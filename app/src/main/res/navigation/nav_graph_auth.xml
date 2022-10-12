@@ -11,16 +11,13 @@
         android:label="fragment_role_select"
         tools:layout="@layout/fragment_role_select" >
         <action
-            android:id="@+id/action_roleSelectFragment_to_signUpStdFragment2"
+            android:id="@+id/action_roleSelectFragment_to_signUpStdFragment"
             app:destination="@id/signUpStdFragment" />
         <action
-            android:id="@+id/action_roleSelectFragment_to_signUpProfFragment2"
+            android:id="@+id/action_roleSelectFragment_to_signUpProfFragment"
             app:destination="@id/signUpProfFragment" />
         <action
-            android:id="@+id/action_roleSelectFragment_to_loginFragment2"
-            app:destination="@id/loginFragment" />
-        <action
-            android:id="@+id/action_roleSelectFragment_to_loginFragment3"
+            android:id="@+id/action_roleSelectFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
     </fragment>
     <fragment
@@ -29,10 +26,7 @@
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" >
         <action
-            android:id="@+id/action_loginFragment_to_roleSelectFragment2"
-            app:destination="@id/roleSelectFragment" />
-        <action
-            android:id="@+id/action_loginFragment_to_roleSelectFragment3"
+            android:id="@+id/action_loginFragment_to_roleSelectFragment"
             app:destination="@id/roleSelectFragment" />
     </fragment>
     <fragment
@@ -41,7 +35,7 @@
         android:label="fragment_sign_up_std"
         tools:layout="@layout/fragment_sign_up_std" >
         <action
-            android:id="@+id/action_signUpStdFragment_to_roleSelectFragment2"
+            android:id="@+id/action_signUpStdFragment_to_roleSelectFragment"
             app:destination="@id/roleSelectFragment" />
     </fragment>
     <fragment
@@ -50,7 +44,7 @@
         android:label="fragment_sign_up_prof"
         tools:layout="@layout/fragment_sign_up_prof" >
         <action
-            android:id="@+id/action_signUpProfFragment_to_roleSelectFragment2"
+            android:id="@+id/action_signUpProfFragment_to_roleSelectFragment"
             app:destination="@id/roleSelectFragment" />
     </fragment>
 </navigation>

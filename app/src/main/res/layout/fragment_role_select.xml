@@ -47,7 +47,8 @@
             android:layout_height="0dp"
             android:scaleType="fitCenter"
             android:layout_weight="1"
-            tools:src="@tools:sample/avatars" />
+            android:src="@drawable/ss_student"
+            android:alpha="0.60"/>
 
         <TextView
             android:id="@+id/tvStdLabel"
@@ -60,6 +61,15 @@
             app:layout_constraintStart_toStartOf="@+id/imageView"
             app:layout_constraintTop_toBottomOf="@+id/imageView" />
     </LinearLayout>
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:background="#51A2A8AD"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toStartOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="@id/guideline1"/>
 
     <LinearLayout
         android:id="@+id/layoutProf"
@@ -78,7 +88,8 @@
             android:layout_height="0dp"
             android:scaleType="fitCenter"
             android:layout_weight="1"
-            tools:src="@tools:sample/avatars" />
+            android:src="@drawable/ss_professor"
+            android:alpha="0.60" />
 
         <TextView
             android:id="@+id/tvProfLabel"
@@ -97,14 +108,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.35" />
+        app:layout_constraintGuide_percent="0.3" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.60" />
+        app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline4"
@@ -122,37 +133,44 @@
 
     <Button
         android:id="@+id/btnSignUp"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="SignUp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline2"
+        android:layout_marginTop="32dp"/>
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#51A2A8AD"
+        app:layout_constraintBottom_toTopOf="@+id/tvExistingAccount"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="32dp"/>
+        android:layout_marginBottom="16dp"/>
 
     <TextView
         android:id="@+id/tvExistingAccount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Have an existing account?"
+        app:layout_constraintBottom_toTopOf="@+id/btnLogin"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSignUp"
-        android:layout_marginTop="24dp"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Login"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvExistingAccount"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="4dp"/>
+        android:layout_marginBottom="32dp"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
