@@ -1,10 +1,12 @@
 package com.example.teachjr.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.source.repository.AuthRepositoryImpl
+import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.Response
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,17 +22,29 @@ class AuthViewModel
      val currUser: FirebaseUser?
         get() = authRepository.currUser
 
-    private val _loginStatus = MutableLiveData<Response<FirebaseUser>>()
-    val loginStatus: LiveData<Response<FirebaseUser>>
+    private val _userType = MutableLiveData<UserType>(UserType.Student())
+    val userType: LiveData<UserType>
+        get() = _userType
+
+    private val _loginStatus = MutableLiveData<Response<FirebaseUser>?>(null)
+    val loginStatus: LiveData<Response<FirebaseUser>?>
         get() = _loginStatus
 
-    private val _signupStatus = MutableLiveData<Response<FirebaseUser>>()
-    val signupStatus: LiveData<Response<FirebaseUser>>
+    private val _signupStatus = MutableLiveData<Response<FirebaseUser>?>(null)
+    val signupStatus: LiveData<Response<FirebaseUser>?>
         get() = _signupStatus
 
     init {
         if(authRepository.currUser != null) {
             _loginStatus.value = Response.Success(authRepository.currUser)
+        }
+    }
+
+    fun setUserType(userString: String) {
+        if(userString.equals(FirebaseConstants.typeStudent)) {
+            _userType.postValue(UserType.Student())
+        } else if(userString.equals(FirebaseConstants.typeProfessor)){
+            _userType.postValue(UserType.Teacher())
         }
     }
 

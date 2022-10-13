@@ -27,7 +27,8 @@
         tools:layout="@layout/fragment_login" >
         <action
             android:id="@+id/action_loginFragment_to_roleSelectFragment"
-            app:destination="@id/roleSelectFragment" />
+            app:destination="@id/roleSelectFragment"
+            app:popUpTo="@id/roleSelectFragment" />
     </fragment>
     <fragment
         android:id="@+id/signUpStdFragment"
@@ -36,7 +37,8 @@
         tools:layout="@layout/fragment_sign_up_std" >
         <action
             android:id="@+id/action_signUpStdFragment_to_roleSelectFragment"
-            app:destination="@id/roleSelectFragment" />
+            app:destination="@id/roleSelectFragment"
+            app:popUpTo="@id/roleSelectFragment" />
     </fragment>
     <fragment
         android:id="@+id/signUpProfFragment"
@@ -45,6 +47,7 @@
         tools:layout="@layout/fragment_sign_up_prof" >
         <action
             android:id="@+id/action_signUpProfFragment_to_roleSelectFragment"
-            app:destination="@id/roleSelectFragment" />
+            app:destination="@id/roleSelectFragment"
+            app:popUpTo="@id/roleSelectFragment" />
     </fragment>
 </navigation>

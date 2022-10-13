@@ -9,20 +9,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.os.bundleOf
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentRoleSelectBinding
+import com.example.teachjr.ui.auth.AuthViewModel
+import com.example.teachjr.ui.auth.UserType
 import com.example.teachjr.utils.FirebaseConstants
+import com.example.teachjr.utils.FirebaseConstants.userType
+import dagger.hilt.android.AndroidEntryPoint
 import hilt_aggregated_deps._dagger_hilt_android_internal_modules_ApplicationContextModule
 import kotlinx.coroutines.NonDisposableHandle.parent
 
+@AndroidEntryPoint
 class RoleSelectFragment : Fragment() {
 
     private lateinit var binding: FragmentRoleSelectBinding
-
-    private var isStdSelected = false
-    private var isProfSelected = false
+    private val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,49 +35,45 @@ class RoleSelectFragment : Fragment() {
     ): View {
         binding = FragmentRoleSelectBinding.inflate(inflater, container, false)
 
+        // TODO: IMPLEMENT TWO WAY BINDING
         binding.layoutStd.setOnClickListener {
-            selectStudent()
-            unSelectProfessor()
+            authViewModel.setUserType(FirebaseConstants.typeStudent)
         }
 
+        // TODO: IMPLEMENT TWO WAY BINDING
         binding.layoutProf.setOnClickListener {
-            selectProfessor()
-            unSelectStudent()
+            authViewModel.setUserType(FirebaseConstants.typeProfessor)
+        }
+
+        authViewModel.userType.observe(viewLifecycleOwner) {
+            when(it) {
+                is UserType.Student -> {
+                    selectStudent()
+                    unSelectProfessor()
+                }
+                is UserType.Teacher -> {
+                    selectProfessor()
+                    unSelectStudent()
+                }
+            }
         }
 
         binding.btnLogin.setOnClickListener {
-            gotoLoginScreen()
+            findNavController().navigate(R.id.action_roleSelectFragment_to_loginFragment)
         }
 
         binding.btnSignUp.setOnClickListener {
             gotoSignUpScreen()
         }
-
         return binding.root
     }
 
-    private fun gotoLoginScreen() {
-        val bundle: Bundle
-        if(isStdSelected) {
-            bundle = bundleOf(
-                FirebaseConstants.userType to FirebaseConstants.typeStudent)
-        } else if(isProfSelected) {
-            bundle = bundleOf(
-                FirebaseConstants.userType to FirebaseConstants.typeProfessor)
-        } else {
-            Toast.makeText(context, "Please select your role", Toast.LENGTH_SHORT).show()
-            return
-        }
-        findNavController().navigate(R.id.action_roleSelectFragment_to_loginFragment, bundle)
-    }
 
     private fun gotoSignUpScreen() {
-        if(isStdSelected) {
+        if(authViewModel.userType.value == UserType.Student()) {
             findNavController().navigate(R.id.action_roleSelectFragment_to_signUpStdFragment)
-        } else if(isProfSelected) {
-            findNavController().navigate(R.id.action_roleSelectFragment_to_signUpProfFragment)
         } else {
-            Toast.makeText(context, "Please select your role", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_roleSelectFragment_to_signUpProfFragment)
         }
     }
 
@@ -82,7 +83,6 @@ class RoleSelectFragment : Fragment() {
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.parseColor("#000000"))
         }
-        isStdSelected = true
     }
 
     private fun selectProfessor() {
@@ -91,7 +91,6 @@ class RoleSelectFragment : Fragment() {
             setTypeface(null, Typeface.BOLD)
             setTextColor(Color.parseColor("#000000"))
         }
-        isProfSelected = true
     }
 
     private fun unSelectStudent() {
@@ -100,7 +99,6 @@ class RoleSelectFragment : Fragment() {
             typeface = Typeface.DEFAULT
             setTextColor(Color.parseColor("#51A2A8AD"))
         }
-        isStdSelected = false
     }
 
     private fun unSelectProfessor() {
@@ -109,6 +107,5 @@ class RoleSelectFragment : Fragment() {
             typeface = Typeface.DEFAULT
             setTextColor(Color.parseColor("#51A2A8AD"))
         }
-        isProfSelected = false
     }
 }
