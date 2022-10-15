@@ -1,26 +1,30 @@
 package com.example.teachjr.di
 
+import com.example.teachjr.data.source.repository.AuthRepository
 import com.example.teachjr.data.source.repository.AuthRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
 class FirebaseModule {
 
     @Provides
-    @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
     }
 
     @Provides
-    @Singleton
-    fun provideAuthRepository(impl: AuthRepositoryImpl): AuthRepositoryImpl {
+    fun provideDatabase(): FirebaseDatabase {
+        return FirebaseDatabase.getInstance()
+    }
+
+    @Provides
+    fun provideAuthRepository(impl: AuthRepositoryImpl): AuthRepository {
         /**
          * Since we have constructor injection inside the 'AuthRepositoryImpl'
          * We can directly get its instance here
