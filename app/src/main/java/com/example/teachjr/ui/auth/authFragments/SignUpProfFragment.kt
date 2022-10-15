@@ -1,5 +1,6 @@
 package com.example.teachjr.ui.auth.authFragments
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,7 +11,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentSignUpProfBinding
-import com.example.teachjr.ui.auth.AuthViewModel
+import com.example.teachjr.ui.professor.ProfessorActivity
+import com.example.teachjr.ui.student.StudentActivity
+import com.example.teachjr.ui.viewmodels.AuthViewModel
+import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -37,6 +41,24 @@ class SignUpProfFragment : Fragment() {
         binding.layoutLogin.setOnClickListener {
             findNavController().navigate(R.id.action_signUpProfFragment_to_roleSelectFragment)
         }
+
+        authViewModel.signupStatus.observe(viewLifecycleOwner) {
+            when(it) {
+                is Response.Loading -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                }
+                is Response.Error -> {
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
+                }
+                is Response.Success -> {
+                    val intent = Intent(activity, ProfessorActivity::class.java)
+                    startActivity(intent)
+                    activity?.finish()
+                }
+                null -> {}
+            }
+        }
     }
 
     private fun createProfUser() {
@@ -49,7 +71,6 @@ class SignUpProfFragment : Fragment() {
             return
         }
 
-        // TODO: Call viewmodel's profSignUp method
-        Toast.makeText(context, "user Registered successfully", Toast.LENGTH_SHORT).show()
+        authViewModel.signupProfessor(name, email, password)
     }
 }

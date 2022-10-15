@@ -3,12 +3,11 @@ package com.example.teachjr.di
 import com.example.teachjr.data.source.repository.AuthRepository
 import com.example.teachjr.data.source.repository.AuthRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.FragmentComponent
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -17,6 +16,11 @@ class FirebaseModule {
     @Provides
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    fun provideDatabase(): FirebaseDatabase {
+        return FirebaseDatabase.getInstance()
     }
 
     @Provides

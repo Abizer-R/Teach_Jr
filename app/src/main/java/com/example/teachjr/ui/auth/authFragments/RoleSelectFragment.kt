@@ -1,5 +1,6 @@
 package com.example.teachjr.ui.auth.authFragments
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -8,20 +9,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentRoleSelectBinding
-import com.example.teachjr.ui.auth.AuthViewModel
-import com.example.teachjr.ui.auth.UserType
+import com.example.teachjr.ui.student.StudentActivity
+import com.example.teachjr.ui.viewmodels.AuthViewModel
+import com.example.teachjr.utils.UserType
 import com.example.teachjr.utils.FirebaseConstants
-import com.example.teachjr.utils.FirebaseConstants.userType
+import com.example.teachjr.utils.Response
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.AndroidEntryPoint
-import hilt_aggregated_deps._dagger_hilt_android_internal_modules_ApplicationContextModule
-import kotlinx.coroutines.NonDisposableHandle.parent
 
 @AndroidEntryPoint
 class RoleSelectFragment : Fragment() {
@@ -34,17 +34,38 @@ class RoleSelectFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentRoleSelectBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setupOnclickListeners()
+        setupObservers()
+    }
+
+    private fun setupOnclickListeners() {
         // TODO: IMPLEMENT TWO WAY BINDING
         binding.layoutStd.setOnClickListener {
-            authViewModel.setUserType(FirebaseConstants.typeStudent)
+            authViewModel.setUserType(FirebaseConstants.TYPE_STUDENT)
         }
 
         // TODO: IMPLEMENT TWO WAY BINDING
         binding.layoutProf.setOnClickListener {
-            authViewModel.setUserType(FirebaseConstants.typeProfessor)
+            authViewModel.setUserType(FirebaseConstants.TYPE_PROFESSOR)
         }
 
+        binding.btnLogin.setOnClickListener {
+            findNavController().navigate(R.id.action_roleSelectFragment_to_loginFragment)
+        }
+
+        // TODO: Bind this in XML itself
+        binding.btnSignUp.setOnClickListener {
+            gotoSignUpScreen()
+        }
+    }
+
+    private fun setupObservers() {
         authViewModel.userType.observe(viewLifecycleOwner) {
             when(it) {
                 is UserType.Student -> {
@@ -55,25 +76,24 @@ class RoleSelectFragment : Fragment() {
                     selectProfessor()
                     unSelectStudent()
                 }
+                null -> {
+                    unSelectStudent()
+                    unSelectProfessor()
+                }
             }
         }
-
-        binding.btnLogin.setOnClickListener {
-            findNavController().navigate(R.id.action_roleSelectFragment_to_loginFragment)
-        }
-
-        binding.btnSignUp.setOnClickListener {
-            gotoSignUpScreen()
-        }
-        return binding.root
     }
 
 
     private fun gotoSignUpScreen() {
-        if(authViewModel.userType.value == UserType.Student()) {
-            findNavController().navigate(R.id.action_roleSelectFragment_to_signUpStdFragment)
-        } else {
-            findNavController().navigate(R.id.action_roleSelectFragment_to_signUpProfFragment)
+        when(authViewModel.userType.value) {
+            is UserType.Student -> {
+                findNavController().navigate(R.id.action_roleSelectFragment_to_signUpStdFragment)
+            }
+            is UserType.Teacher -> {
+                findNavController().navigate(R.id.action_roleSelectFragment_to_signUpProfFragment)
+            }
+            null -> Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
         }
     }
 

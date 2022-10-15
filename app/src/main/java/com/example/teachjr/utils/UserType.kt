@@ -1,4 +1,4 @@
-package com.example.teachjr.ui.auth
+package com.example.teachjr.utils
 
 sealed class UserType() {
     class Student: UserType()
