@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_std"
+    app:startDestination="@id/stdHomeFragment">
+
+    <fragment
+        android:id="@+id/stdHomeFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.stdHomeFragment"
+        android:label="fragment_std_home"
+        tools:layout="@layout/fragment_std_home" >
+        <action
+            android:id="@+id/action_stdHomeFragment_to_stdCourseDetailsFragment"
+            app:destination="@id/stdCourseDetailsFragment" />
+        <action
+            android:id="@+id/action_stdHomeFragment_to_stdCourseEnrollFragment"
+            app:destination="@id/stdCourseEnrollFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/stdCourseEnrollFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.stdCourseEnrollFragment"
+        android:label="fragment_std_course_enroll"
+        tools:layout="@layout/fragment_std_course_enroll" />
+    <fragment
+        android:id="@+id/stdCourseDetailsFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.stdCourseDetailsFragment"
+        android:label="fragment_std_course_details"
+        tools:layout="@layout/fragment_std_course_details" >
+        <action
+            android:id="@+id/action_stdCourseDetailsFragment_to_stdLectureListFragment"
+            app:destination="@id/stdLectureListFragment" />
+        <action
+            android:id="@+id/action_stdCourseDetailsFragment_to_stdMarkAtdFragment"
+            app:destination="@id/stdMarkAtdFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/stdMarkAtdFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.stdMarkAtdFragment"
+        android:label="fragment_std_mark_atd"
+        tools:layout="@layout/fragment_std_mark_atd" />
+    <fragment
+        android:id="@+id/stdLectureListFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.stdLectureListFragment"
+        android:label="fragment_std_lecture_list"
+        tools:layout="@layout/fragment_std_lecture_list" />
+</navigation>
