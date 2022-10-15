@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_prof"
+    app:startDestination="@id/profHomeFragment">
+
+    <fragment
+        android:id="@+id/profHomeFragment"
+        android:name="com.example.teachjr.ui.professor.profFragments.profHomeFragment"
+        android:label="fragment_prof_home"
+        tools:layout="@layout/fragment_prof_home" >
+        <action
+            android:id="@+id/action_profHomeFragment_to_profCourseCreateFragment"
+            app:destination="@id/profCourseCreateFragment" />
+        <action
+            android:id="@+id/action_profHomeFragment_to_profCourseDetailsFragment"
+            app:destination="@id/profCourseDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profCourseCreateFragment"
+        android:name="com.example.teachjr.ui.professor.profFragments.profCourseCreateFragment"
+        android:label="fragment_prof_course_create"
+        tools:layout="@layout/fragment_prof_course_create" />
+    <fragment
+        android:id="@+id/profCourseDetailsFragment"
+        android:name="com.example.teachjr.ui.professor.profFragments.profCourseDetailsFragment"
+        android:label="fragment_prof_course_details"
+        tools:layout="@layout/fragment_prof_course_details" >
+        <action
+            android:id="@+id/action_profCourseDetailsFragment_to_profMarkAtdFragment"
+            app:destination="@id/profMarkAtdFragment" />
+        <action
+            android:id="@+id/action_profCourseDetailsFragment_to_profStdListFragment"
+            app:destination="@id/profStdListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profMarkAtdFragment"
+        android:name="com.example.teachjr.ui.professor.profFragments.profMarkAtdFragment"
+        android:label="fragment_prof_mark_atd"
+        tools:layout="@layout/fragment_prof_mark_atd" />
+    <fragment
+        android:id="@+id/profStdListFragment"
+        android:name="com.example.teachjr.ui.professor.profFragments.profStdListFragment"
+        android:label="fragment_prof_std_list"
+        tools:layout="@layout/fragment_prof_std_list" />
+</navigation>
