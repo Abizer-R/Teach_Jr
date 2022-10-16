@@ -5,6 +5,6 @@ data class CourseDocument constructor(
     val courseName: String? = "",
     val profId: String? = "",
     val profName: String? = "",
-    val enrollmentInfo: EnrollmentInfo? = EnrollmentInfo(),
-    val lectureCollection: LectureCollection? = LectureCollection()
+    val enrolDocId: String? = "",
+    val lecDocId: String? = ""
 )

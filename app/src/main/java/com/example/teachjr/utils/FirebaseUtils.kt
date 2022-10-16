@@ -20,4 +20,6 @@ object FirebasePaths {
     const val COURSE_COLLECTION = "Courses Collection"
     const val  PROF_ID = "professorID"
 
+    const val LECTURE_COLLECTION = "Lectures Collection"
+    const val ENROLLMENT_COLLECTION = "Enrollment Collection"
 }
