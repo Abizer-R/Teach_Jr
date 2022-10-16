@@ -6,11 +6,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
-import com.example.teachjr.data.model.RvCourseListInfo
+import com.example.teachjr.data.model.RvCourseListItem
 
 class CourseListAdapter(): RecyclerView.Adapter<CourseListAdapter.CourseViewHolder>() {
 
-    private var courses: List<RvCourseListInfo> = ArrayList()
+    private var courses: List<RvCourseListItem> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -20,13 +20,14 @@ class CourseListAdapter(): RecyclerView.Adapter<CourseListAdapter.CourseViewHold
 
     override fun onBindViewHolder(holder: CourseViewHolder, position: Int) {
         holder.apply {
-            tvCourseCode.text = courses[position].subCode
-            tvCourseName.text = courses[position].subName
+            tvCourseCode.text = courses[position].courseCode
+            tvCourseName.text = courses[position].courseName
         }
     }
 
-    fun updateList(updatedCourses: List<RvCourseListInfo>) {
+    fun updateList(updatedCourses: List<RvCourseListItem>) {
         courses = updatedCourses
+        notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int {

@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -28,6 +29,7 @@ class ProfRepository
     suspend fun getUserDetails(): Response<User> {
         Log.i("TAG", "GET USER DETAILS-Repo: Calling userDetails()")
         return  dbRef.getReference(FirebasePaths.USER_COLLECTION)
+            .child(FirebasePaths.USER_INFO)
             .child(currentUser.uid)
             .userDetails()
     }
@@ -75,8 +77,8 @@ class ProfRepository
 
             // Adding course ID to professor's User Info
             dbRef.getReference(FirebasePaths.USER_COLLECTION)
-                .child(currentUser.uid)
                 .child(FirebasePaths.COURSE_LIST)
+                .child(currentUser.uid)
                 .child(courseRef.key.toString()).setValue(true).await()
             // Adding course ID to Lectures Collentions
 
@@ -90,17 +92,14 @@ class ProfRepository
         }
     }
 
-//    suspend fun getCourseDocs(): Response<List<CourseDocument>> {
-//
-//        val courseIdResult =
-//            dbRef.getReference(FirebasePaths.USER_COLLECTION)
-//                .child(currentUser.uid)
-//                .child(FirebasePaths.COURSE_LIST)
-//                .getCourseIDs()
-//
-//        // TODO: I HAVE TO CHANGE DATABASE STRUCTUREE >>>>> REFER ONE NOTE
-//    }
+    suspend fun getCourseList(): Response<List<String>> {
+        return dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                .child(FirebasePaths.COURSE_LIST)
+                .child(currentUser.uid)
+                .getCourseIDs()
+    }
 
+    // TODO: Change SingleValueEventListener to onDataChangeListener
     private suspend fun DatabaseReference.getCourseIDs(): Response<List<String>> = suspendCoroutine { continuation ->
         val valueEventListener = object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -108,12 +107,38 @@ class ProfRepository
                     val idList: MutableList<String> = ArrayList()
                     for(id in snapshot.children) {
                         idList.add(id.key.toString())
-                        Log.i(TAG, "COURSE_ID: ${id.key.toString()}")
                     }
+
                     continuation.resume(Response.Success(idList))
                 } else {
                     Log.i(TAG, "onDataChange-getCourseIDs: Something Went Wrong")
                     continuation.resume(Response.Error("Something Went Wrong in repository.getCourseIDs()", null))
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                continuation.resume(Response.Error(error.message, null))
+            }
+        }
+        // Subscribe to the callback
+        addListenerForSingleValueEvent(valueEventListener)
+    }
+
+    suspend fun getCourseDoc(id: String): Response<CourseDocument> {
+        return dbRef.getReference(FirebasePaths.COURSE_COLLECTION)
+            .child(id)
+            .getCourseDocument()
+    }
+
+    // TODO: Change SingleValueEventListener to onDataChangeListener
+    private suspend fun DatabaseReference.getCourseDocument(): Response<CourseDocument> = suspendCoroutine { continuation ->
+        val valueEventListener = object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()) {
+                    continuation.resume(Response.Success(snapshot.getValue(CourseDocument::class.java)))
+                } else {
+                    Log.i(TAG, "onDataChange-getCourseDocument: Something Went Wrong")
+                    continuation.resume(Response.Error("Something Went Wrong in repository.getCourseDocument()", null))
                 }
             }
 
