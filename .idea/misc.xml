@@ -10,7 +10,7 @@
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_login.xml" value="0.246875" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_course_create.xml" value="0.246875" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_course_details.xml" value="0.2609375" />
-        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_home.xml" value="0.2609375" />
+        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_home.xml" value="0.1471861471861472" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_mark_atd.xml" value="0.2609375" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_std_list.xml" value="0.2609375" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_role_select.xml" value="0.264" />
@@ -23,6 +23,7 @@
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_std_lecture_list.xml" value="0.246875" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_std_mark_atd.xml" value="0.246875" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_student_login.xml" value="0.246875" />
+        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/item_course_rv.xml" value="0.2609375" />
       </map>
     </option>
   </component>

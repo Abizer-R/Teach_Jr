@@ -8,7 +8,9 @@ import com.example.teachjr.R
 import com.example.teachjr.databinding.ActivityStudentBinding
 import com.example.teachjr.ui.auth.AuthActivity
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class StudentActivity : AppCompatActivity() {
 
     private val TAG = StudentActivity::class.java.simpleName

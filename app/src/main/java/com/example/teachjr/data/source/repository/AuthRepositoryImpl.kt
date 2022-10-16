@@ -53,7 +53,7 @@ class AuthRepositoryImpl
         }
     }
 
-    suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
+    private suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
         val valueEventListener = object: ValueEventListener {
             override fun onCancelled(error: DatabaseError) { }
 

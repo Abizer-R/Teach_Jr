@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/stdHomeFragment"
-        android:name="com.example.teachjr.ui.student.stdFragments.stdHomeFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.StdHomeFragment"
         android:label="fragment_std_home"
         tools:layout="@layout/fragment_std_home" >
         <action
@@ -19,12 +19,12 @@
     </fragment>
     <fragment
         android:id="@+id/stdCourseEnrollFragment"
-        android:name="com.example.teachjr.ui.student.stdFragments.stdCourseEnrollFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.StdCourseEnrollFragment"
         android:label="fragment_std_course_enroll"
         tools:layout="@layout/fragment_std_course_enroll" />
     <fragment
         android:id="@+id/stdCourseDetailsFragment"
-        android:name="com.example.teachjr.ui.student.stdFragments.stdCourseDetailsFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.StdCourseDetailsFragment"
         android:label="fragment_std_course_details"
         tools:layout="@layout/fragment_std_course_details" >
         <action
@@ -36,12 +36,12 @@
     </fragment>
     <fragment
         android:id="@+id/stdMarkAtdFragment"
-        android:name="com.example.teachjr.ui.student.stdFragments.stdMarkAtdFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.StdMarkAtdFragment"
         android:label="fragment_std_mark_atd"
         tools:layout="@layout/fragment_std_mark_atd" />
     <fragment
         android:id="@+id/stdLectureListFragment"
-        android:name="com.example.teachjr.ui.student.stdFragments.stdLectureListFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.StdLectureListFragment"
         android:label="fragment_std_lecture_list"
         tools:layout="@layout/fragment_std_lecture_list" />
 </navigation>

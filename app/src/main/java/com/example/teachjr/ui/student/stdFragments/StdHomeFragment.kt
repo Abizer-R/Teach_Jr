@@ -6,17 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.teachjr.R
-import com.example.teachjr.databinding.FragmentStdCourseEnrollBinding
+import com.example.teachjr.databinding.FragmentStdHomeBinding
 
-class stdCourseEnrollFragment : Fragment() {
+class StdHomeFragment : Fragment() {
 
-    private lateinit var binding: FragmentStdCourseEnrollBinding
+    private lateinit var binding: FragmentStdHomeBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentStdCourseEnrollBinding.inflate(layoutInflater)
+        binding = FragmentStdHomeBinding.inflate(layoutInflater)
         return binding.root
     }
 

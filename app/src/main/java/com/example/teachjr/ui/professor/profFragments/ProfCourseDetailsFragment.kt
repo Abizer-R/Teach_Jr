@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfCourseDetailsBinding
 
-class profCourseDetailsFragment : Fragment() {
+class ProfCourseDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentProfCourseDetailsBinding
 

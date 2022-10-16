@@ -7,8 +7,8 @@
 
     <fragment
         android:id="@+id/profHomeFragment"
-        android:name="com.example.teachjr.ui.professor.profFragments.profHomeFragment"
-        android:label="fragment_prof_home"
+        android:name="com.example.teachjr.ui.professor.profFragments.ProfHomeFragment"
+        android:label="Courses"
         tools:layout="@layout/fragment_prof_home" >
         <action
             android:id="@+id/action_profHomeFragment_to_profCourseCreateFragment"
@@ -19,13 +19,13 @@
     </fragment>
     <fragment
         android:id="@+id/profCourseCreateFragment"
-        android:name="com.example.teachjr.ui.professor.profFragments.profCourseCreateFragment"
-        android:label="fragment_prof_course_create"
+        android:name="com.example.teachjr.ui.professor.profFragments.ProfCourseCreateFragment"
+        android:label="Create Course"
         tools:layout="@layout/fragment_prof_course_create" />
     <fragment
         android:id="@+id/profCourseDetailsFragment"
-        android:name="com.example.teachjr.ui.professor.profFragments.profCourseDetailsFragment"
-        android:label="fragment_prof_course_details"
+        android:name="com.example.teachjr.ui.professor.profFragments.ProfCourseDetailsFragment"
+        android:label="Course Details"
         tools:layout="@layout/fragment_prof_course_details" >
         <action
             android:id="@+id/action_profCourseDetailsFragment_to_profMarkAtdFragment"
@@ -36,12 +36,12 @@
     </fragment>
     <fragment
         android:id="@+id/profMarkAtdFragment"
-        android:name="com.example.teachjr.ui.professor.profFragments.profMarkAtdFragment"
-        android:label="fragment_prof_mark_atd"
+        android:name="com.example.teachjr.ui.professor.profFragments.ProfMarkAtdFragment"
+        android:label="Mark Attendance"
         tools:layout="@layout/fragment_prof_mark_atd" />
     <fragment
         android:id="@+id/profStdListFragment"
-        android:name="com.example.teachjr.ui.professor.profFragments.profStdListFragment"
-        android:label="fragment_prof_std_list"
+        android:name="com.example.teachjr.ui.professor.profFragments.ProfStdListFragment"
+        android:label="Students List"
         tools:layout="@layout/fragment_prof_std_list" />
 </navigation>

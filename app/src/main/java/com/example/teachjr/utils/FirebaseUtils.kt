@@ -15,5 +15,9 @@ object FirebasePaths {
     const val USER_ID = "id"
     const val USER_NAME = "name"
     const val USER_ENROLLMENT_STUDENT = "enrollment"
+    const val COURSE_LIST = "courseList"
+
+    const val COURSE_COLLECTION = "Courses Collection"
+    const val  PROF_ID = "professorID"
 
 }
