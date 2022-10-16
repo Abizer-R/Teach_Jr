@@ -60,8 +60,16 @@ class ProfRepository
             val courseRef = dbRef.getReference(FirebasePaths.COURSE_COLLECTION).push()
             courseRef.setValue(newCourse).await()
 
-            // Not exposing the direct ID in order to enhance security
-            return Response.Success("$courseCode/${courseRef.key}")
+            // Adding course ID to professor's User Info
+            dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                .child(FirebasePaths.COURSE_LIST)
+                .child(courseRef.key.toString())
+                .setValue(true) // Value doesn't matter, just the key need to be store
+                .await()
+
+//            // Not exposing the direct ID in order to enhance security
+//            return Response.Success("$courseCode/${courseRef.key}")
+            return Response.Success(courseRef.key)
         } catch (e: Exception) {
             e.printStackTrace()
             return Response.Error(e.message.toString(), null)
