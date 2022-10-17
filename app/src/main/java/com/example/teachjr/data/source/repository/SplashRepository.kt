@@ -24,6 +24,7 @@ class SplashRepository
      */
     suspend fun getUserType(): UserType {
         val result = dbRef.getReference(FirebasePaths.USER_COLLECTION)
+            .child(FirebasePaths.USER_INFO)
             .child(firebaseAuth.currentUser!!.uid)
             .singleValueEvent()
 

@@ -41,6 +41,7 @@ class AuthRepositoryImpl
      */
     suspend fun getUserType(): UserType {
         val result = dbRef.getReference(FirebasePaths.USER_COLLECTION)
+            .child(FirebasePaths.USER_INFO)
             .child(firebaseAuth.currentUser!!.uid)
             .singleValueEvent()
 
@@ -53,7 +54,7 @@ class AuthRepositoryImpl
         }
     }
 
-    suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
+    private suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
         val valueEventListener = object: ValueEventListener {
             override fun onCancelled(error: DatabaseError) { }
 
@@ -84,6 +85,7 @@ class AuthRepositoryImpl
                     enrollment = enrollment
                 )
                 dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                    .child(FirebasePaths.USER_INFO)
                     .child(id)
                     .setValue(userStd)
                     .await()
@@ -114,6 +116,7 @@ class AuthRepositoryImpl
                     enrollment = null
                 )
                 dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                    .child(FirebasePaths.USER_INFO)
                     .child(id)
                     .setValue(userProf)
                     .await()
