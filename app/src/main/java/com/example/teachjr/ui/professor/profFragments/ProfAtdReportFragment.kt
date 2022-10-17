@@ -6,17 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.teachjr.R
-import com.example.teachjr.databinding.FragmentProfStdListBinding
+import com.example.teachjr.databinding.FragmentProfAtdReportBinding
 
-class ProfStdListFragment : Fragment() {
+class ProfAtdReportFragment : Fragment() {
 
-    private lateinit var binding: FragmentProfStdListBinding
+    private lateinit var binding: FragmentProfAtdReportBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentProfStdListBinding.inflate(layoutInflater)
+        binding = FragmentProfAtdReportBinding.inflate(layoutInflater)
         return binding.root
     }
 

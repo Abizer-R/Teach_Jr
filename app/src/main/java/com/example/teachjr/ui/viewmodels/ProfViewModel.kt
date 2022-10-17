@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.CourseDocument
+import com.example.teachjr.data.model.LecturesDocument
 import com.example.teachjr.data.model.RvCourseListItem
 import com.example.teachjr.data.model.User
 import com.example.teachjr.data.source.repository.ProfRepository
@@ -25,13 +26,23 @@ class ProfViewModel
     val currUser: LiveData<Response<User>>
         get() = _currUser
 
+    /**
+     * Used by Fragment: Create_Course to recognise the newly created Course
+     */
     private val _newCourseID = MutableLiveData<Response<String>>()
     val newCourseID: LiveData<Response<String>>
         get() = _newCourseID
 
+    /**
+     * Used by Fragment: Home_Page to Display CourseList in RecyclerView
+     */
     private val _courseDocs = MutableLiveData<Response<List<CourseDocument>>>()
     val courseDocs: LiveData<Response<List<CourseDocument>>>
         get() = _courseDocs
+
+    private val _lectureDoc = MutableLiveData<Response<LecturesDocument>>()
+    val lectureDoc: LiveData<Response<LecturesDocument>>
+        get() = _lectureDoc
 
     init {
         getUserDetails()
@@ -95,9 +106,24 @@ class ProfViewModel
 
         for(doc in courseDocList) {
             rvCourseList.add(
-                RvCourseListItem(courseName = doc.courseName!!, courseCode = doc.courseCode!!)
+                RvCourseListItem(courseId = doc.courseId!!, courseName = doc.courseName!!, courseCode = doc.courseCode!!)
             )
         }
         return rvCourseList
+    }
+
+    fun getLectureDoc(courseId: String) {
+        _lectureDoc.postValue(Response.Loading())
+        viewModelScope.launch {
+            val lecDocResponse = profRepository.getLectureDoc(courseId)
+            when(lecDocResponse) {
+                is Response.Loading -> {}
+                is Response.Error -> _lectureDoc.postValue(Response.Error(lecDocResponse.errorMessage.toString(), null))
+                is Response.Success -> {
+                    _lectureDoc.postValue(Response.Success(lecDocResponse.data))
+                    Log.i("TAG", "Lecture Doc: ${lecDocResponse.data}")
+                }
+            }
+        }
     }
 }

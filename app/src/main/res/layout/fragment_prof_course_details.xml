@@ -15,9 +15,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <TextView
+            android:id="@+id/tvNoRequests"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Enrollment Requests"
+            android:layout_gravity="center_horizontal"/>
+
         <Button
+            android:id="@+id/btnRequests"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="24dp"
@@ -39,6 +48,7 @@
             android:id="@+id/tvCourseCodeLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="12dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
             android:text="Course Code" />
@@ -51,13 +61,13 @@
             android:layout_marginEnd="24dp"
             android:text="CS-XXX"
             android:textColor="@color/black"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="18sp"/>
 
         <TextView
             android:id="@+id/tvCourseNameLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="12dp"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="24dp"
@@ -71,13 +81,13 @@
             android:layout_marginEnd="24dp"
             android:text="Object Oriented Programming and Beeverology"
             android:textColor="@color/black"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="18sp"/>
 
         <TextView
             android:id="@+id/tvCourseLinkLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="12dp"
             android:layout_marginStart="24dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="24dp"
@@ -102,8 +112,7 @@
                 android:layout_weight="1"
                 android:text="BeeverAgr/-Netasdfasdf"
                 android:textColor="@color/black"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textSize="18sp"/>
 
             <ImageView
                 android:id="@+id/btnCourseLink"
@@ -133,9 +142,8 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="24dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
             android:background="#51A2A8AD" />
 
         <TextView
@@ -143,15 +151,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="24dp"
             android:text="Total Lecures: 10"
             android:textColor="@color/black"
-            android:textSize="16sp"
             android:textStyle="bold" />
 
         <Button
-            android:id="@+id/btnLecDetails"
+            android:id="@+id/btnAtdReport"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
@@ -165,13 +173,13 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
         android:background="#51A2A8AD"
         app:layout_constraintBottom_toTopOf="@+id/extendedFloatingActionButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/extendedFloatingActionButton"
@@ -181,6 +189,16 @@
         android:text="Mark Attendance"
         app:icon="@drawable/ic_baseline_add_24"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="16dp"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/view3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="16dp"/>

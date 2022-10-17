@@ -21,7 +21,13 @@
         android:id="@+id/profCourseCreateFragment"
         android:name="com.example.teachjr.ui.professor.profFragments.ProfCourseCreateFragment"
         android:label="Create Course"
-        tools:layout="@layout/fragment_prof_course_create" />
+        tools:layout="@layout/fragment_prof_course_create" >
+        <action
+            android:id="@+id/action_profCourseCreateFragment_to_profCourseDetailsFragment"
+            app:destination="@id/profCourseDetailsFragment"
+            app:popUpTo="@id/profCourseCreateFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/profCourseDetailsFragment"
         android:name="com.example.teachjr.ui.professor.profFragments.ProfCourseDetailsFragment"
@@ -31,8 +37,8 @@
             android:id="@+id/action_profCourseDetailsFragment_to_profMarkAtdFragment"
             app:destination="@id/profMarkAtdFragment" />
         <action
-            android:id="@+id/action_profCourseDetailsFragment_to_profStdListFragment"
-            app:destination="@id/profStdListFragment" />
+            android:id="@+id/action_profCourseDetailsFragment_to_profAtdReportFragment"
+            app:destination="@id/profAtdReportFragment" />
     </fragment>
     <fragment
         android:id="@+id/profMarkAtdFragment"
@@ -40,8 +46,8 @@
         android:label="Mark Attendance"
         tools:layout="@layout/fragment_prof_mark_atd" />
     <fragment
-        android:id="@+id/profStdListFragment"
-        android:name="com.example.teachjr.ui.professor.profFragments.ProfStdListFragment"
-        android:label="Students List"
-        tools:layout="@layout/fragment_prof_std_list" />
+        android:id="@+id/profAtdReportFragment"
+        android:name="com.example.teachjr.ui.professor.profFragments.ProfAtdReportFragment"
+        android:label="fragment_prof_atd_report"
+        tools:layout="@layout/fragment_prof_atd_report" />
 </navigation>

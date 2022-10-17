@@ -8,7 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.data.model.RvCourseListItem
 
-class CourseListAdapter(): RecyclerView.Adapter<CourseListAdapter.CourseViewHolder>() {
+class CourseListAdapter(
+    private val onItemClicked: (RvCourseListItem) -> Unit
+): RecyclerView.Adapter<CourseListAdapter.CourseViewHolder>() {
 
     private var courses: List<RvCourseListItem> = ArrayList()
 
@@ -22,6 +24,9 @@ class CourseListAdapter(): RecyclerView.Adapter<CourseListAdapter.CourseViewHold
         holder.apply {
             tvCourseCode.text = courses[position].courseCode
             tvCourseName.text = courses[position].courseName
+            holder.itemView.setOnClickListener {
+                onItemClicked.invoke(courses[position])
+            }
         }
     }
 
@@ -37,5 +42,6 @@ class CourseListAdapter(): RecyclerView.Adapter<CourseListAdapter.CourseViewHold
     class CourseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var tvCourseCode = itemView.findViewById<TextView>(R.id.tvCourseCode)
         var tvCourseName = itemView.findViewById<TextView>(R.id.tvCourseName)
+
     }
 }

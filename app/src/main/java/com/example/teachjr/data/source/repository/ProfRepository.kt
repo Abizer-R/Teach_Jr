@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.log
 
 class ProfRepository
 @Inject constructor(
@@ -135,10 +136,44 @@ class ProfRepository
         val valueEventListener = object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if(snapshot.exists()) {
-                    continuation.resume(Response.Success(snapshot.getValue(CourseDocument::class.java)))
+                    val courseDocument = snapshot.getValue(CourseDocument::class.java)
+                    courseDocument!!.courseId = snapshot.key
+                    continuation.resume(Response.Success(courseDocument))
                 } else {
                     Log.i(TAG, "onDataChange-getCourseDocument: Something Went Wrong")
                     continuation.resume(Response.Error("Something Went Wrong in repository.getCourseDocument()", null))
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                continuation.resume(Response.Error(error.message, null))
+            }
+        }
+        // Subscribe to the callback
+        addListenerForSingleValueEvent(valueEventListener)
+    }
+
+    suspend fun getLectureDoc(courseId: String): Response<LecturesDocument> {
+        val lecId = dbRef.getReference(FirebasePaths.COURSE_COLLECTION)
+            .child(courseId)
+            .child(FirebasePaths.LECTURE_DOC_ID)
+            .get().await()
+
+        Log.i(TAG, "getLectureDoc: LecId = ${lecId.value.toString()}")
+
+        return dbRef.getReference(FirebasePaths.LECTURE_COLLECTION)
+            .child(lecId.value.toString())
+            .getLectureDocument()
+    }
+
+    private suspend fun DatabaseReference.getLectureDocument(): Response<LecturesDocument> = suspendCoroutine { continuation ->
+        val valueEventListener = object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if(snapshot.exists()) {
+                    continuation.resume(Response.Success(snapshot.getValue(LecturesDocument::class.java)))
+                } else {
+                    Log.i(TAG, "onDataChange-getLectureDocument: Something Went Wrong")
+                    continuation.resume(Response.Error("Something Went Wrong in repository.getLectureDocument()", null))
                 }
             }
 
