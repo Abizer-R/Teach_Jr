@@ -24,6 +24,8 @@ class StdCourseEnrollFragment : Fragment() {
     private lateinit var binding: FragmentStdCourseEnrollBinding
     private val studentViewModel by activityViewModels<StudentViewModel>()
 
+    private var courseId: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -50,11 +52,8 @@ class StdCourseEnrollFragment : Fragment() {
                     val newRequestCreated = it.data
                     when(newRequestCreated) {
                         true -> {
-                            // TODO: Design the course Detail fragment
-                            // TODO: send data to view through bundle
-                            // TODO: You already have courseId
-                            // TODO: USE ENROLL_REPO TO FETCH profName, courseCode, courseName
-                            findNavController()
+                            updateLoadingViews(false)
+                            binding.tvRequestStatus.text = "Enrollment request has been registered.\nContact your professor for approval"
                         }
                         false -> {
                             updateLoadingViews(false)
@@ -71,13 +70,13 @@ class StdCourseEnrollFragment : Fragment() {
     }
 
     private fun enrollCourse() {
-        val courseLink = binding.etCourseLink.text.toString()
-        if(courseLink.isBlank()) {
+        courseId = binding.etCourseLink.text.toString()
+        if(courseId!!.isBlank()) {
             Toast.makeText(context, "Please enter course link", Toast.LENGTH_SHORT).show()
             return
         }
 
-        studentViewModel.enrollCourse(courseLink)
+        studentViewModel.enrollCourse(courseId!!)
     }
 
     private fun updateLoadingViews(isLoading: Boolean, btnAgain: Boolean = false) {

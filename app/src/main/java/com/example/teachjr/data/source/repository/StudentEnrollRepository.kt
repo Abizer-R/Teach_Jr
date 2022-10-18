@@ -20,6 +20,10 @@ class StudentEnrollRepository
 
     private val TAG = StudentRepository::class.java.simpleName
 
+    suspend fun getCourseDetails() {
+
+    }
+
 
     /**
      * This function returns Response.Success() only if request was not made in past
