@@ -29,4 +29,5 @@ object FirebasePaths {
 
     const val LECTURE_COLLECTION = "Lectures Collection"
     const val ENROLLMENT_COLLECTION = "Enrollment Collection"
+    const val ENROLLMENT_REQ_LIST = "reqList"
 }
