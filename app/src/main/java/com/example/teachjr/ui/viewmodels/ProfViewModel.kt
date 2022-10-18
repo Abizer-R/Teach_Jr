@@ -48,7 +48,7 @@ class ProfViewModel
         getUserDetails()
     }
 
-    fun getUserDetails() {
+    private fun getUserDetails() {
         viewModelScope.launch {
             val user = profRepository.getUserDetails()
             Log.i("TAG", "GET USER DETAILS-ViewModel: ${user.data}")

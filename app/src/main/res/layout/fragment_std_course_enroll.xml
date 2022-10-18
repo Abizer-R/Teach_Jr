@@ -39,20 +39,20 @@
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/btnCreate"
-        app:layout_constraintEnd_toEndOf="@+id/btnCreate"
-        app:layout_constraintStart_toStartOf="@+id/btnCreate"
-        app:layout_constraintTop_toTopOf="@+id/btnCreate" />
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="@+id/tvRequestStatus"
+        app:layout_constraintStart_toStartOf="@+id/tvRequestStatus"
+        app:layout_constraintTop_toBottomOf="@+id/tvRequestStatus"
+        android:layout_marginTop="16dp"/>
 
     <TextView
-        android:id="@+id/tvNewCourseLink"
+        android:id="@+id/tvRequestStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New_Course_Link"
+        android:text="Request Status"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnCreate"
+        app:layout_constraintTop_toBottomOf="@+id/btnEnroll"
         android:layout_marginTop="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
