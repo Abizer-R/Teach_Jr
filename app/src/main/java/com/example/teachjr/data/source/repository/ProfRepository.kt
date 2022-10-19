@@ -73,6 +73,7 @@ class ProfRepository
             val courseRef = dbRef.getReference(FirebasePaths.COURSE_COLLECTION).push()
             courseRef.setValue(newCourse).await()
 
+            // Adding course ID to Lecture Document and Enrollment Document
             lecDocRef.setValue(LecturesDocument(courseId = courseRef.key)).await()
             enrolDocRef.setValue(EnrollmentDocument(courseId = courseRef.key)).await()
 
@@ -81,7 +82,7 @@ class ProfRepository
                 .child(FirebasePaths.COURSE_LIST)
                 .child(currentUser.uid)
                 .child(courseRef.key.toString()).setValue(true).await()
-            // Adding course ID to Lectures Collentions
+
 
 
 //            // Not exposing the direct ID in order to enhance security
