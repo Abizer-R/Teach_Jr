@@ -23,12 +23,12 @@ class FirebaseModule {
         return FirebaseDatabase.getInstance()
     }
 
-    @Provides
-    fun provideAuthRepository(impl: AuthRepositoryImpl): AuthRepository {
-        /**
-         * Since we have constructor injection inside the 'AuthRepositoryImpl'
-         * We can directly get its instance here
-          */
-        return impl
-    }
+//    @Provides
+//    fun provideAuthRepository(impl: AuthRepositoryImpl): AuthRepository {
+//        /**
+//         * Since we have constructor injection inside the 'AuthRepositoryImpl'
+//         * We can directly get its instance here
+//          */
+//        return impl
+//    }
 }

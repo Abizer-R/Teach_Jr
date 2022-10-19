@@ -85,7 +85,7 @@ class LoginFragment : Fragment() {
         }
 
         binding.layoutSignUp.setOnClickListener {
-            findNavController().navigate(R.id.action_loginFragment_to_roleSelectFragment)
+//            findNavController().navigate(R.id.action_loginFragment_to_roleSelectFragment)
         }
     }
 

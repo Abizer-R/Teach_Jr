@@ -23,9 +23,9 @@ class AuthRepositoryImpl
     @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val dbRef: FirebaseDatabase
-): AuthRepository {
+) {
 
-    override suspend fun login(email: String, password: String): Response<FirebaseUser> {
+    suspend fun login(email: String, password: String): Response<FirebaseUser> {
         try {
             // We have no use of result right now...
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
@@ -36,23 +36,22 @@ class AuthRepositoryImpl
         }
     }
 
-    /**
-     * Same code is used in SplashRepository for getting User type
-     */
-    suspend fun getUserType(): UserType {
-        val result = dbRef.getReference(FirebasePaths.USER_COLLECTION)
-            .child(FirebasePaths.USER_INFO)
-            .child(firebaseAuth.currentUser!!.uid)
-            .singleValueEvent()
-
-        if(result.equals(FirebaseConstants.TYPE_STUDENT)) {
-            Log.i("TAG", "getUserType: Student Confirmed")
-            return UserType.Student()
-        } else {
-            Log.i("TAG", "getUserType: Professor Confirmed")
-            return UserType.Teacher()
-        }
-    }
+//    /**
+//     * Same code is used in SplashRepository for getting User type
+//     */
+//    suspend fun getUserType(): UserType {
+//        val result = dbRef.getReference(FirebasePaths.USER_COLLECTION)
+//            .child(firebaseAuth.currentUser!!.uid)
+//            .singleValueEvent()
+//
+//        if(result.equals(FirebaseConstants.TYPE_STUDENT)) {
+//            Log.i("TAG", "getUserType: Student Confirmed")
+//            return UserType.Student()
+//        } else {
+//            Log.i("TAG", "getUserType: Professor Confirmed")
+//            return UserType.Teacher()
+//        }
+//    }
 
     private suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
         val valueEventListener = object: ValueEventListener {
@@ -68,37 +67,37 @@ class AuthRepositoryImpl
         addListenerForSingleValueEvent(valueEventListener) // Subscribe to the event
     }
 
-    override suspend fun signupStudent(
-        name: String, enrollment: String, email: String, password: String
-    ): Response<FirebaseUser> {
-        try {
-            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+//    suspend fun signupStudent(
+//        name: String, enrollment: String, email: String, password: String
+//    ): Response<FirebaseUser> {
+//        try {
+//            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+//
+//            if(result.user == null) {
+//                return Response.Error("Null User", null)
+//            } else {
+//                val id = result.user!!.uid
+//                val userStd = User(
+//                    id = id,
+//                    name = name,
+//                    userType = FirebaseConstants.TYPE_STUDENT,
+//                    enrollment = enrollment
+//                )
+//                dbRef.getReference(FirebasePaths.USER_COLLECTION)
+//                    .child(FirebasePaths.USER_INFO)
+//                    .child(id)
+//                    .setValue(userStd)
+//                    .await()
+//
+//                return Response.Success(result.user)
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            return Response.Error(e.message.toString(), null)
+//        }
+//    }
 
-            if(result.user == null) {
-                return Response.Error("Null User", null)
-            } else {
-                val id = result.user!!.uid
-                val userStd = User(
-                    id = id,
-                    name = name,
-                    userType = FirebaseConstants.TYPE_STUDENT,
-                    enrollment = enrollment
-                )
-                dbRef.getReference(FirebasePaths.USER_COLLECTION)
-                    .child(FirebasePaths.USER_INFO)
-                    .child(id)
-                    .setValue(userStd)
-                    .await()
-
-                return Response.Success(result.user)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return Response.Error(e.message.toString(), null)
-        }
-    }
-
-    override suspend fun signupProfessor(
+    suspend fun signupProfessor(
         name: String, email: String, password: String
     ): Response<FirebaseUser> {
 

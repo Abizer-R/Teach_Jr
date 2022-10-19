@@ -18,7 +18,7 @@ import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SignUpProfFragment : Fragment() {
+class LoginProfFragment : Fragment() {
 
     private lateinit var binding: FragmentSignUpProfBinding
     private val authViewModel: AuthViewModel by activityViewModels()
@@ -39,7 +39,7 @@ class SignUpProfFragment : Fragment() {
         }
 
         binding.layoutLogin.setOnClickListener {
-            findNavController().navigate(R.id.action_signUpProfFragment_to_roleSelectFragment)
+//            findNavController().navigate(R.id.action_signUpProfFragment_to_roleSelectFragment)
         }
 
         authViewModel.signupStatus.observe(viewLifecycleOwner) {

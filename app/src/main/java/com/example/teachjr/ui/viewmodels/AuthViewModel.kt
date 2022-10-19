@@ -55,22 +55,23 @@ class AuthViewModel
                 }
                 is Response.Loading -> {}
                 is Response.Success -> {
-                    val type = authRepository.getUserType()
-                    _loginStatus.postValue(Response.Success(type))
+                    // TODO: Cross Check Enrollment Number
+//                    val type = authRepository.getUserType()
+//                    _loginStatus.postValue(Response.Success(type))
                 }
             }
         }
     }
 
 
-    fun signupStudent(name: String, enrollment: String, email: String, password: String) {
-        _signupStatus.postValue(Response.Loading())
-        viewModelScope.launch {
-            val result = authRepository.signupStudent(name, enrollment, email, password)
-            _signupStatus.postValue(result)
-        }
-
-    }
+//    fun signupStudent(name: String, enrollment: String, email: String, password: String) {
+//        _signupStatus.postValue(Response.Loading())
+//        viewModelScope.launch {
+//            val result = authRepository.signupStudent(name, enrollment, email, password)
+//            _signupStatus.postValue(result)
+//        }
+//
+//    }
 
     fun signupProfessor(name: String, email: String, password: String) {
         _signupStatus.postValue(Response.Loading())

@@ -15,7 +15,7 @@ import com.example.teachjr.ui.viewmodels.AuthViewModel
 import com.example.teachjr.ui.student.StudentActivity
 import com.example.teachjr.utils.Response
 
-class SignUpStdFragment : Fragment() {
+class LoginStdFragment : Fragment() {
 
     private lateinit var binding: FragmentSignUpStdBinding
     private val authViewModel: AuthViewModel by activityViewModels()
@@ -36,7 +36,7 @@ class SignUpStdFragment : Fragment() {
         }
 
         binding.layoutLogin.setOnClickListener {
-            findNavController().navigate(R.id.action_signUpStdFragment_to_roleSelectFragment)
+//            findNavController().navigate(R.id.action_signUpStdFragment_to_roleSelectFragment)
         }
 
         authViewModel.signupStatus.observe(viewLifecycleOwner) {
@@ -69,7 +69,7 @@ class SignUpStdFragment : Fragment() {
             return
         }
 
-        authViewModel.signupStudent(name, enrollment, email, password)
+//        authViewModel.signupStudent(name, enrollment, email, password)
     }
 
 }

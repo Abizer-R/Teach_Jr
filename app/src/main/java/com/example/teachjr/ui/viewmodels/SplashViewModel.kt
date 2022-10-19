@@ -1,10 +1,12 @@
 package com.example.teachjr.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.source.repository.SplashRepository
+import com.example.teachjr.utils.Response
 import com.example.teachjr.utils.UserType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -21,13 +23,17 @@ class SplashViewModel
         get() = _userType
 
     init {
+        Log.i("TAG", "Testing: USERID = ${splashRepository.currUser?.uid}")
         if(splashRepository.currUser != null) {
             viewModelScope.launch {
-                val type = splashRepository.getUserType()
-                _userType.postValue(type)
+                splashRepository.getUserType()
             }
         } else {
             _userType.postValue(null)
         }
+    }
+
+    fun getUserType() {
+
     }
 }
