@@ -23,14 +23,19 @@ class SplashViewModel
         get() = _userType
 
     init {
-        Log.i("TAG", "Testing: USERID = ${splashRepository.currUser?.uid}")
-        if(splashRepository.currUser != null) {
-            viewModelScope.launch {
-                splashRepository.getUserType()
-            }
-        } else {
-            _userType.postValue(null)
-        }
+        // TODO: REMOVE THIS
+        splashRepository.logout()
+        _userType.postValue(null)
+
+
+//        Log.i("TAG", "Testing: USERID = ${splashRepository.currUser?.uid}")
+//        if(splashRepository.currUser != null) {
+//            viewModelScope.launch {
+//                splashRepository.getUserType()
+//            }
+//        } else {
+//            _userType.postValue(null)
+//        }
     }
 
     fun getUserType() {

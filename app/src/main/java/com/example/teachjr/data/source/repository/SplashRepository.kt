@@ -43,6 +43,12 @@ class SplashRepository
         }
     }
 
+
+    // TODO: REMOVE THIS
+    fun logout() {
+        firebaseAuth.signOut()
+    }
+
 //    suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
 //        val valueEventListener = object: ValueEventListener {
 //            override fun onCancelled(error: DatabaseError) { }

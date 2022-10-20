@@ -1,6 +1,7 @@
 package com.example.teachjr.ui.viewmodels
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,8 +13,10 @@ import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.Response
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,38 +29,48 @@ class AuthViewModel
     val userType: LiveData<UserType?>
         get() = _userType
 
-    private val _loginStatus = MutableLiveData<Response<UserType>>()
-    val loginStatus: LiveData<Response<UserType>>
+    private val _loginStatus = MutableLiveData<Response<FirebaseUser>>()
+    val loginStatus: LiveData<Response<FirebaseUser>>
         get() = _loginStatus
 
-    private val _signupStatus = MutableLiveData<Response<FirebaseUser>>()
-    val signupStatus: LiveData<Response<FirebaseUser>?>
-        get() = _signupStatus
 
     fun setUserType(userString: String) {
         if(userString.equals(FirebaseConstants.TYPE_STUDENT)) {
-            Log.i("TAG", "setUserType: USERTYPE Student")
             _userType.postValue(UserType.Student())
         } else if(userString.equals(FirebaseConstants.TYPE_PROFESSOR)){
-            Log.i("TAG", "setUserType: USERTYPE Professor")
             _userType.postValue(UserType.Teacher())
         }
     }
 
-    fun login(email: String, password: String) {
+    fun loginProfessor(email: String, password: String) {
         _loginStatus.value = Response.Loading()
         viewModelScope.launch {
-            val result = authRepository.login(email, password)
-
-            when(result) {
+            val result = async { authRepository.login(email, password) }
+            when(val response = result.await()) {
                 is Response.Error -> {
-                    _loginStatus.postValue(Response.Error(result.errorMessage.toString(), null))
+                    _loginStatus.postValue(Response.Error(response.errorMessage.toString(), null))
                 }
                 is Response.Loading -> {}
                 is Response.Success -> {
-                    // TODO: Cross Check Enrollment Number
-//                    val type = authRepository.getUserType()
-//                    _loginStatus.postValue(Response.Success(type))
+                    // Verifies if user is professor/student and updates _loginStatus
+                    verifyAndUpdate(FirebaseConstants.TYPE_PROFESSOR)
+                }
+            }
+        }
+    }
+
+    private suspend fun verifyAndUpdate(reqUserType: String) {
+        withContext(Dispatchers.IO) {
+            val userType = async { authRepository.getUserType() }
+            when(val typeResponse = userType.await()) {
+                is Response.Error -> _loginStatus.postValue(Response.Error(typeResponse.errorMessage.toString(), null))
+                is Response.Loading -> {}
+                is Response.Success -> {
+                    if(typeResponse.data.equals(reqUserType)) {
+                        _loginStatus.postValue(Response.Success(authRepository.currUser))
+                    } else {
+                        _loginStatus.postValue(Response.Error("This credentials does not belong to a $reqUserType", null))
+                    }
                 }
             }
         }
@@ -73,18 +86,17 @@ class AuthViewModel
 //
 //    }
 
-    fun signupProfessor(name: String, email: String, password: String) {
-        _signupStatus.postValue(Response.Loading())
-        viewModelScope.launch {
-            val result = authRepository.signupProfessor(name, email, password)
-            _signupStatus.postValue(result)
-        }
-    }
-
-//    fun logout() {
-//        authRepository.logout()
-//        _loginStatus.value = null
-//        _signupStatus.value = null
+//    fun signupProfessor(name: String, email: String, password: String) {
+//        _signupStatus.postValue(Response.Loading())
+//        viewModelScope.launch {
+//            val result = authRepository.signupProfessor(name, email, password)
+//            _signupStatus.postValue(result)
+//        }
 //    }
+
+    fun logout() {
+        authRepository.logout()
+        _loginStatus.postValue(Response.Error("LOGGED_OUT", null))
+    }
 
 }

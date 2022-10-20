@@ -25,6 +25,9 @@ class AuthRepositoryImpl
     private val dbRef: FirebaseDatabase
 ) {
 
+    val currUser: FirebaseUser?
+        get() = firebaseAuth.currentUser
+
     suspend fun login(email: String, password: String): Response<FirebaseUser> {
         try {
             // We have no use of result right now...
@@ -53,19 +56,19 @@ class AuthRepositoryImpl
 //        }
 //    }
 
-    private suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
-        val valueEventListener = object: ValueEventListener {
-            override fun onCancelled(error: DatabaseError) { }
-
-            override fun onDataChange(snapshot: DataSnapshot) {
-                Log.i("TAG", "onDataChange: snapshot: $snapshot")
-                val userType = snapshot.child(FirebaseConstants.userType).value.toString()
-                Log.i("TAG", "onDataChange: Usertype: $userType")
-                continuation.resume(userType)
-            }
-        }
-        addListenerForSingleValueEvent(valueEventListener) // Subscribe to the event
-    }
+//    private suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
+//        val valueEventListener = object: ValueEventListener {
+//            override fun onCancelled(error: DatabaseError) { }
+//
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                Log.i("TAG", "onDataChange: snapshot: $snapshot")
+//                val userType = snapshot.child(FirebaseConstants.userType).value.toString()
+//                Log.i("TAG", "onDataChange: Usertype: $userType")
+//                continuation.resume(userType)
+//            }
+//        }
+//        addListenerForSingleValueEvent(valueEventListener) // Subscribe to the event
+//    }
 
 //    suspend fun signupStudent(
 //        name: String, enrollment: String, email: String, password: String
@@ -97,40 +100,27 @@ class AuthRepositoryImpl
 //        }
 //    }
 
-    suspend fun signupProfessor(
-        name: String, email: String, password: String
-    ): Response<FirebaseUser> {
+    suspend fun getUserType(): Response<String> {
 
-        try {
-            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                .child(currUser!!.uid)
+                .child(FirebaseConstants.userType)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        continuation.resume(Response.Success(snapshot.value.toString()))
+                    }
 
-            if(result.user == null) {
-                return Response.Error("Null User", null)
-            } else {
-                val id = result.user!!.uid
-                val userProf = User(
-                    id = id,
-                    name = name,
-                    userType = FirebaseConstants.TYPE_PROFESSOR,
-                    enrollment = null
-                )
-                dbRef.getReference(FirebasePaths.USER_COLLECTION)
-                    .child(FirebasePaths.USER_INFO)
-                    .child(id)
-                    .setValue(userProf)
-                    .await()
-
-                return Response.Success(result.user)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return Response.Error(e.message.toString(), null)
+                    override fun onCancelled(error: DatabaseError) {
+                        continuation.resume(Response.Error(error.message, null))
+                    }
+                })
         }
     }
 
 
-//    fun logout() {
-//        firebaseAuth.signOut()
-//    }
+    fun logout() {
+        firebaseAuth.signOut()
+    }
 
 }

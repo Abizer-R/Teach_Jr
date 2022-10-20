@@ -22,10 +22,11 @@ object FirebasePaths {
     const val ENRL_STUDENT_COUNT = "stdCount"
     const val ENRL_STUDENT_LIST = "student_list"
 
-    const val USER_COLLECTION = "Users Collection"
+    const val USER_COLLECTION = "User_Collection"
 
 
     const val USER_INFO = "User Info"
+    const val USER_EMAIL = "email"
     const val USER_ID = "id"
     const val USER_NAME = "name"
     const val USER_ENROLLMENT_STUDENT = "enrollment"
