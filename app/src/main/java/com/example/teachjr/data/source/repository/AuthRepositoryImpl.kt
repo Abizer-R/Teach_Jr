@@ -118,6 +118,24 @@ class AuthRepositoryImpl
         }
     }
 
+    suspend fun checkEnrollment(enrollment: String): Response<Boolean> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                .child(currUser!!.uid)
+                .child(FirebasePaths.USER_ENROLLMENT_STUDENT)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val userEnrollment = snapshot.value.toString()
+                        continuation.resume(Response.Success(enrollment.equals(userEnrollment)))
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        continuation.resume(Response.Error(error.message, null))
+                    }
+                })
+        }
+    }
+
 
     fun logout() {
         firebaseAuth.signOut()

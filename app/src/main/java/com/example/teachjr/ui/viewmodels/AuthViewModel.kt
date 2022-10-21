@@ -53,23 +53,69 @@ class AuthViewModel
                 is Response.Loading -> {}
                 is Response.Success -> {
                     // Verifies if user is professor/student and updates _loginStatus
-                    verifyAndUpdate(FirebaseConstants.TYPE_PROFESSOR)
+                    verifyProfAndUpdate()
                 }
             }
         }
     }
 
-    private suspend fun verifyAndUpdate(reqUserType: String) {
+    fun loginStudent(email: String, enrollment: String, password: String) {
+        _loginStatus.value = Response.Loading()
+        viewModelScope.launch {
+            val result = async { authRepository.login(email, password) }
+            when(val response = result.await()) {
+                is Response.Error -> {
+                    _loginStatus.postValue(Response.Error(response.errorMessage.toString(), null))
+                }
+                is Response.Loading -> {}
+                is Response.Success -> {
+                    // Verifies if user is professor/student and updates _loginStatus
+                    verifyStdAndUpdate(enrollment)
+                }
+            }
+        }
+    }
+
+    private suspend fun verifyProfAndUpdate() {
         withContext(Dispatchers.IO) {
             val userType = async { authRepository.getUserType() }
             when(val typeResponse = userType.await()) {
                 is Response.Error -> _loginStatus.postValue(Response.Error(typeResponse.errorMessage.toString(), null))
                 is Response.Loading -> {}
                 is Response.Success -> {
-                    if(typeResponse.data.equals(reqUserType)) {
+                    if(typeResponse.data.equals(FirebaseConstants.TYPE_PROFESSOR)) {
                         _loginStatus.postValue(Response.Success(authRepository.currUser))
                     } else {
-                        _loginStatus.postValue(Response.Error("This credentials does not belong to a $reqUserType", null))
+                        _loginStatus.postValue(Response.Error("These credentials does not belong to a professor", null))
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun verifyStdAndUpdate(enrollment: String) {
+        withContext(Dispatchers.IO) {
+            val userType = async { authRepository.getUserType() }
+            when(val typeResponse = userType.await()) {
+                is Response.Error -> _loginStatus.postValue(Response.Error(typeResponse.errorMessage.toString(), null))
+                is Response.Loading -> {}
+                is Response.Success -> {
+                    if(typeResponse.data.equals(FirebaseConstants.TYPE_STUDENT)) {
+
+                        val validEnrollment = async { authRepository.checkEnrollment(enrollment) }
+                        when(val isValid = validEnrollment.await()) {
+                            is Response.Loading -> {}
+                            is Response.Error -> _loginStatus.postValue(Response.Error(typeResponse.errorMessage.toString(), null))
+                            is Response.Success -> {
+                                if(isValid.data!!) {
+                                    _loginStatus.postValue(Response.Success(authRepository.currUser))
+                                } else {
+                                    _loginStatus.postValue(Response.Error("Invalid Enrollment Number", null))
+                                }
+                            }
+                        }
+                    } else {
+                        _loginStatus.postValue(Response.Error("These credentials does not belong to a student", null))
                     }
                 }
             }

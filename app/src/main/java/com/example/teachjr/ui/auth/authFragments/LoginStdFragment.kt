@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentLoginStdBinding
+import com.example.teachjr.ui.professor.ProfessorActivity
 import com.example.teachjr.ui.viewmodels.AuthViewModel
 import com.example.teachjr.ui.student.StudentActivity
 import com.example.teachjr.utils.Response
@@ -35,39 +36,39 @@ class LoginStdFragment : Fragment() {
             loginStudent()
         }
 
-//        binding.layoutLogin.setOnClickListener {
-////            findNavController().navigate(R.id.action_signUpStdFragment_to_roleSelectFragment)
-//        }
-//
-//        authViewModel.signupStatus.observe(viewLifecycleOwner) {
-//            when(it) {
-//                is Response.Loading -> {
-//                    binding.progressBar.visibility = View.VISIBLE
-//                }
-//                is Response.Error -> {
-//                    binding.progressBar.visibility = View.GONE
-//                    Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
-//                }
-//                is Response.Success -> {
-//                    val intent = Intent(activity, StudentActivity::class.java)
-//                    startActivity(intent)
-//                    activity?.finish()
-//                }
-//                null -> {}
-//            }
-//        }
+        authViewModel.loginStatus.observe(viewLifecycleOwner) {
+            when(it) {
+                is Response.Loading -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                }
+                is Response.Error -> {
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
+                }
+                is Response.Success -> {
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(context, "USER VERIFIED", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(activity, StudentActivity::class.java)
+                    startActivity(intent)
+                    activity?.finish()
+                }
+                null -> {}
+            }
+        }
+
     }
 
     private fun loginStudent() {
         val email = binding.etEmail.text.toString()
+        val enrollment = binding.etEnrollment.text.toString()
         val password = binding.etPassword.text.toString()
 
-        if(email.isBlank() || password.isBlank()) {
+        if(email.isBlank() || enrollment.isBlank() || password.isBlank()) {
             Toast.makeText(context, "Please enter all credentials", Toast.LENGTH_SHORT).show()
             return
         }
 
-//        authViewModel.signupStudent(name, enrollment, email, password)
+        authViewModel.loginStudent(email, enrollment, password)
     }
 
 }
