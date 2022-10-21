@@ -3,10 +3,12 @@ package com.example.teachjr.data.source.repository
 import android.util.Log
 import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.FirebasePaths
+import com.example.teachjr.utils.Response
 import com.example.teachjr.utils.UserType
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -22,32 +24,25 @@ class SplashRepository
     /**
      * Same code is used in AuthRepository for getting User type
      */
-    suspend fun getUserType(): UserType {
-        val result = dbRef.getReference(FirebasePaths.USER_COLLECTION)
-            .child(FirebasePaths.USER_INFO)
-            .child(firebaseAuth.currentUser!!.uid)
-            .singleValueEvent()
+    // TODO: RETURN A RESPONSE<USERTYPE>
+    suspend fun getUserType(): Response<UserType?> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                .child(currUser!!.uid)
+                .child(FirebaseConstants.userType)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val userType = snapshot.value.toString()
+                        when(userType) {
+                            FirebaseConstants.TYPE_STUDENT -> continuation.resume(Response.Success(UserType.Student()))
+                            FirebaseConstants.TYPE_PROFESSOR -> continuation.resume(Response.Success(UserType.Teacher()))
+                        }
+                    }
 
-        if(result.equals(FirebaseConstants.TYPE_STUDENT)) {
-            Log.i("TAG", "getUserType: Student Confirmed")
-            return UserType.Student()
-        } else {
-            Log.i("TAG", "getUserType: Professor Confirmed")
-            return UserType.Teacher()
+                    override fun onCancelled(error: DatabaseError) {
+                        continuation.resume(Response.Error(error.message, null))
+                    }
+                })
         }
-    }
-
-    suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
-        val valueEventListener = object: ValueEventListener {
-            override fun onCancelled(error: DatabaseError) { }
-
-            override fun onDataChange(snapshot: DataSnapshot) {
-                Log.i("TAG", "onDataChange: snapshot: $snapshot")
-                val userType = snapshot.child(FirebaseConstants.userType).value.toString()
-                Log.i("TAG", "onDataChange: Usertype: $userType")
-                continuation.resume(userType)
-            }
-        }
-        addListenerForSingleValueEvent(valueEventListener) // Subscribe to the event
     }
 }

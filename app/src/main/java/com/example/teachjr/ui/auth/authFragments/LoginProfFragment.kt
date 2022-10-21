@@ -8,41 +8,34 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
-import com.example.teachjr.R
-import com.example.teachjr.databinding.FragmentSignUpProfBinding
+import com.example.teachjr.databinding.FragmentLoginProfBinding
 import com.example.teachjr.ui.professor.ProfessorActivity
-import com.example.teachjr.ui.student.StudentActivity
 import com.example.teachjr.ui.viewmodels.AuthViewModel
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SignUpProfFragment : Fragment() {
+class LoginProfFragment : Fragment() {
 
-    private lateinit var binding: FragmentSignUpProfBinding
+    private lateinit var binding: FragmentLoginProfBinding
     private val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentSignUpProfBinding.inflate(inflater, container, false);
+        binding = FragmentLoginProfBinding.inflate(inflater, container, false);
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.btnSignUp.setOnClickListener {
-            createProfUser()
+        binding.btnLogin.setOnClickListener {
+            loginProfessor()
         }
 
-        binding.layoutLogin.setOnClickListener {
-            findNavController().navigate(R.id.action_signUpProfFragment_to_roleSelectFragment)
-        }
-
-        authViewModel.signupStatus.observe(viewLifecycleOwner) {
+        authViewModel.loginStatus.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
@@ -52,6 +45,8 @@ class SignUpProfFragment : Fragment() {
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }
                 is Response.Success -> {
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(context, "USER VERIFIED", Toast.LENGTH_SHORT).show()
                     val intent = Intent(activity, ProfessorActivity::class.java)
                     startActivity(intent)
                     activity?.finish()
@@ -61,16 +56,15 @@ class SignUpProfFragment : Fragment() {
         }
     }
 
-    private fun createProfUser() {
-        val name = binding.etFullName.text.toString()
+    private fun loginProfessor() {
         val email = binding.etEmail.text.toString()
         val password = binding.etPassword.text.toString()
 
-        if(name.isBlank() || email.isBlank() || password.isBlank()) {
+        if(email.isBlank() || password.isBlank()) {
             Toast.makeText(context, "Please enter all credentials", Toast.LENGTH_SHORT).show()
             return
         }
 
-        authViewModel.signupProfessor(name, email, password)
+        authViewModel.loginProfessor(email, password)
     }
 }

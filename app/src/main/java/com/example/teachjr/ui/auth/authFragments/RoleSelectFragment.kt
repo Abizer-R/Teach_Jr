@@ -55,13 +55,9 @@ class RoleSelectFragment : Fragment() {
             authViewModel.setUserType(FirebaseConstants.TYPE_PROFESSOR)
         }
 
-        binding.btnLogin.setOnClickListener {
-            findNavController().navigate(R.id.action_roleSelectFragment_to_loginFragment)
-        }
-
         // TODO: Bind this in XML itself
-        binding.btnSignUp.setOnClickListener {
-            gotoSignUpScreen()
+        binding.btnLogin.setOnClickListener {
+            gotoLoginScreen()
         }
     }
 
@@ -85,13 +81,13 @@ class RoleSelectFragment : Fragment() {
     }
 
 
-    private fun gotoSignUpScreen() {
+    private fun gotoLoginScreen() {
         when(authViewModel.userType.value) {
             is UserType.Student -> {
-                findNavController().navigate(R.id.action_roleSelectFragment_to_signUpStdFragment)
+                findNavController().navigate(R.id.action_roleSelectFragment_to_loginStdFragment)
             }
             is UserType.Teacher -> {
-                findNavController().navigate(R.id.action_roleSelectFragment_to_signUpProfFragment)
+                findNavController().navigate(R.id.action_roleSelectFragment_to_loginProfFragment)
             }
             null -> Toast.makeText(context, "Something Went Wrong", Toast.LENGTH_SHORT).show()
         }
