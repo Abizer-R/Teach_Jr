@@ -25,41 +25,24 @@ class SplashRepository
      * Same code is used in AuthRepository for getting User type
      */
     // TODO: RETURN A RESPONSE<USERTYPE>
-    suspend fun getUserType() {
+    suspend fun getUserType(): Response<UserType?> {
         return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.USER_COLLECTION)
-                .child(currUser?.uid.toString())
+                .child(currUser!!.uid)
                 .child(FirebaseConstants.userType)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        Log.i("TAG", "Testing: snapshot: $snapshot")
+                        val userType = snapshot.value.toString()
+                        when(userType) {
+                            FirebaseConstants.TYPE_STUDENT -> continuation.resume(Response.Success(UserType.Student()))
+                            FirebaseConstants.TYPE_PROFESSOR -> continuation.resume(Response.Success(UserType.Teacher()))
+                        }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
-                        TODO("Not yet implemented")
+                        continuation.resume(Response.Error(error.message, null))
                     }
-
                 })
         }
     }
-
-
-    // TODO: REMOVE THIS
-    fun logout() {
-        firebaseAuth.signOut()
-    }
-
-//    suspend fun DatabaseReference.singleValueEvent(): String = suspendCoroutine { continuation ->
-//        val valueEventListener = object: ValueEventListener {
-//            override fun onCancelled(error: DatabaseError) { }
-//
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                Log.i("TAG", "onDataChange: snapshot: $snapshot")
-//                val userType = snapshot.child(FirebaseConstants.userType).value.toString()
-//                Log.i("TAG", "onDataChange: Usertype: $userType")
-//                continuation.resume(userType)
-//            }
-//        }
-//        addListenerForSingleValueEvent(valueEventListener) // Subscribe to the event
-//    }
 }

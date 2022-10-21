@@ -9,6 +9,7 @@ import com.example.teachjr.data.source.repository.SplashRepository
 import com.example.teachjr.utils.Response
 import com.example.teachjr.utils.UserType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,27 +19,23 @@ class SplashViewModel
     private val splashRepository: SplashRepository
 ): ViewModel() {
 
-    private val _userType = MutableLiveData<UserType?>()
-    val userType: LiveData<UserType?>
+    private val _userType = MutableLiveData<Response<UserType?>>()
+    val userType: LiveData<Response<UserType?>>
         get() = _userType
 
     init {
-        // TODO: REMOVE THIS
-        splashRepository.logout()
-        _userType.postValue(null)
-
-
-//        Log.i("TAG", "Testing: USERID = ${splashRepository.currUser?.uid}")
-//        if(splashRepository.currUser != null) {
-//            viewModelScope.launch {
-//                splashRepository.getUserType()
-//            }
-//        } else {
-//            _userType.postValue(null)
-//        }
+        getUserType()
     }
 
-    fun getUserType() {
-
+    private fun getUserType() {
+        if(splashRepository.currUser != null) {
+            viewModelScope.launch {
+                val userTypeResponse = async { splashRepository.getUserType() }
+                val userType = userTypeResponse.await()
+                _userType.postValue(userType)
+            }
+        } else {
+            _userType.postValue(Response.Success(null))
+        }
     }
 }

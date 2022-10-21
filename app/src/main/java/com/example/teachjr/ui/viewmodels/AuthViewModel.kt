@@ -1,12 +1,9 @@
 package com.example.teachjr.ui.viewmodels
 
-import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.teachjr.data.model.User
 import com.example.teachjr.data.source.repository.AuthRepositoryImpl
 import com.example.teachjr.utils.UserType
 import com.example.teachjr.utils.FirebaseConstants
@@ -52,7 +49,7 @@ class AuthViewModel
                 }
                 is Response.Loading -> {}
                 is Response.Success -> {
-                    // Verifies if user is professor/student and updates _loginStatus
+                    // Verifies if user is professor and updates _loginStatus
                     verifyProfAndUpdate()
                 }
             }
@@ -69,7 +66,7 @@ class AuthViewModel
                 }
                 is Response.Loading -> {}
                 is Response.Success -> {
-                    // Verifies if user is professor/student and updates _loginStatus
+                    // Verifies if user is student and updates _loginStatus
                     verifyStdAndUpdate(enrollment)
                 }
             }
@@ -120,29 +117,6 @@ class AuthViewModel
                 }
             }
         }
-    }
-
-
-//    fun signupStudent(name: String, enrollment: String, email: String, password: String) {
-//        _signupStatus.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val result = authRepository.signupStudent(name, enrollment, email, password)
-//            _signupStatus.postValue(result)
-//        }
-//
-//    }
-
-//    fun signupProfessor(name: String, email: String, password: String) {
-//        _signupStatus.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val result = authRepository.signupProfessor(name, email, password)
-//            _signupStatus.postValue(result)
-//        }
-//    }
-
-    fun logout() {
-        authRepository.logout()
-        _loginStatus.postValue(Response.Error("LOGGED_OUT", null))
     }
 
 }
