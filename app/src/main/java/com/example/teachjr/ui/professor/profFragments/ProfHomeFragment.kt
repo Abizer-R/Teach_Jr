@@ -12,7 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfHomeBinding
-import com.example.teachjr.ui.adapters.CourseListAdapter
+import com.example.teachjr.ui.adapters.ProfCourseListAdapter
 import com.example.teachjr.ui.viewmodels.ProfViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
@@ -25,13 +25,13 @@ class ProfHomeFragment : Fragment() {
     private lateinit var binding: FragmentProfHomeBinding
     private val profViewModel by activityViewModels<ProfViewModel>()
 
-    private val courseListAdapter = CourseListAdapter(
+    private val profCourseListAdapter = ProfCourseListAdapter(
         onItemClicked = { rvCourseItem ->
 
             // send courseCode, courseName and sem_sec
             val bundle = Bundle()
             bundle.putString(FirebasePaths.COURSE_CODE, rvCourseItem.courseCode)
-            bundle.putString(FirebasePaths.NAME, rvCourseItem.courseName)
+            bundle.putString(FirebasePaths.COURSE_NAME, rvCourseItem.courseName)
             bundle.putString(FirebasePaths.SEM_SEC, rvCourseItem.sem_sec)
             findNavController().navigate(R.id.action_profHomeFragment_to_profCourseDetailsFragment, bundle)
         }
@@ -42,6 +42,7 @@ class ProfHomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentProfHomeBinding.inflate(layoutInflater)
+        Log.i(TAG, "ProfessorTesting_HomePage: Professor HomePage Created")
         return binding.root
     }
 
@@ -50,21 +51,23 @@ class ProfHomeFragment : Fragment() {
 
         binding.rvCourseList.apply {
             hasFixedSize()
-            adapter = courseListAdapter
+            adapter = profCourseListAdapter
             layoutManager = LinearLayoutManager(context)
         }
 
-        profViewModel.getCourseDocs()
+        profViewModel.getCourseList()
         profViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
+                    Log.i(TAG, "ProfessorTesting_HomePage: CourseList_Error - ${it.errorMessage}")
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }
                 is Response.Success -> {
+                    Log.i(TAG, "ProfessorTesting_HomePage: CourseList - ${it.data}")
                     binding.progressBar.visibility = View.GONE
-                    courseListAdapter.updateList(it.data!!)
+                    profCourseListAdapter.updateList(it.data!!)
                 }
             }
         }

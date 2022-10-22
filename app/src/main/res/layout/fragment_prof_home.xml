@@ -24,7 +24,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             tools:itemCount="6"
-            tools:listitem="@layout/item_course_rv" />
+            tools:listitem="@layout/item_course_rv_prof" />
 
     </androidx.core.widget.NestedScrollView>
 

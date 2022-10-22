@@ -8,11 +8,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.math.log
 
 class ProfRepository
 @Inject constructor(
@@ -24,35 +22,35 @@ class ProfRepository
     private val currentUser: FirebaseUser
         get() = firebaseAuth.currentUser!!
 
-    suspend fun getUserDetails(): Response<User> {
-        Log.i("TAG", "GET USER DETAILS-Repo: Calling userDetails()")
-        return  dbRef.getReference(FirebasePaths.USER_COLLECTION)
-            .child(FirebasePaths.USER_INFO)
-            .child(currentUser.uid)
-            .userDetails()
-    }
+//    suspend fun getUserDetails(): Response<User> {
+//        Log.i("TAG", "GET USER DETAILS-Repo: Calling userDetails()")
+//        return  dbRef.getReference(FirebasePaths.USER_COLLECTION)
+//            .child(FirebasePaths.USER_INFO)
+//            .child(currentUser.uid)
+//            .userDetails()
+//    }
+//
+//    private suspend fun DatabaseReference.userDetails(): Response<User> = suspendCoroutine { continuation ->
+//        val valueEventListener = object: ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                if(snapshot.exists()) {
+//                    continuation.resume(Response.Success(snapshot.getValue(User::class.java)))
+//                } else {
+//                    Log.i(TAG, "onDataChange: Something Went Wrong")
+//                    continuation.resume(Response.Error("Something Went Wrong in repository.userDetails()", null))
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                 continuation.resume(Response.Error(error.message, null))
+//            }
+//        }
+//        // Subscribe to the callback
+//        addListenerForSingleValueEvent(valueEventListener)
+//    }
 
-    private suspend fun DatabaseReference.userDetails(): Response<User> = suspendCoroutine { continuation ->
-        val valueEventListener = object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()) {
-                    continuation.resume(Response.Success(snapshot.getValue(User::class.java)))
-                } else {
-                    Log.i(TAG, "onDataChange: Something Went Wrong")
-                    continuation.resume(Response.Error("Something Went Wrong in repository.userDetails()", null))
-                }
-            }
 
-            override fun onCancelled(error: DatabaseError) {
-                 continuation.resume(Response.Error(error.message, null))
-            }
-        }
-        // Subscribe to the callback
-        addListenerForSingleValueEvent(valueEventListener)
-    }
-
-
-    suspend fun getCourseList(): Response<List<RvCourseListItem>> {
+    suspend fun getCourseList(): Response<List<RvProfCourseListItem>> {
         return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.USER_COLLECTION)
                 .child(currentUser.uid)
@@ -60,19 +58,18 @@ class ProfRepository
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
 
-                        val courseList: MutableList<RvCourseListItem> = ArrayList()
-
+                        val courseList: MutableList<RvProfCourseListItem> = ArrayList()
                         for(courseDetail in snapshot.children) {
                             val courseCode = courseDetail.key.toString()
-                            val courseName = courseDetail.child(FirebasePaths.NAME).value.toString()
+                            val courseName = courseDetail.child(FirebasePaths.COURSE_NAME).value.toString()
                             for(sem_sec in courseDetail.child(FirebasePaths.PROF_SEM_SEC_LIST).children) {
-                                courseList.add(RvCourseListItem(courseCode, courseName, sem_sec.key.toString()))
+                                courseList.add(RvProfCourseListItem(courseCode, courseName, sem_sec.key.toString()))
                             }
 
                         }
-//                        for(course in courseList) {
-//                            Log.i(TAG, "ProfTesting: courseItem = $course")
-//                        }
+                        for(course in courseList) {
+                            Log.i(TAG, "ProfessorTesting_ProRepo: course - $course")
+                        }
                         continuation.resume(Response.Success(courseList))
                     }
 
@@ -103,27 +100,27 @@ class ProfRepository
         }
     }
 
-    // TODO: Change SingleValueEventListener to onDataChangeListener
-    private suspend fun DatabaseReference.getCourseDocument(): Response<CourseDocument> = suspendCoroutine { continuation ->
-        val valueEventListener = object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()) {
-                    val courseDocument = snapshot.getValue(CourseDocument::class.java)
-                    courseDocument!!.courseId = snapshot.key
-                    continuation.resume(Response.Success(courseDocument))
-                } else {
-                    Log.i(TAG, "onDataChange-getCourseDocument: Something Went Wrong")
-                    continuation.resume(Response.Error("Something Went Wrong in repository.getCourseDocument()", null))
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                continuation.resume(Response.Error(error.message, null))
-            }
-        }
-        // Subscribe to the callback
-        addListenerForSingleValueEvent(valueEventListener)
-    }
+//    // TODO: Change SingleValueEventListener to onDataChangeListener
+//    private suspend fun DatabaseReference.getCourseDocument(): Response<CourseDocument> = suspendCoroutine { continuation ->
+//        val valueEventListener = object: ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                if(snapshot.exists()) {
+//                    val courseDocument = snapshot.getValue(CourseDocument::class.java)
+//                    courseDocument!!.courseId = snapshot.key
+//                    continuation.resume(Response.Success(courseDocument))
+//                } else {
+//                    Log.i(TAG, "onDataChange-getCourseDocument: Something Went Wrong")
+//                    continuation.resume(Response.Error("Something Went Wrong in repository.getCourseDocument()", null))
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                continuation.resume(Response.Error(error.message, null))
+//            }
+//        }
+//        // Subscribe to the callback
+//        addListenerForSingleValueEvent(valueEventListener)
+//    }
 
     suspend fun getLectureDoc(courseId: String): Response<LecturesDocument> {
         val lecId = dbRef.getReference(FirebasePaths.COURSE_COLLECTION)

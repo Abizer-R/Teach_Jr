@@ -3,6 +3,7 @@ package com.example.teachjr.ui.student
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -25,6 +26,7 @@ class StudentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityStudentBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Log.i(TAG, "StudentTesting: Student Activity Created")
 
         binding.btnLogout.setOnClickListener {
             val firebaseAuth = FirebaseAuth.getInstance()

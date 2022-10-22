@@ -3,6 +3,7 @@ package com.example.teachjr.ui.professor
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -31,6 +32,7 @@ class ProfessorActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProfessorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Log.i(TAG, "ProfessorTesting: Professor Activity Created")
 
         binding.btnLogout.setOnClickListener {
             val firebaseAuth = FirebaseAuth.getInstance()

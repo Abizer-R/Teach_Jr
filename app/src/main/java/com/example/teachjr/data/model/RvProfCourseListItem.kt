@@ -4,8 +4,8 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class RvCourseListItem(
+data class RvProfCourseListItem(
     val courseCode: String = "",
     val courseName: String = "",
-    val sem_sec: String? = null // Only for professors
+    val sem_sec: String = ""
 ): Parcelable

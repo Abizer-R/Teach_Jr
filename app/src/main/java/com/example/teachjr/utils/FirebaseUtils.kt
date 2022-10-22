@@ -12,10 +12,11 @@ object FirebasePaths {
 
     const val ATTENDANCE_COLLECTION = "Attendance_Collection"
     const val ATD_LEC_COUNT = "lecCount"
-    const val ATD_TIMESTAMP = "epoch_timestamp"
+    const val TIMESTAMP = "timestamp"
+    const val LEC_LIST = "lecList"
 
     const val COURSE_COLLECTION = "Course_Collection"
-    const val NAME = "name"
+    const val COURSE_NAME = "courseName"
     const val LEC_COUNT = "lecCount"
     const val COURSE_PROF_NAME = "profName"
     const val COURSE_PATHS_PROF = "coursePaths"
@@ -42,7 +43,7 @@ object FirebasePaths {
 
     const val  COURSE_CODE = "courseCode"
     const val  PROF_ID = "profId"
-    const val  PROF_NAME = "profName"
+//    const val  PROF_NAME = "profName"
     const val  ENROLLMENT_DOC_ID = "enrolDocId"
     const val  LECTURE_DOC_ID = "lecDocId"
 

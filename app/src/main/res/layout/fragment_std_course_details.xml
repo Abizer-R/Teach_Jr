@@ -6,131 +6,219 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.student.stdFragments.StdCourseDetailsFragment">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline9"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@id/guideline9"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="16dp">
+
+        <View
+            android:id="@+id/view4"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#51A2A8AD"
+            android:layout_marginBottom="8dp" />
 
 
         <TextView
             android:id="@+id/tvCourseCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
             android:text="CS-XXX"
-            android:textColor="@color/black"
-            android:textSize="18sp"/>
-
-        <TextView
-            android:id="@+id/tvCourseCodeLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Object Oriented Programming and Beaverology"
-            android:textStyle="bold"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp" />
-
-
-        <TextView
-            android:id="@+id/tvCourseNameLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Professor Name"
-            android:textSize="12dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="24dp" />
+            android:textSize="18sp"
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/tvCourseName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Mr. Beaver Agrawala"
-            android:textColor="@color/black"
+            android:text="Object Oriented Programming and Beaverology asdfasdfasdf"
             android:textSize="18sp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
-
+            android:layout_marginEnd="16dp"/>
 
         <LinearLayout
-            android:id="@+id/layoutNotApproved"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/tvProfNameLabel"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enrollment Request is to be approved. \nPlease contact your professor"
-                android:layout_margin="24dp" />
+                android:text="- "
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvProfName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mr. Beaver Agrawala"
+                android:textSize="18sp"/>
 
         </LinearLayout>
 
 
-        <LinearLayout
-            android:id="@+id/layoutAttendanceDetails"
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="8dp">-->
+
+<!--            <TextView-->
+<!--                android:id="@+id/tvLecAttendedLabel"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Lectures Attended: "-->
+<!--                android:textSize="18sp"/>-->
+
+<!--            <TextView-->
+<!--                android:id="@+id/tvLecAttendedCount"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="-&#45;&#45;"-->
+<!--                android:textSize="18sp"/>-->
+
+<!--        </LinearLayout>-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="8dp">-->
+
+<!--            <TextView-->
+<!--                android:id="@+id/tvLecMissedLabel"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Lectures Missed: "-->
+<!--                android:textSize="18sp"/>-->
+
+<!--            <TextView-->
+<!--                android:id="@+id/tvLecMissedCount"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="-&#45;&#45;"-->
+<!--                android:textSize="18sp"/>-->
+
+<!--        </LinearLayout>-->
+
+
+        <View
+            android:id="@+id/view2"
             android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:background="#51A2A8AD" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_gravity="center_horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Lectures Attended: 7"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Lectures Missed: 3"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:layout_marginTop="16dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp" />
-
-
-            <View
-                android:id="@+id/view2"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="8dp"
-                android:background="#51A2A8AD" />
-
-            <TextView
-                android:id="@+id/tvLecCount"
+                android:id="@+id/tvTotalLecLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
-                android:text="Total Lecures: 10"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
+                android:text="Total Lectures: "
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"/>
 
-            <!--        TODO: Make a pie chart, show list of lectures when someone clicks on it-->
-
-            <Button
-                android:id="@+id/btnAtdReport"
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tvTotalLecCount"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lectures List"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp" />
+                android:layout_gravity="center_horizontal"
+                android:text="---"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp"/>
 
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/tvLecAttendedLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Attended: "
+                    android:textSize="18sp"
+                    android:layout_weight="1"
+                    android:gravity="end"/>
+
+                <TextView
+                    android:id="@+id/tvLecAttendedCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="---"
+                    android:textSize="18sp"
+                    android:layout_weight="1"
+                    android:gravity="start"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/tvLecMissedLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Missed: "
+                    android:textSize="18sp"
+                    android:layout_weight="1"
+                    android:gravity="end"/>
+
+                <TextView
+                    android:id="@+id/tvLecMissedCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="---"
+                    android:textSize="18sp"
+                    android:layout_weight="1"
+                    android:gravity="start"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+
+
+
+        <!--        TODO: Make a pie chart, show list of lectures when someone clicks on it-->
+
+        <Button
+            android:id="@+id/btnAtdReport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lectures List"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp" />
     </LinearLayout>
 
     <View

@@ -7,50 +7,80 @@
     tools:context=".ui.professor.profFragments.ProfCourseDetailsFragment"
     android:orientation="vertical">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline8"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@+id/guideline8">
 
         <View
-            android:id="@+id/view"
+            android:id="@+id/view4"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="#51A2A8AD" />
+            android:background="#51A2A8AD"
+            android:layout_marginBottom="8dp"/>
 
         <TextView
             android:id="@+id/tvCourseCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="CS-XXX"
-            android:textStyle="bold"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp" />
+            android:layout_marginEnd="24dp"
+            android:text="CS-XXX"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
 
         <TextView
             android:id="@+id/tvCourseName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Object Oriented Programming and Beeverology"
-            android:textColor="@color/black"
-            android:textSize="18sp"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"/>
+            android:layout_marginEnd="24dp"
+            android:text="Object Oriented Programming and Beeverology"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="24dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvSectionLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Section: "
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CS1"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
         <View
             android:id="@+id/view2"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
             android:background="#51A2A8AD" />
 
@@ -59,8 +89,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
             android:text="Total Lecures: 10"
             android:textColor="@color/black"

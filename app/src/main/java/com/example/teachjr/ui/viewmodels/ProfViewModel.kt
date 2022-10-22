@@ -5,10 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.teachjr.data.model.CourseDocument
 import com.example.teachjr.data.model.LecturesDocument
-import com.example.teachjr.data.model.RvCourseListItem
-import com.example.teachjr.data.model.User
+import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.source.repository.ProfRepository
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,8 +34,8 @@ class ProfViewModel
     /**
      * Used by Fragment: Home_Page to Display CourseList in RecyclerView
      */
-    private val _courseList = MutableLiveData<Response<List<RvCourseListItem>>>()
-    val courseList: LiveData<Response<List<RvCourseListItem>>>
+    private val _courseList = MutableLiveData<Response<List<RvProfCourseListItem>>>()
+    val courseList: LiveData<Response<List<RvProfCourseListItem>>>
         get() = _courseList
 //    private val _courseDocs = MutableLiveData<Response<List<CourseDocument>>>()
 //    val courseDocs: LiveData<Response<List<CourseDocument>>>
@@ -64,7 +62,7 @@ class ProfViewModel
 //    }
 
     // TODO: Use Flow instead of LiveData
-    fun getCourseDocs() {
+    fun getCourseList() {
         _courseList.postValue(Response.Loading())
         viewModelScope.launch {
             val courseListDeferred = async { profRepository.getCourseList() }
