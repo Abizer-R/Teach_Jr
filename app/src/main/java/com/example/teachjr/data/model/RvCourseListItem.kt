@@ -5,7 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class RvCourseListItem(
-    val courseId: String = "",
     val courseCode: String = "",
-    val courseName: String = ""
+    val courseName: String = "",
+    val sem_sec: String? = null // Only for professors
 ): Parcelable

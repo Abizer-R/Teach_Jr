@@ -15,14 +15,19 @@ object FirebasePaths {
     const val ATD_TIMESTAMP = "epoch_timestamp"
 
     const val COURSE_COLLECTION = "Course_Collection"
-    const val COURSE_NAME = "name"
+    const val NAME = "name"
+    const val LEC_COUNT = "lecCount"
     const val COURSE_PROF_NAME = "profName"
+    const val COURSE_PATHS_PROF = "coursePaths"
+    const val COURSE_BRANCH = "branch"
 
     const val ENROLLMENT_COLLECTION = "Enrollment_Collection"
     const val ENRL_STUDENT_COUNT = "stdCount"
     const val ENRL_STUDENT_LIST = "student_list"
 
     const val USER_COLLECTION = "User_Collection"
+    const val PROF_SEM_SEC_LIST = "sem_sec_list"
+    const val SEM_SEC = "sem_sec"
 
 
     const val USER_INFO = "User Info"

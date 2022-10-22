@@ -1,18 +1,13 @@
 package com.example.teachjr.ui.student.stdFragments
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
-import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdCourseEnrollBinding
-import com.example.teachjr.ui.professor.profFragments.ProfCourseCreateFragment
-import com.example.teachjr.ui.viewmodels.ProfViewModel
 import com.example.teachjr.ui.viewmodels.StudentViewModel
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,7 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class StdCourseEnrollFragment : Fragment() {
 
-    private val TAG = ProfCourseCreateFragment::class.java.simpleName
+    private val TAG = StdCourseEnrollFragment::class.java.simpleName
     private lateinit var binding: FragmentStdCourseEnrollBinding
     private val studentViewModel by activityViewModels<StudentViewModel>()
 

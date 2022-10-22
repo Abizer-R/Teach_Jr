@@ -1,10 +1,7 @@
 package com.example.teachjr.data.source.repository
 
 import android.util.Log
-import com.example.teachjr.data.model.CourseDocument
-import com.example.teachjr.data.model.EnrollmentDocument
-import com.example.teachjr.data.model.LecturesDocument
-import com.example.teachjr.data.model.User
+import com.example.teachjr.data.model.*
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import com.google.firebase.auth.FirebaseAuth
@@ -54,82 +51,56 @@ class ProfRepository
         addListenerForSingleValueEvent(valueEventListener)
     }
 
-    suspend fun createCourse(
-        courseCode: String, courseName: String, profName: String): Response<String> {
-        try {
 
-            val lecDocRef = dbRef.getReference(FirebasePaths.LECTURE_COLLECTION).push()
-            val enrolDocRef = dbRef.getReference(FirebasePaths.ENROLLMENT_COLLECTION).push()
-
-            val newCourse: CourseDocument = CourseDocument(
-                courseCode = courseCode,
-                courseName = courseName,
-                profId = currentUser.uid,
-                profName = profName,
-                enrolDocId = enrolDocRef.key,
-                lecDocId = lecDocRef.key
-            )
-
-            val courseRef = dbRef.getReference(FirebasePaths.COURSE_COLLECTION).push()
-            courseRef.setValue(newCourse).await()
-
-            // Adding course ID to Lecture Document and Enrollment Document
-            lecDocRef.setValue(LecturesDocument(courseId = courseRef.key)).await()
-            enrolDocRef.setValue(EnrollmentDocument(courseId = courseRef.key)).await()
-
-            // Adding course ID to professor's User Info
+    suspend fun getCourseList(): Response<List<RvCourseListItem>> {
+        return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.USER_COLLECTION)
-                .child(FirebasePaths.COURSE_LIST)
                 .child(currentUser.uid)
-                .child(courseRef.key.toString()).setValue(true).await()
+                .child(FirebasePaths.COURSE_PATHS_PROF)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
 
+                        val courseList: MutableList<RvCourseListItem> = ArrayList()
 
+                        for(courseDetail in snapshot.children) {
+                            val courseCode = courseDetail.key.toString()
+                            val courseName = courseDetail.child(FirebasePaths.NAME).value.toString()
+                            for(sem_sec in courseDetail.child(FirebasePaths.PROF_SEM_SEC_LIST).children) {
+                                courseList.add(RvCourseListItem(courseCode, courseName, sem_sec.key.toString()))
+                            }
 
-//            // Not exposing the direct ID in order to enhance security
-//            return Response.Success("$courseCode/${courseRef.key}")
-            return Response.Success(courseRef.key)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return Response.Error(e.message.toString(), null)
-        }
-    }
-
-    suspend fun getCourseList(): Response<List<String>> {
-        return dbRef.getReference(FirebasePaths.USER_COLLECTION)
-                .child(FirebasePaths.COURSE_LIST)
-                .child(currentUser.uid)
-                .getCourseIDs()
-    }
-
-    // TODO: Change SingleValueEventListener to onDataChangeListener
-    private suspend fun DatabaseReference.getCourseIDs(): Response<List<String>> = suspendCoroutine { continuation ->
-        val valueEventListener = object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()) {
-                    val idList: MutableList<String> = ArrayList()
-                    for(id in snapshot.children) {
-                        idList.add(id.key.toString())
+                        }
+//                        for(course in courseList) {
+//                            Log.i(TAG, "ProfTesting: courseItem = $course")
+//                        }
+                        continuation.resume(Response.Success(courseList))
                     }
 
-                    continuation.resume(Response.Success(idList))
-                } else {
-                    Log.i(TAG, "onDataChange-getCourseIDs: Something Went Wrong")
-                    continuation.resume(Response.Error("Something Went Wrong in repository.getCourseIDs()", null))
-                }
-            }
+                    override fun onCancelled(error: DatabaseError) {
+                        continuation.resume(Response.Error(error.message, null))
+                    }
 
-            override fun onCancelled(error: DatabaseError) {
-                continuation.resume(Response.Error(error.message, null))
-            }
+                })
         }
-        // Subscribe to the callback
-        addListenerForSingleValueEvent(valueEventListener)
     }
 
-    suspend fun getCourseDoc(id: String): Response<CourseDocument> {
-        return dbRef.getReference(FirebasePaths.COURSE_COLLECTION)
-            .child(id)
-            .getCourseDocument()
+
+    suspend fun getLectureCount(sem_sec: String, courseCode: String): Response<Int> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child(sem_sec)
+                .child(courseCode)
+                .child(FirebasePaths.LEC_COUNT)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        continuation.resume(Response.Success(snapshot.getValue(Int::class.java)))
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        continuation.resume(Response.Error(error.message, null))
+                    }
+                })
+        }
     }
 
     // TODO: Change SingleValueEventListener to onDataChangeListener

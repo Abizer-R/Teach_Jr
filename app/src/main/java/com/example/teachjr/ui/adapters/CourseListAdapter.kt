@@ -1,5 +1,6 @@
 package com.example.teachjr.ui.adapters
 
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,14 @@ class CourseListAdapter(
         holder.apply {
             tvCourseCode.text = courses[position].courseCode
             tvCourseName.text = courses[position].courseName
+            val semSec = courses[position].sem_sec
+            if(semSec != null) {
+                val secIdx = semSec.indexOf("_", 0)
+                tvSection.text = semSec.substring(secIdx + 1)
+            } else {
+                // TODO: CHECK IF THIS WORKS IN STUDENT HOMEPAGE
+                tvSection.visibility = View.GONE
+            }
             holder.itemView.setOnClickListener {
                 onItemClicked.invoke(courses[position])
             }
@@ -42,6 +51,6 @@ class CourseListAdapter(
     class CourseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var tvCourseCode = itemView.findViewById<TextView>(R.id.tvCourseCode)
         var tvCourseName = itemView.findViewById<TextView>(R.id.tvCourseName)
-
+        var tvSection = itemView.findViewById<TextView>(R.id.tvSection)
     }
 }
