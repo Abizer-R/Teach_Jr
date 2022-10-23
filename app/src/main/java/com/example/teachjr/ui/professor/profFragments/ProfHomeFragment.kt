@@ -7,15 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.os.bundleOf
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfHomeBinding
-import com.example.teachjr.ui.adapters.CourseListAdapter
+import com.example.teachjr.ui.adapters.ProfCourseListAdapter
 import com.example.teachjr.ui.viewmodels.ProfViewModel
-import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,16 +25,14 @@ class ProfHomeFragment : Fragment() {
     private lateinit var binding: FragmentProfHomeBinding
     private val profViewModel by activityViewModels<ProfViewModel>()
 
-    private val courseListAdapter = CourseListAdapter(
+    private val profCourseListAdapter = ProfCourseListAdapter(
         onItemClicked = { rvCourseItem ->
 
-            // TODO: PASS WHOLE COURSE LIST OBJECT TO OTHER FRAGMENT....
-            // We need courseCode and courseName as well
-
+            // send courseCode, courseName and sem_sec
             val bundle = Bundle()
-            bundle.putString(FirebasePaths.COURSE_ID, rvCourseItem.courseId)
             bundle.putString(FirebasePaths.COURSE_CODE, rvCourseItem.courseCode)
             bundle.putString(FirebasePaths.COURSE_NAME, rvCourseItem.courseName)
+            bundle.putString(FirebasePaths.SEM_SEC, rvCourseItem.sem_sec)
             findNavController().navigate(R.id.action_profHomeFragment_to_profCourseDetailsFragment, bundle)
         }
     )
@@ -46,6 +42,7 @@ class ProfHomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentProfHomeBinding.inflate(layoutInflater)
+        Log.i(TAG, "ProfessorTesting_HomePage: Professor HomePage Created")
         return binding.root
     }
 
@@ -53,27 +50,24 @@ class ProfHomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.rvCourseList.apply {
-            adapter = courseListAdapter
+            hasFixedSize()
+            adapter = profCourseListAdapter
             layoutManager = LinearLayoutManager(context)
         }
 
-        binding.fabCreateCourse.setOnClickListener {
-            findNavController().navigate(R.id.action_profHomeFragment_to_profCourseCreateFragment)
-        }
-
-        profViewModel.getCourseDocs()
-        profViewModel.courseDocs.observe(viewLifecycleOwner) {
+        profViewModel.getCourseList()
+        profViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
+                    Log.i(TAG, "ProfessorTesting_HomePage: CourseList_Error - ${it.errorMessage}")
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
-                    Log.i(TAG, "Get Courses Failed: ${it.errorMessage}")
                 }
                 is Response.Success -> {
+                    Log.i(TAG, "ProfessorTesting_HomePage: CourseList - ${it.data}")
                     binding.progressBar.visibility = View.GONE
-                    Toast.makeText(context, "New data loaded", Toast.LENGTH_SHORT).show()
-                    courseListAdapter.updateList(profViewModel.getRvCourseItemList(it.data!!))
+                    profCourseListAdapter.updateList(it.data!!)
                 }
             }
         }

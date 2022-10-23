@@ -3,6 +3,7 @@ package com.example.teachjr.ui
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import com.example.teachjr.databinding.ActivitySplashBinding
@@ -17,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
 
+    private val TAG = SplashActivity::class.java.simpleName
     private lateinit var binding: ActivitySplashBinding
     private val splashViewModel by viewModels<SplashViewModel>()
 
@@ -24,11 +26,15 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Log.i(TAG, "SplashTesting: Splash Activity Created")
 
         splashViewModel.userType.observe(this) {
             when(it) {
                 is Response.Loading -> {}
-                is Response.Error -> Toast.makeText(this, it.errorMessage, Toast.LENGTH_LONG).show()
+                is Response.Error -> {
+                    Log.i(TAG, "SplashTesting: Error - ${it.errorMessage}")
+                    Toast.makeText(this, it.errorMessage, Toast.LENGTH_LONG).show()
+                }
                 is Response.Success -> {
                     when(it.data) {
                         is UserType.Student -> {

@@ -1,6 +1,7 @@
 package com.example.teachjr.data.model
 
 data class StudentUser constructor(
+    val institute: String? = "",
     val name: String? = "",
     val enrollment: String? = "",
     val userType: String? = "",

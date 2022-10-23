@@ -3,6 +3,7 @@ package com.example.teachjr.ui.professor
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -31,6 +32,7 @@ class ProfessorActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProfessorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Log.i(TAG, "ProfessorTesting: Professor Activity Created")
 
         binding.btnLogout.setOnClickListener {
             val firebaseAuth = FirebaseAuth.getInstance()
@@ -46,12 +48,12 @@ class ProfessorActivity : AppCompatActivity() {
         /**
          * Implementing Up Navigation button
          */
-//        val navHostFragment = supportFragmentManager.findFragmentById(R.id.profFragmentContainerView) as NavHostFragment
-//        val navController = navHostFragment.navController
-//        appBarConfiguration = AppBarConfiguration(navController.graph)
-//        // Check if androidx.navigation.ui.NavigationUI.setupActionBarWithNavController is imported
-//        // By default title in actionbar is used from the fragment label in navigation graph
-//        // To use the app name, remove label else if you want to add customized label specify it there
-//        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.profFragmentContainerView) as NavHostFragment
+        val navController = navHostFragment.navController
+        appBarConfiguration = AppBarConfiguration(navController.graph)
+        // Check if androidx.navigation.ui.NavigationUI.setupActionBarWithNavController is imported
+        // By default title in actionbar is used from the fragment label in navigation graph
+        // To use the app name, remove label else if you want to add customized label specify it there
+        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
     }
 }

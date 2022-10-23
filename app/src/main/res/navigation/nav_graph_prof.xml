@@ -11,22 +11,8 @@
         android:label="Courses"
         tools:layout="@layout/fragment_prof_home" >
         <action
-            android:id="@+id/action_profHomeFragment_to_profCourseCreateFragment"
-            app:destination="@id/profCourseCreateFragment" />
-        <action
             android:id="@+id/action_profHomeFragment_to_profCourseDetailsFragment"
             app:destination="@id/profCourseDetailsFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/profCourseCreateFragment"
-        android:name="com.example.teachjr.ui.professor.profFragments.ProfCourseCreateFragment"
-        android:label="Create Course"
-        tools:layout="@layout/fragment_prof_course_create" >
-        <action
-            android:id="@+id/action_profCourseCreateFragment_to_profCourseDetailsFragment"
-            app:destination="@id/profCourseDetailsFragment"
-            app:popUpTo="@id/profCourseCreateFragment"
-            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/profCourseDetailsFragment"
