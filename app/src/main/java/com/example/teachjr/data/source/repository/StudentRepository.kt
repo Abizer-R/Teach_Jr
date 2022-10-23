@@ -1,9 +1,7 @@
 package com.example.teachjr.data.source.repository
 
 import android.util.Log
-import com.example.teachjr.data.model.RvStdCourseListItem
-import com.example.teachjr.data.model.StudentUser
-import com.example.teachjr.data.model.User
+import com.example.teachjr.data.model.*
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import com.google.android.gms.tasks.OnSuccessListener
@@ -73,7 +71,7 @@ class StudentRepository
         }
     }
     
-    suspend fun getLecDetails(sem_sec: String, courseCode: String): Response<Pair<Int, Int>> {
+    suspend fun getLecDetails(sem_sec: String, courseCode: String): Response<StdAttendanceDetails> {
         return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
                 .child(sem_sec)
@@ -82,20 +80,21 @@ class StudentRepository
                     override fun onDataChange(snapshot: DataSnapshot) {
 
                         val lecCount = snapshot.child(FirebasePaths.LEC_COUNT).getValue(Int::class.java)
-                        Log.i(TAG, "StudentTesting_Repo: LecCount - $lecCount")
-
-                        // TODO: RETURN THE List<StdLecInfo>
                         var lecAttended: Int = 0
+                        val stdLecListItem: MutableList<RvStdLecListItem> = ArrayList()
+
                         for(lecInfo in snapshot.child(FirebasePaths.LEC_LIST).children) {
                             val timestamp = lecInfo.child(FirebasePaths.TIMESTAMP).value.toString()
                             if(lecInfo.child(currentUser.uid).exists()) {
-                                Log.i(TAG, "StudentTesting_Repo: $timestamp - present")
                                 lecAttended++
+                                stdLecListItem.add(RvStdLecListItem(timestamp, true))
                             } else {
-                                Log.i(TAG, "StudentTesting_Repo: $timestamp - missed")
+                                stdLecListItem.add(RvStdLecListItem(timestamp, false))
                             }
                         }
-                        continuation.resume(Response.Success(Pair(lecCount!!, lecAttended)))
+
+                        val atdDetails = StdAttendanceDetails(lecCount!!, lecAttended, lecCount - lecAttended, stdLecListItem)
+                        continuation.resume(Response.Success(atdDetails))
                     }
 
                     override fun onCancelled(error: DatabaseError) {

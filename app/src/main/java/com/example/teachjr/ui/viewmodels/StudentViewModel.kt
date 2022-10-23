@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.model.RvStdCourseListItem
+import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.StudentRepository
 import com.example.teachjr.utils.Response
@@ -45,12 +46,9 @@ class StudentViewModel
         get() = _courseList
 
     // TODO: Make an object StdLecInfo(lecNumber, timestamp, isPresent) and pass it in here
-//    private val _lecList = MutableLiveData<Response<List<StdLecInfo>>>()
-//    val lecList: LiveData<Response<List<StdLecInfo>>>
-//        get() = _lecList
-    private val _lecPair = MutableLiveData<Response<Pair<Int, Int>>>()
-    val lecPair: LiveData<Response<Pair<Int, Int>>>
-        get() = _lecPair
+    private val _atdDetails = MutableLiveData<Response<StdAttendanceDetails>>()
+    val atdDetails: LiveData<Response<StdAttendanceDetails>>
+        get() = _atdDetails
 
     fun getCourseList() {
         _courseList.postValue(Response.Loading())
@@ -75,7 +73,7 @@ class StudentViewModel
             if(courseCode == null || semSec == null) {
                 Log.i("TAG", "StdTesting-ViewModel: Error - null values")
             } else {
-                _lecPair.postValue(studentRepository.getLecDetails(semSec, courseCode))
+                _atdDetails.postValue(studentRepository.getLecDetails(semSec, courseCode))
             }
         }
     }
