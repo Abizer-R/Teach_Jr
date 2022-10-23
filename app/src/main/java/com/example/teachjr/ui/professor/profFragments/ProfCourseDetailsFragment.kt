@@ -79,6 +79,10 @@ class ProfCourseDetailsFragment : Fragment() {
         binding.btnAtdReport.setOnClickListener {
             findNavController().navigate(R.id.action_profCourseDetailsFragment_to_profAtdReportFragment)
         }
+
+        binding.fabMarkAtd.setOnClickListener {
+            findNavController().navigate(R.id.action_profCourseDetailsFragment_to_profMarkAtdFragment)
+        }
     }
 
 }
