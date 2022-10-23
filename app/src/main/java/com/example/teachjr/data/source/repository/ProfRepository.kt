@@ -22,33 +22,6 @@ class ProfRepository
     private val currentUser: FirebaseUser
         get() = firebaseAuth.currentUser!!
 
-//    suspend fun getUserDetails(): Response<User> {
-//        Log.i("TAG", "GET USER DETAILS-Repo: Calling userDetails()")
-//        return  dbRef.getReference(FirebasePaths.USER_COLLECTION)
-//            .child(FirebasePaths.USER_INFO)
-//            .child(currentUser.uid)
-//            .userDetails()
-//    }
-//
-//    private suspend fun DatabaseReference.userDetails(): Response<User> = suspendCoroutine { continuation ->
-//        val valueEventListener = object: ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                if(snapshot.exists()) {
-//                    continuation.resume(Response.Success(snapshot.getValue(User::class.java)))
-//                } else {
-//                    Log.i(TAG, "onDataChange: Something Went Wrong")
-//                    continuation.resume(Response.Error("Something Went Wrong in repository.userDetails()", null))
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                 continuation.resume(Response.Error(error.message, null))
-//            }
-//        }
-//        // Subscribe to the callback
-//        addListenerForSingleValueEvent(valueEventListener)
-//    }
-
 
     suspend fun getCourseList(): Response<List<RvProfCourseListItem>> {
         return suspendCoroutine { continuation ->
@@ -100,57 +73,27 @@ class ProfRepository
         }
     }
 
-//    // TODO: Change SingleValueEventListener to onDataChangeListener
-//    private suspend fun DatabaseReference.getCourseDocument(): Response<CourseDocument> = suspendCoroutine { continuation ->
-//        val valueEventListener = object: ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                if(snapshot.exists()) {
-//                    val courseDocument = snapshot.getValue(CourseDocument::class.java)
-//                    courseDocument!!.courseId = snapshot.key
-//                    continuation.resume(Response.Success(courseDocument))
-//                } else {
-//                    Log.i(TAG, "onDataChange-getCourseDocument: Something Went Wrong")
-//                    continuation.resume(Response.Error("Something Went Wrong in repository.getCourseDocument()", null))
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                continuation.resume(Response.Error(error.message, null))
-//            }
-//        }
-//        // Subscribe to the callback
-//        addListenerForSingleValueEvent(valueEventListener)
-//    }
+    /**
+     * It doesn't matter what we return here, all we need is confirmation
+     */
+    suspend fun createNewAtdRef(
+        sem_sec: String, courseCode: String, timeInMilli: Long, lecCount: Int): Response<Boolean> {
+        return suspendCoroutine { continuation ->
 
-    suspend fun getLectureDoc(courseId: String): Response<LecturesDocument> {
-        val lecId = dbRef.getReference(FirebasePaths.COURSE_COLLECTION)
-            .child(courseId)
-            .child(FirebasePaths.LECTURE_DOC_ID)
-            .get().await()
-
-        Log.i(TAG, "getLectureDoc: LecId = ${lecId.value.toString()}")
-
-        return dbRef.getReference(FirebasePaths.LECTURE_COLLECTION)
-            .child(lecId.value.toString())
-            .getLectureDocument()
-    }
-
-    private suspend fun DatabaseReference.getLectureDocument(): Response<LecturesDocument> = suspendCoroutine { continuation ->
-        val valueEventListener = object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()) {
-                    continuation.resume(Response.Success(snapshot.getValue(LecturesDocument::class.java)))
-                } else {
-                    Log.i(TAG, "onDataChange-getLectureDocument: Something Went Wrong")
-                    continuation.resume(Response.Error("Something Went Wrong in repository.getLectureDocument()", null))
+            val courseAtdPath = "/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode"
+            val updates = hashMapOf<String, Any>(
+                "$courseAtdPath/${FirebasePaths.LEC_COUNT}" to (lecCount+1),
+                "$courseAtdPath/${FirebasePaths.LEC_LIST}/LEC_${lecCount+1}/timestamp" to timeInMilli
+            )
+            dbRef.reference.updateChildren(updates)
+                .addOnSuccessListener {
+                    continuation.resume(Response.Success(true))
                 }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                continuation.resume(Response.Error(error.message, null))
-            }
+                .addOnFailureListener {
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
         }
-        // Subscribe to the callback
-        addListenerForSingleValueEvent(valueEventListener)
     }
+
+
 }

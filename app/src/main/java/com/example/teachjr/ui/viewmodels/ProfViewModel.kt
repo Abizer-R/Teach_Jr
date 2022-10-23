@@ -12,6 +12,7 @@ import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,46 +21,20 @@ class ProfViewModel
     private val profRepository: ProfRepository
 ): ViewModel() {
 
-//    private val _currUser = MutableLiveData<Response<User>>()
-//    val currUser: LiveData<Response<User>>
-//        get() = _currUser
-
-    /**
-     * Used by Fragment: Create_Course to recognise the newly created Course
-     */
-    private val _newCourseID = MutableLiveData<Response<String>>()
-    val newCourseID: LiveData<Response<String>>
-        get() = _newCourseID
-
     /**
      * Used by Fragment: Home_Page to Display CourseList in RecyclerView
      */
     private val _courseList = MutableLiveData<Response<List<RvProfCourseListItem>>>()
     val courseList: LiveData<Response<List<RvProfCourseListItem>>>
         get() = _courseList
-//    private val _courseDocs = MutableLiveData<Response<List<CourseDocument>>>()
-//    val courseDocs: LiveData<Response<List<CourseDocument>>>
-//        get() = _courseDocs
 
     private val _lecCount = MutableLiveData<Response<Int>>()
     val lecCount: LiveData<Response<Int>>
         get() = _lecCount
 
-    private val _lectureDoc = MutableLiveData<Response<LecturesDocument>>()
-    val lectureDoc: LiveData<Response<LecturesDocument>>
-        get() = _lectureDoc
-
-//    init {
-//        getUserDetails()
-//    }
-
-//    private fun getUserDetails() {
-//        viewModelScope.launch {
-//            val user = profRepository.getUserDetails()
-//            Log.i("TAG", "GET USER DETAILS-ViewModel: ${user.data}")
-//            _currUser.postValue(user)
-//        }
-//    }
+    private val _atdList = MutableLiveData<Response<List<String>>>()
+    val atdList: LiveData<Response<List<String>>>
+        get() = _atdList
 
     // TODO: Use Flow instead of LiveData
     fun getCourseList() {
@@ -71,25 +46,29 @@ class ProfViewModel
     }
 
     fun getLectureCount(sem_sec: String, courseCode: String) {
-        _lectureDoc.postValue(Response.Loading())
+        _lecCount.postValue(Response.Loading())
         viewModelScope.launch {
             val lecCountDeferred = async { profRepository.getLectureCount(sem_sec, courseCode) }
             _lecCount.postValue(lecCountDeferred.await())
         }
     }
 
-    fun getLectureDoc(courseId: String) {
-        _lectureDoc.postValue(Response.Loading())
+    fun createNewAtdRef(sem_sec: String, courseCode: String, lecCount: Int) {
+        _atdList.postValue(Response.Loading())
         viewModelScope.launch {
-            val lecDocResponse = profRepository.getLectureDoc(courseId)
-            when(lecDocResponse) {
+            val currTime = Calendar.getInstance().timeInMillis
+            val newLecDocDeferred = async { profRepository.createNewAtdRef(sem_sec, courseCode, currTime, lecCount) }
+            when(val newLecCreated = newLecDocDeferred.await()) {
                 is Response.Loading -> {}
-                is Response.Error -> _lectureDoc.postValue(Response.Error(lecDocResponse.errorMessage.toString(), null))
+                is Response.Error -> _atdList.postValue(Response.Error(newLecCreated.errorMessage.toString(), null))
                 is Response.Success -> {
-                    _lectureDoc.postValue(Response.Success(lecDocResponse.data))
-                    Log.i("TAG", "Lecture Doc: ${lecDocResponse.data}")
+                    // TODO: Start Service broadcast and share timestamp (using it as otp for now)
+                    if(newLecCreated.data == true) {
+                        Log.i("TAG", "ProfessorTesting_ViewModel: node created")
+                    }
                 }
             }
-        }
+         }
     }
+
 }

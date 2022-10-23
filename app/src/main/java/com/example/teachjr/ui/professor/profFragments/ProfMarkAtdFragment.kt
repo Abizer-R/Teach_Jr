@@ -2,18 +2,24 @@ package com.example.teachjr.ui.professor.profFragments
 
 import android.app.Activity
 import android.content.Context
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
+import com.example.teachjr.ui.adapters.AttendanceAdapter
 import com.example.teachjr.ui.viewmodels.ProfViewModel
+import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 
 
@@ -23,13 +29,19 @@ class ProfMarkAtdFragment : Fragment() {
     private lateinit var binding: FragmentProfMarkAtdBinding
     private val profViewModel by activityViewModels<ProfViewModel>()
 
+    private val attendanceAdapter = AttendanceAdapter()
+
+    private var courseCode: String? = null
+    private var semSec: String? = null
+    private var lecCount: Int? = null
+
     private val permissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             val granted = permissions.entries.all {
                 it.value == true
             }
             if(granted) {
-                startAttendance()
+                checkGpsAndStartAttendance()
             } else {
                 // TODO: Display a message that attendance cannot be initiated without permission
             }
@@ -46,22 +58,37 @@ class ProfMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initialSetup()
         setupViews()
+    }
+
+    private fun initialSetup() {
+        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
+        semSec = arguments?.getString(FirebasePaths.SEM_SEC)
+        lecCount = arguments?.getInt(FirebasePaths.LEC_COUNT)
     }
 
     private fun setupViews() {
 
         binding.rvAttendance.apply {
-            // TODO: Setup RecyclerView
+            hasFixedSize()
+            adapter = attendanceAdapter
+            layoutManager = GridLayoutManager(context, 4)
         }
 
         binding.fabAttendance.setOnClickListener {
             if(Permissions.hasAccessCoarseLocation(activity as Context)
                 && Permissions.hasAccessFineLocation(activity as Context)) {
-                startAttendance()
+                checkGpsAndStartAttendance()
             } else {
                 permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
             }
+
+
+//            val dummyList = arrayListOf<String>(
+//                "0818CS201001", "0818CS201002", "0818CS201003", "0818CS201004", "0818CS201005"
+//            )
+//            attendanceAdapter.updateList(dummyList)
         }
 
         binding.rvAttendance.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -76,15 +103,29 @@ class ProfMarkAtdFragment : Fragment() {
         })
     }
 
+    private fun checkGpsAndStartAttendance(){
+        val mLocationManager = (activity as Context).getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        // Checking GPS is enabled
+        val mGPS = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+        if(mGPS) {
+            startAttendance()
+        } else {
+            // TODO: Display a popup
+            Toast.makeText(context, "Please turn on GPS", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun startAttendance() {
-        Log.i(TAG, "ProfessorTesting_CoursePage: startAttendance() called")
+        Log.i(TAG, "ProfessorTesting_MarkAtdPage: startAttendance() called")
 
         // TODO: Check if location and wifi is on
-
-        // TODO Make viewmodel and repo functions
-        // TODO-1: Create a unique otp
-        // TODO-2: Create a new lecFile in database
-        // TODO-3: Broadcast the otp
+        if(courseCode == null || semSec == null || lecCount == null) {
+            Log.i(TAG, "ProfessorTesting_MarkAtdPage: null bundle arguments")
+            Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
+        } else {
+            profViewModel.createNewAtdRef(semSec!!, courseCode!!, lecCount!!)
+        }
     }
 
 }

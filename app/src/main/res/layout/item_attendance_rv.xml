@@ -5,24 +5,13 @@
     android:elevation="1dp"
     android:layout_margin="8dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvEnrollment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0818CSXXX"
-            android:textSize="10sp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="YYY"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-
+        android:text="YYY"
+        android:textStyle="bold"
+        android:textSize="24sp"
+        android:layout_margin="8dp"/>
 
 </androidx.cardview.widget.CardView>
