@@ -3,6 +3,7 @@ package com.example.teachjr.ui.professor.profFragments
 import android.app.Activity
 import android.content.Context
 import android.location.LocationManager
+import android.net.wifi.p2p.WifiP2pManager
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -21,6 +22,8 @@ import com.example.teachjr.ui.adapters.AttendanceAdapter
 import com.example.teachjr.ui.viewmodels.ProfViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
+import com.example.teachjr.utils.Response
+import dagger.hilt.android.internal.managers.FragmentComponentManager.initializeArguments
 
 
 class ProfMarkAtdFragment : Fragment() {
@@ -34,6 +37,10 @@ class ProfMarkAtdFragment : Fragment() {
     private var courseCode: String? = null
     private var semSec: String? = null
     private var lecCount: Int? = null
+
+    private var manager: WifiP2pManager? = null
+    private var channel: WifiP2pManager.Channel? = null
+
 
     private val permissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -58,11 +65,12 @@ class ProfMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initialSetup()
+        initArguments()
         setupViews()
+        setupObservers()
     }
 
-    private fun initialSetup() {
+    private fun initArguments() {
         courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
         semSec = arguments?.getString(FirebasePaths.SEM_SEC)
         lecCount = arguments?.getInt(FirebasePaths.LEC_COUNT)
@@ -103,6 +111,18 @@ class ProfMarkAtdFragment : Fragment() {
         })
     }
 
+    private fun setupObservers() {
+        profViewModel.presentList.observe(viewLifecycleOwner) {
+            when(it) {
+                is Response.Loading -> {} // TODO: Indicate loading
+                is Response.Error -> Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
+                is Response.Success -> {
+                    attendanceAdapter.updateList(it.data!!)
+                }
+            }
+        }
+    }
+
     private fun checkGpsAndStartAttendance(){
         val mLocationManager = (activity as Context).getSystemService(Context.LOCATION_SERVICE) as LocationManager
         // Checking GPS is enabled
@@ -124,7 +144,8 @@ class ProfMarkAtdFragment : Fragment() {
             Log.i(TAG, "ProfessorTesting_MarkAtdPage: null bundle arguments")
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
         } else {
-            profViewModel.createNewAtdRef(semSec!!, courseCode!!, lecCount!!)
+            // Makes a new Lec doc and fetches list of enrolled students
+            val stdList = profViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
         }
     }
 

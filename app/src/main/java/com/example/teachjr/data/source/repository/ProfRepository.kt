@@ -7,7 +7,10 @@ import com.example.teachjr.utils.Response
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -73,6 +76,24 @@ class ProfRepository
         }
     }
 
+//    suspend fun getStdList(sem_sec: String): Response<List<String>> {
+//        return suspendCoroutine { continuation ->
+//            dbRef.getReference(FirebasePaths.ENROLLMENT_COLLECTION)
+//                .child(sem_sec)
+//                .child(FirebasePaths.ENRL_STUDENT_LIST)
+//                .get()
+//                .addOnSuccessListener {
+//                    val stdList: MutableList<String> = ArrayList()
+//                    for(students in it.children) {
+//                        stdList.add(students.key.toString())
+//                    }
+//                }
+//                .addOnFailureListener {
+//                    continuation.resume(Response.Error(it.message.toString(), null))
+//                }
+//        }
+//    }
+
     /**
      * It doesn't matter what we return here, all we need is confirmation
      */
@@ -95,5 +116,50 @@ class ProfRepository
         }
     }
 
+    /**
+     * TODO: User flow to return the stdId as they get added to the lecList
+     */
+    fun observeAttendance(sem_sec: String, courseCode: String, lecNum: String): Flow<String> =
+        dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+            .child(sem_sec)
+            .child(courseCode)
+            .child(FirebasePaths.LEC_LIST)
+            .child(lecNum)
+            .observeChildEvent()
+            .catch { Log.i(TAG, "ProfessorTesting_ProRepo - observeAttendance: ERROR = ${it.message}") }
+
+    fun DatabaseReference.observeChildEvent(): Flow<String> = callbackFlow {
+            val childEventListener = object : ChildEventListener {
+                override fun onCancelled(error: DatabaseError) {
+                    close(error.toException())
+                }
+
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildAdded: snapshot - $snapshot, prevChildName - $previousChildName")
+                    if(snapshot.key != (FirebasePaths.TIMESTAMP)) {
+                        trySend(snapshot.value.toString()).isSuccess
+                    }
+                }
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildChanged: snapshot - $snapshot, prevChildName - $previousChildName")
+                    TODO("Not yet implemented")
+                }
+
+                override fun onChildRemoved(snapshot: DataSnapshot) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildRemoved: snapshot - $snapshot")
+                    TODO("Not yet implemented")
+                }
+
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildMoved: snapshot - $snapshot, prevChildName - $previousChildName")
+                    TODO("Not yet implemented")
+                }
+            }
+        addChildEventListener(childEventListener)
+        awaitClose {
+            removeEventListener(childEventListener)
+        }
+    }
 
 }
