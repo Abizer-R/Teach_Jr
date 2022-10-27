@@ -112,9 +112,25 @@ class ProfMarkAtdFragment : Fragment() {
     }
 
     private fun setupObservers() {
+
+        profViewModel.timestamp.observe(viewLifecycleOwner) {
+            when(it) {
+                is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
+                is Response.Error -> {
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
+                }
+                is Response.Success -> {
+                    binding.progressBar.visibility = View.GONE
+                    profViewModel.observeAtd(semSec!!, courseCode!!, it.data!!)
+                    binding.tvTimeStamp.text = it.data
+                }
+            }
+        }
+
         profViewModel.presentList.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> {} // TODO: Indicate loading
+                is Response.Loading -> {} // TODO: Indicate "Marking Attendance"
                 is Response.Error -> Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 is Response.Success -> {
                     attendanceAdapter.updateList(it.data!!)
@@ -145,7 +161,7 @@ class ProfMarkAtdFragment : Fragment() {
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
         } else {
             // Makes a new Lec doc and fetches list of enrolled students
-            val stdList = profViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
+            profViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
         }
     }
 

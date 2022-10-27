@@ -14,6 +14,7 @@ import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import java.sql.Timestamp
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,6 +51,10 @@ class StudentViewModel
     val atdDetails: LiveData<Response<StdAttendanceDetails>>
         get() = _atdDetails
 
+    private val _markAtdStatus = MutableLiveData<Response<Boolean>>()
+    val markAtdStatus: LiveData<Response<Boolean>>
+        get() = _markAtdStatus
+
     fun getCourseList() {
         _courseList.postValue(Response.Loading())
         Log.i("TAG", "StdTesting-ViewModel: Calling getCourselist")
@@ -67,6 +72,7 @@ class StudentViewModel
     }
 
     fun getLecAttended(courseCode: String?) {
+        _atdDetails.postValue(Response.Loading())
         Log.i("TAG", "StdTesting-ViewModel: Calling getLecAttended")
         viewModelScope.launch {
             val semSec = currUserStd.value?.data?.sem_sec
@@ -78,8 +84,19 @@ class StudentViewModel
         }
     }
 
-
-
+    fun martAtd(courseCode: String, timestamp: String) {
+        _markAtdStatus.postValue(Response.Loading())
+        Log.i("TAG", "StdTesting-ViewModel: Calling markAtd")
+        viewModelScope.launch {
+            val semSec = currUserStd.value?.data?.sem_sec
+            val enrollment = currUserStd.value?.data?.enrollment
+            if(semSec == null || enrollment == null) {
+                Log.i("TAG", "StdTesting-ViewModel: marAtd() Error - null values")
+            } else {
+                _markAtdStatus.postValue(studentRepository.markAtd(semSec, courseCode, timestamp, enrollment))
+            }
+        }
+    }
 //    fun enrollCourse(courseId: String) {
 //        _enrollCourseStatus.postValue(Response.Loading())
 //        viewModelScope.launch {

@@ -11,9 +11,10 @@ object FirebaseConstants {
 object FirebasePaths {
 
     const val ATTENDANCE_COLLECTION = "Attendance_Collection"
-    const val ATD_LEC_COUNT = "lecCount"
+//    const val ATD_LEC_COUNT = "lecCount"
     const val TIMESTAMP = "timestamp"
     const val LEC_LIST = "lecList"
+    const val ATD_IS_CONTINUING = "isContinuing"
 
     const val COURSE_COLLECTION = "Course_Collection"
     const val COURSE_NAME = "courseName"

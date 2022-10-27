@@ -10,6 +10,7 @@ import android.widget.AbsListView
 import android.widget.Toast
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdCourseDetailsBinding
@@ -43,7 +44,7 @@ class StdCourseDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initialSetup()
-        setupLecRecyclerView()
+        setupViews()
         setupScrollView()
     }
 
@@ -82,11 +83,17 @@ class StdCourseDetailsFragment : Fragment() {
         }
     }
 
-    private fun setupLecRecyclerView() {
+    private fun setupViews() {
         binding.rvLecList.apply {
             hasFixedSize()
             adapter = stdLecListAdapter
             layoutManager = LinearLayoutManager(context)
+        }
+
+        binding.fabMarkAtd.setOnClickListener {
+            val bundle = Bundle()
+            bundle.putString(FirebasePaths.COURSE_CODE, courseCode)
+            findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment, bundle)
         }
     }
 

@@ -98,13 +98,14 @@ class ProfRepository
      * It doesn't matter what we return here, all we need is confirmation
      */
     suspend fun createNewAtdRef(
-        sem_sec: String, courseCode: String, timeInMilli: Long, lecCount: Int): Response<Boolean> {
+        sem_sec: String, courseCode: String, timestamp: String, lecCount: Int): Response<Boolean> {
         return suspendCoroutine { continuation ->
+            Log.i(TAG, "createNewAtdRef: TIMESTAMP = $timestamp")
 
             val courseAtdPath = "/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode"
             val updates = hashMapOf<String, Any>(
                 "$courseAtdPath/${FirebasePaths.LEC_COUNT}" to (lecCount+1),
-                "$courseAtdPath/${FirebasePaths.LEC_LIST}/LEC_${lecCount+1}/timestamp" to timeInMilli
+                "$courseAtdPath/${FirebasePaths.LEC_LIST}/$timestamp/${FirebasePaths.ATD_IS_CONTINUING}" to true
             )
             dbRef.reference.updateChildren(updates)
                 .addOnSuccessListener {
@@ -116,15 +117,25 @@ class ProfRepository
         }
     }
 
+    suspend fun isAtdContinuing(lecPath: String): Response<Boolean> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(lecPath)
+                .child(FirebasePaths.ATD_IS_CONTINUING)
+                .get()
+                .addOnSuccessListener {
+                    continuation.resume(Response.Success(it.getValue(Boolean::class.java)))
+                }
+                .addOnFailureListener {
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
+        }
+    }
+
     /**
      * TODO: User flow to return the stdId as they get added to the lecList
      */
-    fun observeAttendance(sem_sec: String, courseCode: String, lecNum: String): Flow<String> =
-        dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
-            .child(sem_sec)
-            .child(courseCode)
-            .child(FirebasePaths.LEC_LIST)
-            .child(lecNum)
+    fun observeAttendance(lecPath: String): Flow<String> =
+        dbRef.getReference(lecPath)
             .observeChildEvent()
             .catch { Log.i(TAG, "ProfessorTesting_ProRepo - observeAttendance: ERROR = ${it.message}") }
 

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.LecturesDocument
 import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.source.repository.ProfRepository
+import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,10 @@ class ProfViewModel
 //    val stdList: LiveData<Response<List<String>>>
 //        get() = _stdList
 
+    private val _timestamp = MutableLiveData<Response<String>>()
+    val timestamp: LiveData<Response<String>>
+        get() = _timestamp
+
     private val _presentList = MutableLiveData<Response<List<String>>>()
     val presentList: LiveData<Response<List<String>>>
         get() = _presentList
@@ -69,36 +74,51 @@ class ProfViewModel
 //    }
 
     fun initAtd(sem_sec: String, courseCode: String, lecCount: Int) {
-        _presentList.postValue(Response.Loading())
+        _timestamp.postValue(Response.Loading())
         viewModelScope.launch {
-
-            val currTime = Calendar.getInstance().timeInMillis
-            val newLecDocDeferred = async { profRepository.createNewAtdRef(sem_sec, courseCode, currTime, lecCount) }
+            val timestamp = Calendar.getInstance().timeInMillis.toString()
+            val newLecDocDeferred = async { profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount) }
             when(val newLecCreated = newLecDocDeferred.await()) {
                 is Response.Loading -> {}
-                is Response.Error -> _presentList.postValue(Response.Error(newLecCreated.errorMessage.toString(), null))
+                is Response.Error -> _timestamp.postValue(Response.Error(newLecCreated.errorMessage.toString(), null))
                 is Response.Success -> {
-                    // TODO: Start Service broadcast and share timestamp (using it as otp for now)
-
-                    val stdList: MutableList<String> = ArrayList()
-                    try {
-                        withContext(Dispatchers.IO) {
-                            profRepository.observeAttendance(sem_sec, courseCode, "LEC_${lecCount+1}")
-                                .collect { student ->
-                                    stdList.add(student)
-                                    _presentList.postValue(Response.Success(stdList))
-                                }
-
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        _presentList.postValue(Response.Error(e.message.toString(), null))
-                    }
-
-
+                    _timestamp.postValue(Response.Success(timestamp))
                 }
             }
          }
+    }
+
+    fun observeAtd(sem_sec: String, courseCode: String, timestamp: String) {
+        _presentList.postValue(Response.Loading())
+        viewModelScope.launch {
+            val stdList: MutableList<String> = ArrayList()
+            try {
+                val lecPath = "/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode/${FirebasePaths.LEC_LIST}/$timestamp"
+                val atdStatus = profRepository.isAtdContinuing(lecPath)
+                when(atdStatus) {
+                    is Response.Loading -> {}
+                    is Response.Error -> _presentList.postValue(Response.Error(atdStatus.errorMessage.toString(), null))
+                    is Response.Success -> {
+                        if(atdStatus.data!!) {
+                            withContext(Dispatchers.IO) {
+                                profRepository.observeAttendance(lecPath)
+                                    .collect { student ->
+                                        stdList.add(student)
+                                        _presentList.postValue(Response.Success(stdList))
+                                    }
+                            }
+
+                        } else {
+                            _presentList.postValue(Response.Error("Attendance is over", null))
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _presentList.postValue(Response.Error(e.message.toString(), null))
+            }
+        }
     }
 
 }

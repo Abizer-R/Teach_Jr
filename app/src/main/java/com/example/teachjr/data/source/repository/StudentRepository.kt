@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.coroutines.tasks.await
+import java.sql.Timestamp
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -84,7 +85,8 @@ class StudentRepository
                         val stdLecListItem: MutableList<RvStdLecListItem> = ArrayList()
 
                         for(lecInfo in snapshot.child(FirebasePaths.LEC_LIST).children) {
-                            val timestamp = lecInfo.child(FirebasePaths.TIMESTAMP).value.toString()
+//                            val timestamp = lecInfo.child(FirebasePaths.TIMESTAMP).value.toString()
+                            val timestamp = lecInfo.key.toString()
                             if(lecInfo.child(currentUser.uid).exists()) {
                                 lecAttended++
                                 stdLecListItem.add(RvStdLecListItem(timestamp, true))
@@ -103,6 +105,25 @@ class StudentRepository
                     }
 
                 })
+        }
+    }
+
+    suspend fun markAtd(
+        sem_sec: String, courseCode: String, timestamp: String, enrollment: String): Response<Boolean> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child(sem_sec)
+                .child(courseCode)
+                .child(FirebasePaths.LEC_LIST)
+                .child(timestamp)
+                .child(currentUser.uid)
+                .setValue(enrollment)
+                .addOnSuccessListener {
+                    continuation.resume(Response.Success(true))
+                }
+                .addOnFailureListener {
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
         }
     }
 
