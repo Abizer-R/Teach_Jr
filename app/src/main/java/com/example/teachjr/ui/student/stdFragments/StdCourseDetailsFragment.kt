@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AbsListView
 import android.widget.Toast
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.activityViewModels
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdCourseDetailsBinding
 import com.example.teachjr.ui.adapters.StdLecListAdapter
-import com.example.teachjr.ui.professor.profFragments.ProfCourseDetailsFragment
 import com.example.teachjr.ui.viewmodels.StudentViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
@@ -61,7 +59,7 @@ class StdCourseDetailsFragment : Fragment() {
         binding.tvCourseName.text = courseName
         binding.tvProfName.text = profName
 
-        stdViewModel.getLecAttended(courseCode)
+        stdViewModel.getAttendanceDetails(courseCode)
         stdViewModel.atdDetails.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
@@ -77,7 +75,8 @@ class StdCourseDetailsFragment : Fragment() {
                     binding.tvLecAttendedCount.text = it.data.attendedLecCount.toString()
                     binding.tvLecMissedCount.text = it.data.missedLecCount.toString()
 
-                    stdLecListAdapter.updateList(it.data.lecList)
+                    val revLecList = it.data.lecList.reversed()
+                    stdLecListAdapter.updateList(revLecList)
                 }
             }
         }

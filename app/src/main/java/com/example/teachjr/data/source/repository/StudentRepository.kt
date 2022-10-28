@@ -72,7 +72,7 @@ class StudentRepository
         }
     }
     
-    suspend fun getLecDetails(sem_sec: String, courseCode: String): Response<StdAttendanceDetails> {
+    suspend fun getAttendanceDetails(sem_sec: String, courseCode: String): Response<StdAttendanceDetails> {
         return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
                 .child(sem_sec)
@@ -87,11 +87,15 @@ class StudentRepository
                         for(lecInfo in snapshot.child(FirebasePaths.LEC_LIST).children) {
 //                            val timestamp = lecInfo.child(FirebasePaths.TIMESTAMP).value.toString()
                             val timestamp = lecInfo.key.toString()
+                            var isContinuing = false
+                            if(lecInfo.child(FirebasePaths.ATD_IS_CONTINUING).getValue(Boolean::class.java) == true) {
+                                isContinuing = true
+                            }
                             if(lecInfo.child(currentUser.uid).exists()) {
                                 lecAttended++
-                                stdLecListItem.add(RvStdLecListItem(timestamp, true))
+                                stdLecListItem.add(RvStdLecListItem(timestamp, isContinuing, true))
                             } else {
-                                stdLecListItem.add(RvStdLecListItem(timestamp, false))
+                                stdLecListItem.add(RvStdLecListItem(timestamp, isContinuing, false))
                             }
                         }
 

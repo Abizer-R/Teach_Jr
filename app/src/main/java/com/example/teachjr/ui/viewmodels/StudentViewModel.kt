@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.model.RvStdCourseListItem
 import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.data.model.StudentUser
@@ -14,7 +13,6 @@ import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.sql.Timestamp
 import javax.inject.Inject
 
 @HiltViewModel
@@ -71,15 +69,16 @@ class StudentViewModel
         }
     }
 
-    fun getLecAttended(courseCode: String?) {
+    fun getAttendanceDetails(courseCode: String?) {
         _atdDetails.postValue(Response.Loading())
-        Log.i("TAG", "StdTesting-ViewModel: Calling getLecAttended")
+        Log.i("TAG", "StdTesting-ViewModel: Calling getAttendanceDetails")
         viewModelScope.launch {
             val semSec = currUserStd.value?.data?.sem_sec
             if(courseCode == null || semSec == null) {
                 Log.i("TAG", "StdTesting-ViewModel: Error - null values")
+                _atdDetails.postValue(Response.Error("Error - null values", null))
             } else {
-                _atdDetails.postValue(studentRepository.getLecDetails(semSec, courseCode))
+                _atdDetails.postValue(studentRepository.getAttendanceDetails(semSec, courseCode))
             }
         }
     }

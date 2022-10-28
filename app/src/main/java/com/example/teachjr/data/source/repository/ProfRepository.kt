@@ -147,7 +147,7 @@ class ProfRepository
 
                 override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                     Log.i(TAG, "ProfessorTesting_ProRepo - onChildAdded: snapshot - $snapshot, prevChildName - $previousChildName")
-                    if(snapshot.key != (FirebasePaths.TIMESTAMP)) {
+                    if(snapshot.key != (FirebasePaths.ATD_IS_CONTINUING)) {
                         trySend(snapshot.value.toString()).isSuccess
                     }
                 }
