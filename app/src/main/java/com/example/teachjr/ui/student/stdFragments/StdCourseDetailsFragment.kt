@@ -76,7 +76,14 @@ class StdCourseDetailsFragment : Fragment() {
                     binding.tvLecMissedCount.text = it.data.missedLecCount.toString()
 
                     val revLecList = it.data.lecList.reversed()
+
+                    // Show mark Attendance if attendance is onGoing
+                    if(revLecList[0].isContinuing) {
+                        binding.fabMarkAtd.visibility = View.VISIBLE
+                    }
                     stdLecListAdapter.updateList(revLecList)
+
+
                 }
             }
         }
