@@ -117,25 +117,12 @@ class ProfRepository
         }
     }
 
-    suspend fun isAtdContinuing(lecPath: String): Response<Boolean> {
-        return suspendCoroutine { continuation ->
-            dbRef.getReference(lecPath)
-                .child(FirebasePaths.ATD_IS_CONTINUING)
-                .get()
-                .addOnSuccessListener {
-                    continuation.resume(Response.Success(it.getValue(Boolean::class.java)))
-                }
-                .addOnFailureListener {
-                    continuation.resume(Response.Error(it.message.toString(), null))
-                }
-        }
-    }
 
     /**
-     * TODO: User flow to return the stdId as they get added to the lecList
+     * This flow will get cancelled when prof will leave the MarkAtdFragment
      */
-    fun observeAttendance(lecPath: String): Flow<String> =
-        dbRef.getReference(lecPath)
+    fun observeAttendance(sem_sec: String, courseCode: String, timestamp: String): Flow<String> =
+        dbRef.getReference("/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode/${FirebasePaths.LEC_LIST}/$timestamp")
             .observeChildEvent()
             .catch { Log.i(TAG, "ProfessorTesting_ProRepo - observeAttendance: ERROR = ${it.message}") }
 

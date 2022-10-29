@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.LecturesDocument
 import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.source.repository.ProfRepository
+import com.example.teachjr.utils.AttendanceStatus
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,9 +41,9 @@ class ProfViewModel
 //    val stdList: LiveData<Response<List<String>>>
 //        get() = _stdList
 
-    private val _timestamp = MutableLiveData<Response<String>>()
-    val timestamp: LiveData<Response<String>>
-        get() = _timestamp
+    private val _atdStatus = MutableLiveData<AttendanceStatus>()
+    val atdStatus: LiveData<AttendanceStatus>
+        get() = _atdStatus
 
     private val _presentList = MutableLiveData<Response<List<String>>>()
     val presentList: LiveData<Response<List<String>>>
@@ -73,52 +74,68 @@ class ProfViewModel
 //        }
 //    }
 
+
     fun initAtd(sem_sec: String, courseCode: String, lecCount: Int) {
-        _timestamp.postValue(Response.Loading())
+        _atdStatus.postValue(AttendanceStatus.FetchingTimestamp())
         viewModelScope.launch {
             val timestamp = Calendar.getInstance().timeInMillis.toString()
             val newLecDocDeferred = async { profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount) }
             when(val newLecCreated = newLecDocDeferred.await()) {
                 is Response.Loading -> {}
-                is Response.Error -> _timestamp.postValue(Response.Error(newLecCreated.errorMessage.toString(), null))
+                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(newLecCreated.errorMessage.toString()))
                 is Response.Success -> {
-                    _timestamp.postValue(Response.Success(timestamp))
+                    _atdStatus.postValue(AttendanceStatus.Initiated(timestamp))
                 }
             }
          }
     }
 
-    fun observeAtd(sem_sec: String, courseCode: String, timestamp: String) {
+    /**
+     * To understand why we are using 'suspend fun',
+     * read the note in ProfMarkAtdFrag (in setupObserver())
+     */
+    suspend fun observeAtd(sem_sec: String, courseCode: String, timestamp: String) {
         _presentList.postValue(Response.Loading())
-        viewModelScope.launch {
-            val stdList: MutableList<String> = ArrayList()
-            try {
-                val lecPath = "/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode/${FirebasePaths.LEC_LIST}/$timestamp"
-                val atdStatus = profRepository.isAtdContinuing(lecPath)
-                when(atdStatus) {
-                    is Response.Loading -> {}
-                    is Response.Error -> _presentList.postValue(Response.Error(atdStatus.errorMessage.toString(), null))
-                    is Response.Success -> {
-                        if(atdStatus.data!!) {
-                            withContext(Dispatchers.IO) {
-                                profRepository.observeAttendance(lecPath)
-                                    .collect { student ->
-                                        stdList.add(student)
-                                        _presentList.postValue(Response.Success(stdList))
-                                    }
-                            }
-
-                        } else {
-                            _presentList.postValue(Response.Error("Attendance is over", null))
-                        }
+        try {
+            withContext(Dispatchers.IO) {
+                val stdList: MutableList<String> = ArrayList()
+                profRepository.observeAttendance(sem_sec, courseCode, timestamp)
+                    .collect { student ->
+                        stdList.add(student)
+                        _presentList.postValue(Response.Success(stdList))
                     }
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _presentList.postValue(Response.Error(e.message.toString(), null))
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _presentList.postValue(Response.Error(e.message.toString(), null))
         }
+    }
+
+//    fun observeAtd(sem_sec: String, courseCode: String, timestamp: String) {
+//        _presentList.postValue(Response.Loading())
+//        viewModelScope.launch {
+//            val stdList: MutableList<String> = ArrayList()
+//            try {
+//                withContext(Dispatchers.IO) {
+//                    profRepository.observeAttendance(sem_sec, courseCode, timestamp)
+//                        .collect { student ->
+//                            stdList.add(student)
+//                            _presentList.postValue(Response.Success(stdList))
+//                        }
+//                }
+//
+//
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//                _presentList.postValue(Response.Error(e.message.toString(), null))
+//            }
+//        }
+//    }
+
+
+
+    fun endAttendance(sem_sec: String, courseCode: String, timestamp: String) {
+
     }
 
 }

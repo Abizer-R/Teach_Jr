@@ -2,6 +2,8 @@ package com.example.teachjr.ui.professor.profFragments
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.location.LocationManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Bundle
@@ -12,18 +14,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
 import com.example.teachjr.ui.adapters.AttendanceAdapter
 import com.example.teachjr.ui.viewmodels.ProfViewModel
+import com.example.teachjr.utils.AttendanceStatus
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 import com.example.teachjr.utils.Response
-import dagger.hilt.android.internal.managers.FragmentComponentManager.initializeArguments
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class ProfMarkAtdFragment : Fragment() {
@@ -40,6 +45,8 @@ class ProfMarkAtdFragment : Fragment() {
 
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
+
+    private var isAtdOngoing: Boolean = false
 
 
     private val permissionRequestLauncher =
@@ -87,16 +94,15 @@ class ProfMarkAtdFragment : Fragment() {
         binding.fabAttendance.setOnClickListener {
             if(Permissions.hasAccessCoarseLocation(activity as Context)
                 && Permissions.hasAccessFineLocation(activity as Context)) {
-                checkGpsAndStartAttendance()
+
+                if(isAtdOngoing) {
+                    endAttendance()
+                } else {
+                    checkGpsAndStartAttendance()
+                }
             } else {
                 permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
             }
-
-
-//            val dummyList = arrayListOf<String>(
-//                "0818CS201001", "0818CS201002", "0818CS201003", "0818CS201004", "0818CS201005"
-//            )
-//            attendanceAdapter.updateList(dummyList)
         }
 
         binding.rvAttendance.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -113,17 +119,39 @@ class ProfMarkAtdFragment : Fragment() {
 
     private fun setupObservers() {
 
-        profViewModel.timestamp.observe(viewLifecycleOwner) {
+        profViewModel.atdStatus.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
-                is Response.Error -> {
+                is AttendanceStatus.FetchingTimestamp -> {
+                    isAtdOngoing = true
+                    binding.progressBar.visibility = View.VISIBLE
+                    updateFAB(isEnabled = false)
+                }
+                is AttendanceStatus.Initiated -> {
+                    binding.progressBar.visibility = View.GONE
+                    binding.tvTimeStamp.text = it.timestamp
+                    updateFAB(atdOngoing = true)
+
+                    /**
+                     * Applying LifeCycleScope so that when we exit the fragment,
+                     * the flow gets cancelled automatically.
+                     * Otherwise, the childEventListener (in Repo) would
+                     * keep listening for updates in the lec location
+                     */
+                    lifecycleScope.launch {
+                        profViewModel.observeAtd(semSec!!, courseCode!!, it.timestamp!!)
+                    }
+                }
+                is AttendanceStatus.Ended -> {
+                    updateFAB(atdEnded = true)
+                    isAtdOngoing = false
+                    Toast.makeText(context, "Attendance is over", Toast.LENGTH_SHORT).show()
+                }
+                is AttendanceStatus.Error -> {
+                    // TODO: Give some functionality to retry
+                    isAtdOngoing = false
+                    updateFAB(atdEnded = true)
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
-                }
-                is Response.Success -> {
-                    binding.progressBar.visibility = View.GONE
-                    profViewModel.observeAtd(semSec!!, courseCode!!, it.data!!)
-                    binding.tvTimeStamp.text = it.data
                 }
             }
         }
@@ -162,6 +190,33 @@ class ProfMarkAtdFragment : Fragment() {
         } else {
             // Makes a new Lec doc and fetches list of enrolled students
             profViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
+        }
+    }
+
+    private fun endAttendance() {
+
+    }
+
+    private fun updateFAB(isEnabled: Boolean = true, atdOngoing: Boolean = false, atdEnded: Boolean = false) {
+
+        if(isEnabled) {
+            binding.fabAttendance.isEnabled = true
+            binding.fabAttendance.isClickable = true
+        } else {
+            binding.fabAttendance.isEnabled = false
+            binding.fabAttendance.isClickable = false
+        }
+
+        if(atdOngoing) {
+            binding.fabAttendance.apply {
+                shrink()
+                setIconResource(R.drawable.ic_baseline_close_24)
+                backgroundTintList = ColorStateList.valueOf(Color.parseColor("#f7292b"))
+            }
+        }
+
+        if(atdEnded) {
+            binding.fabAttendance.visibility = View.GONE
         }
     }
 

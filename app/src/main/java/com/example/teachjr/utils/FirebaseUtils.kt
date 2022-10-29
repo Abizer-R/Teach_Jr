@@ -6,6 +6,7 @@ object FirebaseConstants {
     const val TYPE_PROFESSOR: String = "professor"
     const val userType: String = "userType"
 
+    const val STATUS_ATD_ENDED = "ATTENDANCE_ENDED"
 }
 
 object FirebasePaths {
