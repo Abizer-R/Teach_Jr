@@ -50,6 +50,7 @@ class ProfRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "ProfessorTesting_Repo: getCourseList = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
 
@@ -70,6 +71,7 @@ class ProfRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "ProfessorTesting_Repo: getLectureCount = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
                 })
@@ -112,6 +114,7 @@ class ProfRepository
                     continuation.resume(Response.Success(true))
                 }
                 .addOnFailureListener {
+                    Log.i(TAG, "ProfessorTesting_Repo: createNewAtdRef = ${it.message}")
                     continuation.resume(Response.Error(it.message.toString(), null))
                 }
         }
@@ -126,9 +129,10 @@ class ProfRepository
             .observeChildEvent()
             .catch { Log.i(TAG, "ProfessorTesting_ProRepo - observeAttendance: ERROR = ${it.message}") }
 
-    fun DatabaseReference.observeChildEvent(): Flow<String> = callbackFlow {
+    private fun DatabaseReference.observeChildEvent(): Flow<String> = callbackFlow {
             val childEventListener = object : ChildEventListener {
                 override fun onCancelled(error: DatabaseError) {
+                    Log.i(TAG, "ProfessorTesting_Repo: onCancelled = ${error.message}")
                     close(error.toException())
                 }
 
@@ -141,7 +145,9 @@ class ProfRepository
 
                 override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                     Log.i(TAG, "ProfessorTesting_ProRepo - onChildChanged: snapshot - $snapshot, prevChildName - $previousChildName")
-                    TODO("Not yet implemented")
+                    if(snapshot.key == FirebasePaths.ATD_IS_CONTINUING) {
+                        trySend(snapshot.value.toString()).isSuccess
+                    }
                 }
 
                 override fun onChildRemoved(snapshot: DataSnapshot) {
@@ -157,6 +163,25 @@ class ProfRepository
         addChildEventListener(childEventListener)
         awaitClose {
             removeEventListener(childEventListener)
+        }
+    }
+
+    /**
+     * It doesn't matter what we return here, all we need is confirmation
+     */
+    suspend fun endAttendance(
+        sem_sec: String, courseCode: String, timestamp: String): Response<Boolean> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child("/$sem_sec/$courseCode/${FirebasePaths.LEC_LIST}/$timestamp/${FirebasePaths.ATD_IS_CONTINUING}")
+                .setValue(false)
+                .addOnSuccessListener {
+                    continuation.resume(Response.Success(true))
+                }
+                .addOnFailureListener {
+                    Log.i(TAG, "ProfessorTesting_Repo: endAttendance = ${it.message}")
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
         }
     }
 

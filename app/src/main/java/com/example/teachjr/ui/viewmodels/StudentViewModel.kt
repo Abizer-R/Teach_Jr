@@ -10,6 +10,7 @@ import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.StudentRepository
 import com.example.teachjr.utils.Response
+import com.google.firebase.auth.ktx.userProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -92,25 +93,23 @@ class StudentViewModel
             if(semSec == null || enrollment == null) {
                 Log.i("TAG", "StdTesting-ViewModel: marAtd() Error - null values")
             } else {
-                _markAtdStatus.postValue(studentRepository.markAtd(semSec, courseCode, timestamp, enrollment))
+                val isContinuingResponse = studentRepository.checkAtdStatus(semSec, courseCode, timestamp)
+                when(isContinuingResponse) {
+                    "true" -> {
+                        // Attendance is still going on
+                        _markAtdStatus.postValue(studentRepository.markAtd(semSec, courseCode, timestamp, enrollment))
+                    }
+                    "false" -> {
+                        // Attendance is over
+                        _markAtdStatus.postValue(Response.Error("Attendance is Over", null))
+                    }
+                    else -> {
+                        _markAtdStatus.postValue(Response.Error(isContinuingResponse, null))
+                    }
+                }
             }
         }
     }
-//    fun enrollCourse(courseId: String) {
-//        _enrollCourseStatus.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val userId = currUser.value?.data?.id
-//
-//            if(userId != null) {
-//                val requestReponse = studentEnrollRepository.enrollCourse(courseId, _currUser.value?.data?.id!!)
-//                _enrollCourseStatus.postValue(requestReponse)
-//            } else {
-//                _enrollCourseStatus.postValue(Response.Error("Cannot extract user. Please try again.", null))
-//            }
-//        }
-//    }
-
-    
 
 
 }

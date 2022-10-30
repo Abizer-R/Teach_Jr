@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.switchMap
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
@@ -194,7 +195,13 @@ class ProfMarkAtdFragment : Fragment() {
     }
 
     private fun endAttendance() {
-
+        val timestamp = profViewModel.atdStatus.value?.timestamp
+        if(timestamp != null) {
+            profViewModel.endAttendance(semSec!!, courseCode!!, timestamp)
+        } else {
+            Log.i(TAG, "ProfessorTesting_MarkAtdPage: null timestamp")
+            Toast.makeText(context, "null timestamp", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun updateFAB(isEnabled: Boolean = true, atdOngoing: Boolean = false, atdEnded: Boolean = false) {

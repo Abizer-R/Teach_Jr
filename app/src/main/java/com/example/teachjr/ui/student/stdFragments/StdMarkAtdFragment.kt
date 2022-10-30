@@ -118,7 +118,8 @@ class StdMarkAtdFragment : Fragment() {
             Log.i(TAG, "StudentTesting_MarkAtdPage: null bundle arguments")
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
         } else {
-            // Makes a new Lec doc and fetches list of enrolled students
+
+            // TODO: Start Discovery
             checkEditTextAndMarkAtd()
 
         }

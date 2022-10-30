@@ -35,6 +35,7 @@ class StudentRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "StudentTesting_Repo: getUserDetails = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
 
@@ -64,7 +65,7 @@ class StudentRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
-//                        Log.i(TAG, "StdTesting: Error = ${error.message}")
+                        Log.i(TAG, "StudentTesting_Repo: getCourseList = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
 
@@ -112,6 +113,26 @@ class StudentRepository
         }
     }
 
+    suspend fun checkAtdStatus(sem_sec: String, courseCode: String, timestamp: String): String {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child(sem_sec)
+                .child(courseCode)
+                .child(FirebasePaths.LEC_LIST)
+                .child(timestamp)
+                .child(FirebasePaths.ATD_IS_CONTINUING)
+                .get()
+                .addOnSuccessListener {
+                    Log.i(TAG, "StudentTesting_Repo: checkAtdStatus = ${it.getValue(Boolean::class.java).toString()}")
+                    continuation.resume(it.getValue(Boolean::class.java).toString())
+                }
+                .addOnFailureListener {
+                    Log.i(TAG, "StudentTesting_Repo: checkAtdStatus = ${it.message}")
+                    continuation.resume(it.message.toString())
+                }
+        }
+    }
+
     suspend fun markAtd(
         sem_sec: String, courseCode: String, timestamp: String, enrollment: String): Response<Boolean> {
         return suspendCoroutine { continuation ->
@@ -126,6 +147,7 @@ class StudentRepository
                     continuation.resume(Response.Success(true))
                 }
                 .addOnFailureListener {
+                    Log.i(TAG, "StudentTesting_Repo: markAtd = ${it.message}")
                     continuation.resume(Response.Error(it.message.toString(), null))
                 }
         }

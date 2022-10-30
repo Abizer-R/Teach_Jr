@@ -79,10 +79,10 @@ class ProfViewModel
         _atdStatus.postValue(AttendanceStatus.FetchingTimestamp())
         viewModelScope.launch {
             val timestamp = Calendar.getInstance().timeInMillis.toString()
-            val newLecDocDeferred = async { profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount) }
-            when(val newLecCreated = newLecDocDeferred.await()) {
+            val newLecDoc = profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount)
+            when(newLecDoc) {
                 is Response.Loading -> {}
-                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(newLecCreated.errorMessage.toString()))
+                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(newLecDoc.errorMessage.toString()))
                 is Response.Success -> {
                     _atdStatus.postValue(AttendanceStatus.Initiated(timestamp))
                 }
@@ -100,9 +100,14 @@ class ProfViewModel
             withContext(Dispatchers.IO) {
                 val stdList: MutableList<String> = ArrayList()
                 profRepository.observeAttendance(sem_sec, courseCode, timestamp)
-                    .collect { student ->
-                        stdList.add(student)
-                        _presentList.postValue(Response.Success(stdList))
+                    .collect { flowResult ->
+
+                        if(flowResult == "false") {
+                            _atdStatus.postValue(AttendanceStatus.Ended())
+                        } else {
+                            stdList.add(flowResult)
+                            _presentList.postValue(Response.Success(stdList))
+                        }
                     }
             }
         } catch (e: Exception) {
@@ -111,31 +116,17 @@ class ProfViewModel
         }
     }
 
-//    fun observeAtd(sem_sec: String, courseCode: String, timestamp: String) {
-//        _presentList.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val stdList: MutableList<String> = ArrayList()
-//            try {
-//                withContext(Dispatchers.IO) {
-//                    profRepository.observeAttendance(sem_sec, courseCode, timestamp)
-//                        .collect { student ->
-//                            stdList.add(student)
-//                            _presentList.postValue(Response.Success(stdList))
-//                        }
-//                }
-//
-//
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//                _presentList.postValue(Response.Error(e.message.toString(), null))
-//            }
-//        }
-//    }
-
-
-
     fun endAttendance(sem_sec: String, courseCode: String, timestamp: String) {
-
+        viewModelScope.launch {
+            val isContinuingStatus = profRepository.endAttendance(sem_sec, courseCode, timestamp)
+            when(isContinuingStatus) {
+                is Response.Loading -> {}
+                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(isContinuingStatus.errorMessage.toString()))
+                is Response.Success -> {
+                    _atdStatus.postValue(AttendanceStatus.Ended())
+                }
+            }
+        }
     }
 
 }

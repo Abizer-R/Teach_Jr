@@ -104,22 +104,26 @@ class StdCourseDetailsFragment : Fragment() {
     }
 
     private fun setupScrollView() {
-        binding.svStdCourseDetails.setOnScrollChangeListener(object: NestedScrollView.OnScrollChangeListener {
-            override fun onScrollChange(
-                v: NestedScrollView,
-                scrollX: Int,
-                scrollY: Int,
-                oldScrollX: Int,
-                oldScrollY: Int
-            ) {
-                if(scrollY > oldScrollY) {
-                    binding.fabMarkAtd.hide()
-                } else {
-                    binding.fabMarkAtd.show()
-                }
-
-            }
-
-        })
+        // TODO: Can't decide whether to keep this feature or not....
+        /**
+         * Don't really need this because the FAB will be visible during the time of attendance only
+         */
+//        binding.svStdCourseDetails.setOnScrollChangeListener(object: NestedScrollView.OnScrollChangeListener {
+//            override fun onScrollChange(
+//                v: NestedScrollView,
+//                scrollX: Int,
+//                scrollY: Int,
+//                oldScrollX: Int,
+//                oldScrollY: Int
+//            ) {
+//                if(scrollY > oldScrollY) {
+//                    binding.fabMarkAtd.hide()
+//                } else {
+//                    binding.fabMarkAtd.show()
+//                }
+//
+//            }
+//
+//        })
     }
 }
