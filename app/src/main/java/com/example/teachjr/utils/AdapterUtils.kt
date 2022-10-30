@@ -17,8 +17,9 @@ object AdapterUtils {
 
     fun getFormattedDate(timestamp: String): String {
         try {
-            val sdf = SimpleDateFormat("EEE, MMM dd, yyyy")
-            val netDate = Date(timestamp.toLong() * 1000)
+//            val sdf = SimpleDateFormat("EEE, MMM dd, yyyy")
+            val sdf = SimpleDateFormat("dd/MM/yy")
+            val netDate = Date(timestamp.toLong())
             return sdf.format(netDate)
         } catch (e: Exception) {
             return e.toString()

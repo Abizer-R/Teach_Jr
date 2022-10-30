@@ -5,12 +5,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.model.RvStdCourseListItem
 import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.StudentRepository
 import com.example.teachjr.utils.Response
+import com.google.firebase.auth.ktx.userProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -50,6 +50,10 @@ class StudentViewModel
     val atdDetails: LiveData<Response<StdAttendanceDetails>>
         get() = _atdDetails
 
+    private val _markAtdStatus = MutableLiveData<Response<Boolean>>()
+    val markAtdStatus: LiveData<Response<Boolean>>
+        get() = _markAtdStatus
+
     fun getCourseList() {
         _courseList.postValue(Response.Loading())
         Log.i("TAG", "StdTesting-ViewModel: Calling getCourselist")
@@ -66,35 +70,46 @@ class StudentViewModel
         }
     }
 
-    fun getLecAttended(courseCode: String?) {
-        Log.i("TAG", "StdTesting-ViewModel: Calling getLecAttended")
+    fun getAttendanceDetails(courseCode: String?) {
+        _atdDetails.postValue(Response.Loading())
+        Log.i("TAG", "StdTesting-ViewModel: Calling getAttendanceDetails")
         viewModelScope.launch {
             val semSec = currUserStd.value?.data?.sem_sec
             if(courseCode == null || semSec == null) {
                 Log.i("TAG", "StdTesting-ViewModel: Error - null values")
+                _atdDetails.postValue(Response.Error("Error - null values", null))
             } else {
-                _atdDetails.postValue(studentRepository.getLecDetails(semSec, courseCode))
+                _atdDetails.postValue(studentRepository.getAttendanceDetails(semSec, courseCode))
             }
         }
     }
 
-
-
-//    fun enrollCourse(courseId: String) {
-//        _enrollCourseStatus.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val userId = currUser.value?.data?.id
-//
-//            if(userId != null) {
-//                val requestReponse = studentEnrollRepository.enrollCourse(courseId, _currUser.value?.data?.id!!)
-//                _enrollCourseStatus.postValue(requestReponse)
-//            } else {
-//                _enrollCourseStatus.postValue(Response.Error("Cannot extract user. Please try again.", null))
-//            }
-//        }
-//    }
-
-    
+    fun martAtd(courseCode: String, timestamp: String) {
+        _markAtdStatus.postValue(Response.Loading())
+        Log.i("TAG", "StdTesting-ViewModel: Calling markAtd")
+        viewModelScope.launch {
+            val semSec = currUserStd.value?.data?.sem_sec
+            val enrollment = currUserStd.value?.data?.enrollment
+            if(semSec == null || enrollment == null) {
+                Log.i("TAG", "StdTesting-ViewModel: marAtd() Error - null values")
+            } else {
+                val isContinuingResponse = studentRepository.checkAtdStatus(semSec, courseCode, timestamp)
+                when(isContinuingResponse) {
+                    "true" -> {
+                        // Attendance is still going on
+                        _markAtdStatus.postValue(studentRepository.markAtd(semSec, courseCode, timestamp, enrollment))
+                    }
+                    "false" -> {
+                        // Attendance is over
+                        _markAtdStatus.postValue(Response.Error("Attendance is Over", null))
+                    }
+                    else -> {
+                        _markAtdStatus.postValue(Response.Error(isContinuingResponse, null))
+                    }
+                }
+            }
+        }
+    }
 
 
 }

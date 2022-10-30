@@ -28,6 +28,7 @@ class ProfCourseDetailsFragment : Fragment() {
     private var courseCode: String? = null
     private var courseName: String? = null
     private var semSec: String? = null
+    private var lecCount: Int? = null
 
 //    private var lecDoc: LecturesDocument? = null
 
@@ -70,14 +71,23 @@ class ProfCourseDetailsFragment : Fragment() {
                 }
                 is Response.Success -> {
                     Log.i(TAG, "ProfessorTesting_CoursePage: lecCount - ${it.data}")
+                    lecCount = it.data
                     binding.progressBar.visibility = View.GONE
-                    binding.tvLecCount.text = "Total Lectures: ${it.data.toString()}"
+                    binding.tvLecCount.text = "Total Lectures: ${lecCount.toString()}"
                 }
             }
         }
 
         binding.btnAtdReport.setOnClickListener {
             findNavController().navigate(R.id.action_profCourseDetailsFragment_to_profAtdReportFragment)
+        }
+
+        binding.fabMarkAtd.setOnClickListener {
+            val bundle = Bundle()
+            bundle.putString(FirebasePaths.COURSE_CODE, courseCode)
+            bundle.putString(FirebasePaths.SEM_SEC, semSec)
+            bundle.putInt(FirebasePaths.LEC_COUNT, lecCount!!)
+            findNavController().navigate(R.id.action_profCourseDetailsFragment_to_profMarkAtdFragment, bundle)
         }
     }
 

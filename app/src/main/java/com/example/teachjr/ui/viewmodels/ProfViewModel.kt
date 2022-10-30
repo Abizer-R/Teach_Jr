@@ -8,11 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.LecturesDocument
 import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.source.repository.ProfRepository
+import com.example.teachjr.utils.AttendanceStatus
+import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
 
 @HiltViewModel
 class ProfViewModel
@@ -20,46 +26,28 @@ class ProfViewModel
     private val profRepository: ProfRepository
 ): ViewModel() {
 
-//    private val _currUser = MutableLiveData<Response<User>>()
-//    val currUser: LiveData<Response<User>>
-//        get() = _currUser
-
-    /**
-     * Used by Fragment: Create_Course to recognise the newly created Course
-     */
-    private val _newCourseID = MutableLiveData<Response<String>>()
-    val newCourseID: LiveData<Response<String>>
-        get() = _newCourseID
-
     /**
      * Used by Fragment: Home_Page to Display CourseList in RecyclerView
      */
     private val _courseList = MutableLiveData<Response<List<RvProfCourseListItem>>>()
     val courseList: LiveData<Response<List<RvProfCourseListItem>>>
         get() = _courseList
-//    private val _courseDocs = MutableLiveData<Response<List<CourseDocument>>>()
-//    val courseDocs: LiveData<Response<List<CourseDocument>>>
-//        get() = _courseDocs
 
     private val _lecCount = MutableLiveData<Response<Int>>()
     val lecCount: LiveData<Response<Int>>
         get() = _lecCount
 
-    private val _lectureDoc = MutableLiveData<Response<LecturesDocument>>()
-    val lectureDoc: LiveData<Response<LecturesDocument>>
-        get() = _lectureDoc
+//    private val _stdList = MutableLiveData<Response<List<String>>>()
+//    val stdList: LiveData<Response<List<String>>>
+//        get() = _stdList
 
-//    init {
-//        getUserDetails()
-//    }
+    private val _atdStatus = MutableLiveData<AttendanceStatus>()
+    val atdStatus: LiveData<AttendanceStatus>
+        get() = _atdStatus
 
-//    private fun getUserDetails() {
-//        viewModelScope.launch {
-//            val user = profRepository.getUserDetails()
-//            Log.i("TAG", "GET USER DETAILS-ViewModel: ${user.data}")
-//            _currUser.postValue(user)
-//        }
-//    }
+    private val _presentList = MutableLiveData<Response<List<String>>>()
+    val presentList: LiveData<Response<List<String>>>
+        get() = _presentList
 
     // TODO: Use Flow instead of LiveData
     fun getCourseList() {
@@ -71,25 +59,74 @@ class ProfViewModel
     }
 
     fun getLectureCount(sem_sec: String, courseCode: String) {
-        _lectureDoc.postValue(Response.Loading())
+        _lecCount.postValue(Response.Loading())
         viewModelScope.launch {
             val lecCountDeferred = async { profRepository.getLectureCount(sem_sec, courseCode) }
             _lecCount.postValue(lecCountDeferred.await())
         }
     }
 
-    fun getLectureDoc(courseId: String) {
-        _lectureDoc.postValue(Response.Loading())
+//    fun getStdList(sem_sec: String) {
+//        _stdList.postValue(Response.Loading())
+//        viewModelScope.launch {
+//            val stdListResponse = profRepository.getStdList(sem_sec)
+//            _stdList.postValue(stdListResponse)
+//        }
+//    }
+
+
+    fun initAtd(sem_sec: String, courseCode: String, lecCount: Int) {
+        _atdStatus.postValue(AttendanceStatus.FetchingTimestamp())
         viewModelScope.launch {
-            val lecDocResponse = profRepository.getLectureDoc(courseId)
-            when(lecDocResponse) {
+            val timestamp = Calendar.getInstance().timeInMillis.toString()
+            val newLecDoc = profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount)
+            when(newLecDoc) {
                 is Response.Loading -> {}
-                is Response.Error -> _lectureDoc.postValue(Response.Error(lecDocResponse.errorMessage.toString(), null))
+                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(newLecDoc.errorMessage.toString()))
                 is Response.Success -> {
-                    _lectureDoc.postValue(Response.Success(lecDocResponse.data))
-                    Log.i("TAG", "Lecture Doc: ${lecDocResponse.data}")
+                    _atdStatus.postValue(AttendanceStatus.Initiated(timestamp))
+                }
+            }
+         }
+    }
+
+    /**
+     * To understand why we are using 'suspend fun',
+     * read the note in ProfMarkAtdFrag (in setupObserver())
+     */
+    suspend fun observeAtd(sem_sec: String, courseCode: String, timestamp: String) {
+        _presentList.postValue(Response.Loading())
+        try {
+            withContext(Dispatchers.IO) {
+                val stdList: MutableList<String> = ArrayList()
+                profRepository.observeAttendance(sem_sec, courseCode, timestamp)
+                    .collect { flowResult ->
+
+                        if(flowResult == "false") {
+                            _atdStatus.postValue(AttendanceStatus.Ended())
+                        } else {
+                            stdList.add(flowResult)
+                            _presentList.postValue(Response.Success(stdList))
+                        }
+                    }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _presentList.postValue(Response.Error(e.message.toString(), null))
+        }
+    }
+
+    fun endAttendance(sem_sec: String, courseCode: String, timestamp: String) {
+        viewModelScope.launch {
+            val isContinuingStatus = profRepository.endAttendance(sem_sec, courseCode, timestamp)
+            when(isContinuingStatus) {
+                is Response.Loading -> {}
+                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(isContinuingStatus.errorMessage.toString()))
+                is Response.Success -> {
+                    _atdStatus.postValue(AttendanceStatus.Ended())
                 }
             }
         }
     }
+
 }

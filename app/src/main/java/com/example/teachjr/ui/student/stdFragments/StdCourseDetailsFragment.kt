@@ -6,15 +6,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AbsListView
 import android.widget.Toast
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdCourseDetailsBinding
 import com.example.teachjr.ui.adapters.StdLecListAdapter
-import com.example.teachjr.ui.professor.profFragments.ProfCourseDetailsFragment
 import com.example.teachjr.ui.viewmodels.StudentViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
@@ -43,7 +42,7 @@ class StdCourseDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initialSetup()
-        setupLecRecyclerView()
+        setupViews()
         setupScrollView()
     }
 
@@ -60,7 +59,7 @@ class StdCourseDetailsFragment : Fragment() {
         binding.tvCourseName.text = courseName
         binding.tvProfName.text = profName
 
-        stdViewModel.getLecAttended(courseCode)
+        stdViewModel.getAttendanceDetails(courseCode)
         stdViewModel.atdDetails.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
@@ -76,37 +75,55 @@ class StdCourseDetailsFragment : Fragment() {
                     binding.tvLecAttendedCount.text = it.data.attendedLecCount.toString()
                     binding.tvLecMissedCount.text = it.data.missedLecCount.toString()
 
-                    stdLecListAdapter.updateList(it.data.lecList)
+                    val revLecList = it.data.lecList.reversed()
+
+                    // Show mark Attendance if attendance is onGoing
+                    if(revLecList[0].isContinuing) {
+                        binding.fabMarkAtd.visibility = View.VISIBLE
+                    }
+                    stdLecListAdapter.updateList(revLecList)
+
+
                 }
             }
         }
     }
 
-    private fun setupLecRecyclerView() {
+    private fun setupViews() {
         binding.rvLecList.apply {
             hasFixedSize()
             adapter = stdLecListAdapter
             layoutManager = LinearLayoutManager(context)
         }
+
+        binding.fabMarkAtd.setOnClickListener {
+            val bundle = Bundle()
+            bundle.putString(FirebasePaths.COURSE_CODE, courseCode)
+            findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment, bundle)
+        }
     }
 
     private fun setupScrollView() {
-        binding.svStdCourseDetails.setOnScrollChangeListener(object: NestedScrollView.OnScrollChangeListener {
-            override fun onScrollChange(
-                v: NestedScrollView,
-                scrollX: Int,
-                scrollY: Int,
-                oldScrollX: Int,
-                oldScrollY: Int
-            ) {
-                if(scrollY > oldScrollY) {
-                    binding.fabMarkAtd.hide()
-                } else {
-                    binding.fabMarkAtd.show()
-                }
-
-            }
-
-        })
+        // TODO: Can't decide whether to keep this feature or not....
+        /**
+         * Don't really need this because the FAB will be visible during the time of attendance only
+         */
+//        binding.svStdCourseDetails.setOnScrollChangeListener(object: NestedScrollView.OnScrollChangeListener {
+//            override fun onScrollChange(
+//                v: NestedScrollView,
+//                scrollX: Int,
+//                scrollY: Int,
+//                oldScrollX: Int,
+//                oldScrollY: Int
+//            ) {
+//                if(scrollY > oldScrollY) {
+//                    binding.fabMarkAtd.hide()
+//                } else {
+//                    binding.fabMarkAtd.show()
+//                }
+//
+//            }
+//
+//        })
     }
 }

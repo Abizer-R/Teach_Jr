@@ -23,8 +23,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:layout_marginTop="16dp">
+            android:layout_marginEnd="24dp">
 
             <View
                 android:id="@+id/view4"
@@ -194,6 +193,7 @@
         android:layout_gravity="bottom"
         android:text="Mark Attendance"
         app:icon="@drawable/ic_baseline_add_24"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

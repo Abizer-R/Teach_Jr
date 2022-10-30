@@ -11,6 +11,7 @@ import com.example.teachjr.ui.auth.AuthActivity
 import com.example.teachjr.ui.professor.ProfessorActivity
 import com.example.teachjr.ui.student.StudentActivity
 import com.example.teachjr.ui.viewmodels.SplashViewModel
+import com.example.teachjr.utils.Permissions
 import com.example.teachjr.utils.Response
 import com.example.teachjr.utils.UserType
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +28,8 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
         Log.i(TAG, "SplashTesting: Splash Activity Created")
+
+        Permissions.requestPermission(this@SplashActivity)
 
         splashViewModel.userType.observe(this) {
             when(it) {

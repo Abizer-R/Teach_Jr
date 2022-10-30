@@ -22,14 +22,21 @@ class StdLecListAdapter : RecyclerView.Adapter<StdLecListAdapter.CourseViewHolde
 
     override fun onBindViewHolder(holder: CourseViewHolder, position: Int) {
         holder.apply {
-            tvLecNum.text = "Lec-${position+1}: "
+            val lecNum = lectures.size - position
+            tvLecNum.text = "Lec-${lecNum}: "
             tvLecDate.text = AdapterUtils.getFormattedDate(lectures[position].timestamp)
             if(lectures[position].isPresent) {
                 tvLecNum.setTextColor(Color.parseColor("#01dd01"))
                 tvLecDate.setTextColor(Color.parseColor("#01dd01"))
             } else {
-                tvLecNum.setTextColor(Color.parseColor("#f7292b"))
-                tvLecDate.setTextColor(Color.parseColor("#f7292b"))
+                if(lectures[position].isContinuing) {
+
+                    tvLecNum.setTextColor(Color.parseColor("#f79e00"))
+                    tvLecDate.setTextColor(Color.parseColor("#f79e00"))
+                } else {
+                    tvLecNum.setTextColor(Color.parseColor("#f7292b"))
+                    tvLecDate.setTextColor(Color.parseColor("#f7292b"))
+                }
             }
         }
     }

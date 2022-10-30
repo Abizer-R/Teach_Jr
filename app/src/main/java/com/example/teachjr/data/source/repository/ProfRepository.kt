@@ -7,7 +7,10 @@ import com.example.teachjr.utils.Response
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -21,33 +24,6 @@ class ProfRepository
     private val TAG = ProfRepository::class.java.simpleName
     private val currentUser: FirebaseUser
         get() = firebaseAuth.currentUser!!
-
-//    suspend fun getUserDetails(): Response<User> {
-//        Log.i("TAG", "GET USER DETAILS-Repo: Calling userDetails()")
-//        return  dbRef.getReference(FirebasePaths.USER_COLLECTION)
-//            .child(FirebasePaths.USER_INFO)
-//            .child(currentUser.uid)
-//            .userDetails()
-//    }
-//
-//    private suspend fun DatabaseReference.userDetails(): Response<User> = suspendCoroutine { continuation ->
-//        val valueEventListener = object: ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                if(snapshot.exists()) {
-//                    continuation.resume(Response.Success(snapshot.getValue(User::class.java)))
-//                } else {
-//                    Log.i(TAG, "onDataChange: Something Went Wrong")
-//                    continuation.resume(Response.Error("Something Went Wrong in repository.userDetails()", null))
-//                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                 continuation.resume(Response.Error(error.message, null))
-//            }
-//        }
-//        // Subscribe to the callback
-//        addListenerForSingleValueEvent(valueEventListener)
-//    }
 
 
     suspend fun getCourseList(): Response<List<RvProfCourseListItem>> {
@@ -74,6 +50,7 @@ class ProfRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "ProfessorTesting_Repo: getCourseList = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
 
@@ -94,63 +71,118 @@ class ProfRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "ProfessorTesting_Repo: getLectureCount = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
                 })
         }
     }
 
-//    // TODO: Change SingleValueEventListener to onDataChangeListener
-//    private suspend fun DatabaseReference.getCourseDocument(): Response<CourseDocument> = suspendCoroutine { continuation ->
-//        val valueEventListener = object: ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                if(snapshot.exists()) {
-//                    val courseDocument = snapshot.getValue(CourseDocument::class.java)
-//                    courseDocument!!.courseId = snapshot.key
-//                    continuation.resume(Response.Success(courseDocument))
-//                } else {
-//                    Log.i(TAG, "onDataChange-getCourseDocument: Something Went Wrong")
-//                    continuation.resume(Response.Error("Something Went Wrong in repository.getCourseDocument()", null))
+//    suspend fun getStdList(sem_sec: String): Response<List<String>> {
+//        return suspendCoroutine { continuation ->
+//            dbRef.getReference(FirebasePaths.ENROLLMENT_COLLECTION)
+//                .child(sem_sec)
+//                .child(FirebasePaths.ENRL_STUDENT_LIST)
+//                .get()
+//                .addOnSuccessListener {
+//                    val stdList: MutableList<String> = ArrayList()
+//                    for(students in it.children) {
+//                        stdList.add(students.key.toString())
+//                    }
 //                }
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                continuation.resume(Response.Error(error.message, null))
-//            }
+//                .addOnFailureListener {
+//                    continuation.resume(Response.Error(it.message.toString(), null))
+//                }
 //        }
-//        // Subscribe to the callback
-//        addListenerForSingleValueEvent(valueEventListener)
 //    }
 
-    suspend fun getLectureDoc(courseId: String): Response<LecturesDocument> {
-        val lecId = dbRef.getReference(FirebasePaths.COURSE_COLLECTION)
-            .child(courseId)
-            .child(FirebasePaths.LECTURE_DOC_ID)
-            .get().await()
+    /**
+     * It doesn't matter what we return here, all we need is confirmation
+     */
+    suspend fun createNewAtdRef(
+        sem_sec: String, courseCode: String, timestamp: String, lecCount: Int): Response<Boolean> {
+        return suspendCoroutine { continuation ->
+            Log.i(TAG, "createNewAtdRef: TIMESTAMP = $timestamp")
 
-        Log.i(TAG, "getLectureDoc: LecId = ${lecId.value.toString()}")
-
-        return dbRef.getReference(FirebasePaths.LECTURE_COLLECTION)
-            .child(lecId.value.toString())
-            .getLectureDocument()
+            val courseAtdPath = "/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode"
+            val updates = hashMapOf<String, Any>(
+                "$courseAtdPath/${FirebasePaths.LEC_COUNT}" to (lecCount+1),
+                "$courseAtdPath/${FirebasePaths.LEC_LIST}/$timestamp/${FirebasePaths.ATD_IS_CONTINUING}" to true
+            )
+            dbRef.reference.updateChildren(updates)
+                .addOnSuccessListener {
+                    continuation.resume(Response.Success(true))
+                }
+                .addOnFailureListener {
+                    Log.i(TAG, "ProfessorTesting_Repo: createNewAtdRef = ${it.message}")
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
+        }
     }
 
-    private suspend fun DatabaseReference.getLectureDocument(): Response<LecturesDocument> = suspendCoroutine { continuation ->
-        val valueEventListener = object: ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if(snapshot.exists()) {
-                    continuation.resume(Response.Success(snapshot.getValue(LecturesDocument::class.java)))
-                } else {
-                    Log.i(TAG, "onDataChange-getLectureDocument: Something Went Wrong")
-                    continuation.resume(Response.Error("Something Went Wrong in repository.getLectureDocument()", null))
+
+    /**
+     * This flow will get cancelled when prof will leave the MarkAtdFragment
+     */
+    fun observeAttendance(sem_sec: String, courseCode: String, timestamp: String): Flow<String> =
+        dbRef.getReference("/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode/${FirebasePaths.LEC_LIST}/$timestamp")
+            .observeChildEvent()
+            .catch { Log.i(TAG, "ProfessorTesting_ProRepo - observeAttendance: ERROR = ${it.message}") }
+
+    private fun DatabaseReference.observeChildEvent(): Flow<String> = callbackFlow {
+            val childEventListener = object : ChildEventListener {
+                override fun onCancelled(error: DatabaseError) {
+                    Log.i(TAG, "ProfessorTesting_Repo: onCancelled = ${error.message}")
+                    close(error.toException())
+                }
+
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildAdded: snapshot - $snapshot, prevChildName - $previousChildName")
+                    if(snapshot.key != (FirebasePaths.ATD_IS_CONTINUING)) {
+                        trySend(snapshot.value.toString()).isSuccess
+                    }
+                }
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildChanged: snapshot - $snapshot, prevChildName - $previousChildName")
+                    if(snapshot.key == FirebasePaths.ATD_IS_CONTINUING) {
+                        trySend(snapshot.value.toString()).isSuccess
+                    }
+                }
+
+                override fun onChildRemoved(snapshot: DataSnapshot) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildRemoved: snapshot - $snapshot")
+                    TODO("Not yet implemented")
+                }
+
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+                    Log.i(TAG, "ProfessorTesting_ProRepo - onChildMoved: snapshot - $snapshot, prevChildName - $previousChildName")
+                    TODO("Not yet implemented")
                 }
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                continuation.resume(Response.Error(error.message, null))
-            }
+        addChildEventListener(childEventListener)
+        awaitClose {
+            removeEventListener(childEventListener)
         }
-        // Subscribe to the callback
-        addListenerForSingleValueEvent(valueEventListener)
     }
+
+    /**
+     * It doesn't matter what we return here, all we need is confirmation
+     */
+    suspend fun endAttendance(
+        sem_sec: String, courseCode: String, timestamp: String): Response<Boolean> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child("/$sem_sec/$courseCode/${FirebasePaths.LEC_LIST}/$timestamp/${FirebasePaths.ATD_IS_CONTINUING}")
+                .setValue(false)
+                .addOnSuccessListener {
+                    continuation.resume(Response.Success(true))
+                }
+                .addOnFailureListener {
+                    Log.i(TAG, "ProfessorTesting_Repo: endAttendance = ${it.message}")
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
+        }
+    }
+
 }

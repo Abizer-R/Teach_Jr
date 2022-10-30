@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import kotlinx.coroutines.tasks.await
+import java.sql.Timestamp
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -34,6 +35,7 @@ class StudentRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "StudentTesting_Repo: getUserDetails = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
 
@@ -63,7 +65,7 @@ class StudentRepository
                     }
 
                     override fun onCancelled(error: DatabaseError) {
-//                        Log.i(TAG, "StdTesting: Error = ${error.message}")
+                        Log.i(TAG, "StudentTesting_Repo: getCourseList = ${error.message}")
                         continuation.resume(Response.Error(error.message, null))
                     }
 
@@ -71,7 +73,7 @@ class StudentRepository
         }
     }
     
-    suspend fun getLecDetails(sem_sec: String, courseCode: String): Response<StdAttendanceDetails> {
+    suspend fun getAttendanceDetails(sem_sec: String, courseCode: String): Response<StdAttendanceDetails> {
         return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
                 .child(sem_sec)
@@ -84,12 +86,17 @@ class StudentRepository
                         val stdLecListItem: MutableList<RvStdLecListItem> = ArrayList()
 
                         for(lecInfo in snapshot.child(FirebasePaths.LEC_LIST).children) {
-                            val timestamp = lecInfo.child(FirebasePaths.TIMESTAMP).value.toString()
+//                            val timestamp = lecInfo.child(FirebasePaths.TIMESTAMP).value.toString()
+                            val timestamp = lecInfo.key.toString()
+                            var isContinuing = false
+                            if(lecInfo.child(FirebasePaths.ATD_IS_CONTINUING).getValue(Boolean::class.java) == true) {
+                                isContinuing = true
+                            }
                             if(lecInfo.child(currentUser.uid).exists()) {
                                 lecAttended++
-                                stdLecListItem.add(RvStdLecListItem(timestamp, true))
+                                stdLecListItem.add(RvStdLecListItem(timestamp, isContinuing, true))
                             } else {
-                                stdLecListItem.add(RvStdLecListItem(timestamp, false))
+                                stdLecListItem.add(RvStdLecListItem(timestamp, isContinuing, false))
                             }
                         }
 
@@ -103,6 +110,46 @@ class StudentRepository
                     }
 
                 })
+        }
+    }
+
+    suspend fun checkAtdStatus(sem_sec: String, courseCode: String, timestamp: String): String {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child(sem_sec)
+                .child(courseCode)
+                .child(FirebasePaths.LEC_LIST)
+                .child(timestamp)
+                .child(FirebasePaths.ATD_IS_CONTINUING)
+                .get()
+                .addOnSuccessListener {
+                    Log.i(TAG, "StudentTesting_Repo: checkAtdStatus = ${it.getValue(Boolean::class.java).toString()}")
+                    continuation.resume(it.getValue(Boolean::class.java).toString())
+                }
+                .addOnFailureListener {
+                    Log.i(TAG, "StudentTesting_Repo: checkAtdStatus = ${it.message}")
+                    continuation.resume(it.message.toString())
+                }
+        }
+    }
+
+    suspend fun markAtd(
+        sem_sec: String, courseCode: String, timestamp: String, enrollment: String): Response<Boolean> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child(sem_sec)
+                .child(courseCode)
+                .child(FirebasePaths.LEC_LIST)
+                .child(timestamp)
+                .child(currentUser.uid)
+                .setValue(enrollment)
+                .addOnSuccessListener {
+                    continuation.resume(Response.Success(true))
+                }
+                .addOnFailureListener {
+                    Log.i(TAG, "StudentTesting_Repo: markAtd = ${it.message}")
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
         }
     }
 
