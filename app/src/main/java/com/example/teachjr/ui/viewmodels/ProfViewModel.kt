@@ -1,5 +1,8 @@
 package com.example.teachjr.ui.viewmodels
 
+import android.annotation.SuppressLint
+import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,11 +14,9 @@ import com.example.teachjr.data.source.repository.ProfRepository
 import com.example.teachjr.utils.AttendanceStatus
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.WifiSD.BroadcastService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
@@ -48,6 +49,8 @@ class ProfViewModel
     private val _presentList = MutableLiveData<Response<List<String>>>()
     val presentList: LiveData<Response<List<String>>>
         get() = _presentList
+
+    private var isServiceBroadcasting = false
 
     // TODO: Use Flow instead of LiveData
     fun getCourseList() {
@@ -90,6 +93,56 @@ class ProfViewModel
          }
     }
 
+    fun broadcastTimestamp(manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInfo: WifiP2pDnsSdServiceInfo) {
+
+        viewModelScope.launch {
+            Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Calling broadcastTimestamp()")
+            val broadcastResult = BroadcastService.startServiceBroadcast(serviceInfo, manager, channel)
+            when(broadcastResult) {
+                1 -> { /* Service Added Successfully */
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Service Added Successfully")
+                    isServiceBroadcasting = true
+                    broadcastServiceInLoop(manager, channel)
+                }
+                2 -> { /* Failed to add service */
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to add service")
+                }
+                3 -> { /* Failed to Clear Service */
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to Clear Service")
+                }
+            }
+        }
+
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun broadcastServiceInLoop(manager: WifiP2pManager, channel: WifiP2pManager.Channel) {
+        // Following is the solution from the post on link - https://stackoverflow.com/questions/26300889/wifi-p2p-service-discovery-works-intermittently
+        while(isServiceBroadcasting) {
+            delay(10000)
+            manager.discoverPeers(channel, object: WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Services Reset Successfully")
+                }
+
+                override fun onFailure(reason: Int) {
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Failed to reset services: Reason-$reason")
+                }
+            })
+        }
+    }
+
+    suspend fun stopBroadcasting(manager: WifiP2pManager, channel: WifiP2pManager.Channel) {
+        val isCleared = BroadcastService.clearLocalServices(manager, channel)
+        if(isCleared) {
+            isServiceBroadcasting = false
+            Log.i("TAG", "WIFI_SD_Testing-ViewModel: stopBroadcasting - Service Cleared Successfully")
+        } else {
+            /* Failed to add service */
+            Log.i("TAG", "WIFI_SD_Testing-ViewModel: stopBroadcasting - Failed to Clear service")
+        }
+    }
+
     /**
      * To understand why we are using 'suspend fun',
      * read the note in ProfMarkAtdFrag (in setupObserver())
@@ -118,10 +171,11 @@ class ProfViewModel
 
     fun endAttendance(sem_sec: String, courseCode: String, timestamp: String) {
         viewModelScope.launch {
-            val isContinuingStatus = profRepository.endAttendance(sem_sec, courseCode, timestamp)
-            when(isContinuingStatus) {
+
+            val endedStatus = profRepository.endAttendance(sem_sec, courseCode, timestamp)
+            when(endedStatus) {
                 is Response.Loading -> {}
-                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(isContinuingStatus.errorMessage.toString()))
+                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(endedStatus.errorMessage.toString()))
                 is Response.Success -> {
                     _atdStatus.postValue(AttendanceStatus.Ended())
                 }

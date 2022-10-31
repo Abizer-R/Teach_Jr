@@ -6,7 +6,9 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.location.LocationManager
 import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -47,6 +49,8 @@ class ProfMarkAtdFragment : Fragment() {
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
 
+    private val SERVICE_TYPE = "_presence._tcp"
+
     private var isAtdOngoing: Boolean = false
 
 
@@ -56,7 +60,11 @@ class ProfMarkAtdFragment : Fragment() {
                 it.value == true
             }
             if(granted) {
-                checkGpsAndStartAttendance()
+                if(isAtdOngoing) {
+                    endAttendance()
+                } else {
+                    checkGpsAndStartAttendance()
+                }
             } else {
                 // TODO: Display a message that attendance cannot be initiated without permission
             }
@@ -138,7 +146,26 @@ class ProfMarkAtdFragment : Fragment() {
                      * Otherwise, the childEventListener (in Repo) would
                      * keep listening for updates in the lec location
                      */
+
+                    broadcastTimestamp(it.timestamp!!)
+
+                    // TODO: REVIEW THE CODE BELOW
+//                    val serviceInstance = "$semSec/$courseCode"
+//                    val record = mapOf( FirebasePaths.TIMESTAMP to it.timestamp )
+//                    val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
+//                    if(manager == null) {
+//                        val applicationContext = (activity as Activity).applicationContext
+//                        manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+//                    }
+//                    if(channel == null) {
+//                        channel = manager?.initialize(context, Looper.getMainLooper(), null)
+//                    }
+//
+//                    profViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
                     lifecycleScope.launch {
+                        /**
+                         * This is a blocking call, therefore it is placed in its different coroutine
+                         */
                         profViewModel.observeAtd(semSec!!, courseCode!!, it.timestamp!!)
                     }
                 }
@@ -167,6 +194,27 @@ class ProfMarkAtdFragment : Fragment() {
             }
         }
     }
+
+    private fun broadcastTimestamp(timestamp: String) {
+        val serviceInstance = "$semSec/$courseCode"
+        val record = mapOf( FirebasePaths.TIMESTAMP to timestamp )
+        val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
+        if(manager == null) {
+            val applicationContext = (activity as Activity).applicationContext
+            manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+        }
+        if(channel == null) {
+            channel = manager?.initialize(context, Looper.getMainLooper(), null)
+        }
+        profViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
+    }
+
+//    suspend fun startBroadcasting(timestamp: String) {
+//        val serviceInstance = "$semSec/$courseCode"
+//        val record = mapOf( FirebasePaths.TIMESTAMP to timestamp )
+//        val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
+//        profViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
+//    }
 
     private fun checkGpsAndStartAttendance(){
         val mLocationManager = (activity as Context).getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -198,6 +246,9 @@ class ProfMarkAtdFragment : Fragment() {
         val timestamp = profViewModel.atdStatus.value?.timestamp
         if(timestamp != null) {
             profViewModel.endAttendance(semSec!!, courseCode!!, timestamp)
+            lifecycleScope.launch {
+                profViewModel.stopBroadcasting(manager!!, channel!!)
+            }
         } else {
             Log.i(TAG, "ProfessorTesting_MarkAtdPage: null timestamp")
             Toast.makeText(context, "null timestamp", Toast.LENGTH_SHORT).show()
