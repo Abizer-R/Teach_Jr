@@ -8,10 +8,7 @@ import com.example.teachjr.data.model.RvStdCourseListItem
 import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.StudentRepository
-import com.example.teachjr.utils.AttendanceStatusProf
-import com.example.teachjr.utils.AttendanceStatusStd
-import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.*
 import com.example.teachjr.utils.WifiSD.DiscoverService
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -148,32 +145,36 @@ class StudentViewModel
         }
     }
 
-//    fun martAtd(courseCode: String, timestamp: String) {
-//        _markAtdStatus.postValue(Response.Loading())
-//        Log.i("TAG", "StdTesting-ViewModel: Calling markAtd")
-//        viewModelScope.launch {
-//            val semSec = currUserStd.value?.data?.sem_sec
-//            val enrollment = currUserStd.value?.data?.enrollment
-//            if(semSec == null || enrollment == null) {
-//                Log.i("TAG", "StdTesting-ViewModel: marAtd() Error - null values")
-//            } else {
-//                val isContinuingResponse = studentRepository.checkAtdStatus(semSec, courseCode, timestamp)
-//                when(isContinuingResponse) {
-//                    "true" -> {
-//                        // Attendance is still going on
-//                        _markAtdStatus.postValue(studentRepository.markAtd(semSec, courseCode, timestamp, enrollment))
-//                    }
-//                    "false" -> {
-//                        // Attendance is over
-//                        _markAtdStatus.postValue(Response.Error("Attendance is Over", null))
-//                    }
-//                    else -> {
-//                        _markAtdStatus.postValue(Response.Error(isContinuingResponse, null))
-//                    }
-//                }
-//            }
-//        }
-//    }
+    fun martAtd(courseCode: String, timestamp: String) {
+        Log.i("TAG", "StdTesting-ViewModel: Calling markAtd")
+        viewModelScope.launch {
+            val semSec = currUserStd.value?.data?.sem_sec
+            val enrollment = currUserStd.value?.data?.enrollment
+            if(semSec == null || enrollment == null) {
+                Log.i("TAG", "StdTesting-ViewModel: marAtd() Error - null values")
+            } else {
+                val isContinuingResponse = studentRepository.checkAtdStatus(semSec, courseCode, timestamp)
+                when(isContinuingResponse) {
+                    "true" -> {
+                        // Attendance is still going on
+                        val markAtdResult = studentRepository.markAtd(semSec, courseCode, timestamp, enrollment)
+                        if(markAtdResult == FirebaseConstants.STATUS_SUCCESSFUL) {
+                            _atdStatus.postValue(AttendanceStatusStd.AttendanceMarked())
+                        } else {
+                            _atdStatus.postValue(AttendanceStatusStd.Error(markAtdResult))
+                        }
+                    }
+                    "false" -> {
+                        // Attendance is over
+                        _atdStatus.postValue(AttendanceStatusStd.Error("Attendance is Over"))
+                    }
+                    else -> {
+                        _atdStatus.postValue(AttendanceStatusStd.Error(isContinuingResponse))
+                    }
+                }
+            }
+        }
+    }
 
     private suspend fun setServiceRequest(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {

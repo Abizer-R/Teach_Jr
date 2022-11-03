@@ -107,11 +107,16 @@ class StdMarkAtdFragment : Fragment() {
                     binding.fabMarkAtd.isEnabled = false
                     binding.fabMarkAtd.isClickable = false
                     binding.tvStatus.text = "Marking Attendance... Please Wait"
-                    // TODO: Mark Attendance
+
+                    /**
+                     * Marking Attendance
+                     */
+                    stdViewModel.martAtd(courseCode!!, it.timestamp.toString())
                 }
                 is AttendanceStatusStd.AttendanceMarked -> {
                     binding.fabMarkAtd.visibility = View.GONE
                     binding.tvStatus.text = "Attendance Marked Successfully"
+
                     // TODO: Broadcast Timestamp
                 }
                 is AttendanceStatusStd.Error -> {
