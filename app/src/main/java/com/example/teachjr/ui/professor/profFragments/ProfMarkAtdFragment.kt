@@ -48,6 +48,7 @@ class ProfMarkAtdFragment : Fragment() {
 
     private val SERVICE_TYPE = "_presence._tcp"
 
+    // TODO: Move isAtdOngoing to viewModel
     private var isAtdOngoing: Boolean = false
 
 
@@ -234,6 +235,9 @@ class ProfMarkAtdFragment : Fragment() {
             Log.i(TAG, "ProfessorTesting_MarkAtdPage: null bundle arguments")
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
         } else {
+
+            // TODO: Give an option to choose for manually closing atd or closing in 2 min
+
             // Makes a new Lec doc and fetches list of enrolled students
             profViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
         }

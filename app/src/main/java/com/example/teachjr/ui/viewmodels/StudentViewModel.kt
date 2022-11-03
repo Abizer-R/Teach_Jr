@@ -1,6 +1,8 @@
 package com.example.teachjr.ui.viewmodels
 
+import android.annotation.SuppressLint
 import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.util.Log
 import androidx.lifecycle.*
@@ -9,6 +11,7 @@ import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.StudentRepository
 import com.example.teachjr.utils.*
+import com.example.teachjr.utils.WifiSD.BroadcastService
 import com.example.teachjr.utils.WifiSD.DiscoverService
 import com.google.firebase.auth.ktx.userProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +29,11 @@ class StudentViewModel
 
     private val serviceList = mutableMapOf<String, String>()
     private var serviceRequest: WifiP2pDnsSdServiceRequest? = null
+
+    private var _isDiscovering = false
+    val isDiscovering: Boolean
+        get() = _isDiscovering
+    fun updateIsDiscovering(newState: Boolean) {_isDiscovering = newState}
 //    private val _serviceList = mutableMapOf<String, String>()
 //    val serviceList: Map<String, String>
 //        get() = _serviceList
@@ -106,11 +114,12 @@ class StudentViewModel
         _atdStatus.postValue(AttendanceStatusStd.DiscoveringTimestamp())
         viewModelScope.launch {
             setServiceRequest(manager, channel, serviceInstance)
-            discoverTimestampInLoop(manager, channel)
+            discoverTimestampFor1Min(manager, channel, 0)
         }
     }
 
-    suspend fun discoverTimestampInLoop(manager: WifiP2pManager, channel: WifiP2pManager.Channel) {
+    suspend fun discoverTimestampFor1Min(
+        manager: WifiP2pManager, channel: WifiP2pManager.Channel, repeatCount: Int) {
         val discoveryResult = DiscoverService.startServiceDiscovery(serviceRequest!!, manager, channel)
         when(discoveryResult) {
             1 -> { /* Discovery Initiated Successfully */
@@ -120,7 +129,9 @@ class StudentViewModel
                  * resetting the whole discovery after delay
                  */
                 delay(10000)
-                discoverTimestampInLoop(manager, channel)
+                if(isDiscovering && repeatCount < 6) {
+                    discoverTimestampFor1Min(manager, channel, repeatCount+1)
+                }
             }
             2 -> { /* Failed to initiate discovery */
                 Log.i("TAG", "WIFI_SD_Testing-ViewModel: Failed to initiate discovery")
@@ -213,6 +224,47 @@ class StudentViewModel
 
         manager.setDnsSdResponseListeners(channel, servListener, txtListener)
         serviceRequest = WifiP2pDnsSdServiceRequest.newInstance()
+    }
+
+    fun broadcastTimestamp(manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInfo: WifiP2pDnsSdServiceInfo) {
+
+        viewModelScope.launch {
+            Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Calling broadcastTimestamp()")
+            val broadcastResult = BroadcastService.startServiceBroadcast(serviceInfo, manager, channel)
+            when(broadcastResult) {
+                1 -> { /* Service Added Successfully */
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Service Added Successfully")
+                    broadcastServiceFor20Sec(manager, channel)
+                }
+                2 -> { /* Failed to add service */
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to add service")
+                    _atdStatus.postValue(AttendanceStatusStd.Error("Failed to add service"))
+                }
+                3 -> { /* Failed to Clear Service */
+                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to Clear Service")
+                    _atdStatus.postValue(AttendanceStatusStd.Error("Failed to Clear Service"))
+                }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun broadcastServiceFor20Sec(manager: WifiP2pManager, channel: WifiP2pManager.Channel) {
+        // Following is the solution from the post on link - https://stackoverflow.com/questions/26300889/wifi-p2p-service-discovery-works-intermittently
+        delay(10000)
+        manager.discoverPeers(channel, object: WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Services Reset Successfully")
+            }
+
+            override fun onFailure(reason: Int) {
+                Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Failed to reset services: Reason-$reason")
+            }
+        })
+        delay(10000)
+//        repeat(2) {
+//        }
+        _atdStatus.postValue(AttendanceStatusStd.BroadcastComplete())
     }
 
 }

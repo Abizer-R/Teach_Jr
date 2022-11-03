@@ -6,6 +6,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.location.LocationManager
 import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.Bundle
 import android.os.Looper
@@ -38,11 +39,13 @@ class StdMarkAtdFragment : Fragment() {
     private val stdViewModel by activityViewModels<StudentViewModel>()
 
     private var courseCode: String? = null
+    private var sem_sec: String? = null
 
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
 
-//    private var serviceRequest: WifiP2pDnsSdServiceRequest? = null
+    private val SERVICE_TYPE = "_presence._tcp"
+//    private var isDiscovering = false
 
     private val permissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -80,7 +83,20 @@ class StdMarkAtdFragment : Fragment() {
         binding.fabMarkAtd.setOnClickListener {
             if(Permissions.hasAccessCoarseLocation(activity as Context)
                 && Permissions.hasAccessFineLocation(activity as Context)) {
-                checkGpsAndStartAttendance()
+
+                if(stdViewModel.isDiscovering == false) {
+                    checkGpsAndStartAttendance()
+                } else {
+                    stdViewModel.removeServiceRequest(manager!!, channel!!)
+                    binding.fabMarkAtd.apply {
+                        extend()
+                        setIconResource(R.drawable.ic_baseline_add_24)
+                        backgroundTintList = ColorStateList.valueOf(Color.parseColor("#03dac5"))
+                    }
+                    stdViewModel.updateIsDiscovering(false)
+                    binding.progressBar.visibility = View.GONE
+                }
+
             } else {
                 permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
             }
@@ -92,32 +108,46 @@ class StdMarkAtdFragment : Fragment() {
             when(it) {
 //                is AttendanceStatusStd.InitiatingDiscovery -> binding.progressBar.visibility = View.VISIBLE
                 is AttendanceStatusStd.DiscoveringTimestamp -> {
+                    stdViewModel.updateIsDiscovering(true)
                     binding.progressBar.visibility = View.VISIBLE
                     binding.fabMarkAtd.apply {
                         shrink()
                         setIconResource(R.drawable.ic_baseline_close_24)
                         backgroundTintList = ColorStateList.valueOf(Color.parseColor("#f7292b"))
                     }
+                    /**
+                     * Discovering Timestamp
+                     */
                     binding.tvStatus.text = "Initial Loading... Please Wait"
+                    // TODO: Implement an "You haven't marked your attendance yet, do you still want to exit?" pop up
                 }
                 is AttendanceStatusStd.TimestampDiscovered -> {
                     binding.progressBar.visibility = View.GONE
                     binding.tvTimeStamp.text = it.timestamp
 
-                    binding.fabMarkAtd.isEnabled = false
-                    binding.fabMarkAtd.isClickable = false
+                    binding.fabMarkAtd.visibility = View.GONE
                     binding.tvStatus.text = "Marking Attendance... Please Wait"
+                    stdViewModel.updateIsDiscovering(false)
 
                     /**
                      * Marking Attendance
                      */
                     stdViewModel.martAtd(courseCode!!, it.timestamp.toString())
+                    // TODO: Implement an "You haven't marked your attendance yet, do you still want to exit?" pop up
                 }
                 is AttendanceStatusStd.AttendanceMarked -> {
-                    binding.fabMarkAtd.visibility = View.GONE
-                    binding.tvStatus.text = "Attendance Marked Successfully"
+//                    binding.fabMarkAtd.visibility = View.GONE
+                    binding.tvStatus.text = "Attendance Marked. Broadcasting code... Please Wait"
 
-                    // TODO: Broadcast Timestamp
+                    /**
+                     * Broadcasting Timestamp
+                     */
+                    broadcastTimestamp(it.timestamp.toString())
+                    // TODO: Implement an "You need to wait xx sec before exiting" pop up
+                }
+                is AttendanceStatusStd.BroadcastComplete -> {
+                    binding.tvStatus.text = "Thank you for waiting, you can exit the screen now."
+
                 }
                 is AttendanceStatusStd.Error -> {
                     binding.progressBar.visibility = View.GONE
@@ -157,7 +187,7 @@ class StdMarkAtdFragment : Fragment() {
     }
 
     private fun discoverTimestamp() {
-        val sem_sec = stdViewModel.currUserStd.value?.data?.sem_sec
+        sem_sec = stdViewModel.currUserStd.value?.data?.sem_sec
         if(sem_sec == null) {
             Log.i(TAG, "StudentTesting_MarkAtdPage: sem_sec is null")
             Toast.makeText(context, "sem_sec is null", Toast.LENGTH_SHORT).show()
@@ -190,6 +220,20 @@ class StdMarkAtdFragment : Fragment() {
             manager?.clearLocalServices(channel, null)
             stdViewModel.removeServiceRequest(manager!!, channel!!)
         }
+    }
+
+    private fun broadcastTimestamp(timestamp: String) {
+        val serviceInstance = "$sem_sec/$courseCode"
+        val record = mapOf( FirebasePaths.TIMESTAMP to timestamp )
+        val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
+        if(manager == null) {
+            val applicationContext = (activity as Activity).applicationContext
+            manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+        }
+        if(channel == null) {
+            channel = manager?.initialize(context, Looper.getMainLooper(), null)
+        }
+        stdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
     }
 
 }
