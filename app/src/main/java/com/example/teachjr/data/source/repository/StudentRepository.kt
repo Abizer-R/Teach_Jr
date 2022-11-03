@@ -2,6 +2,7 @@ package com.example.teachjr.data.source.repository
 
 import android.util.Log
 import com.example.teachjr.data.model.*
+import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import com.google.android.gms.tasks.OnSuccessListener
@@ -134,7 +135,7 @@ class StudentRepository
     }
 
     suspend fun markAtd(
-        sem_sec: String, courseCode: String, timestamp: String, enrollment: String): Response<Boolean> {
+        sem_sec: String, courseCode: String, timestamp: String, enrollment: String): String {
         return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
                 .child(sem_sec)
@@ -144,11 +145,11 @@ class StudentRepository
                 .child(currentUser.uid)
                 .setValue(enrollment)
                 .addOnSuccessListener {
-                    continuation.resume(Response.Success(true))
+                    continuation.resume(FirebaseConstants.STATUS_SUCCESSFUL)
                 }
                 .addOnFailureListener {
                     Log.i(TAG, "StudentTesting_Repo: markAtd = ${it.message}")
-                    continuation.resume(Response.Error(it.message.toString(), null))
+                    continuation.resume(it.message.toString())
                 }
         }
     }

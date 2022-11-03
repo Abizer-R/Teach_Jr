@@ -1,26 +1,34 @@
 package com.example.teachjr.ui.student.stdFragments
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.location.LocationManager
 import android.net.wifi.p2p.WifiP2pManager
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdMarkAtdBinding
-import com.example.teachjr.ui.professor.profFragments.ProfMarkAtdFragment
 import com.example.teachjr.ui.viewmodels.StudentViewModel
+import com.example.teachjr.utils.AttendanceStatusStd
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
-import com.example.teachjr.utils.Response
-import kotlinx.coroutines.processNextEventInCurrentThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class StdMarkAtdFragment : Fragment() {
 
@@ -29,9 +37,14 @@ class StdMarkAtdFragment : Fragment() {
     private val stdViewModel by activityViewModels<StudentViewModel>()
 
     private var courseCode: String? = null
+    private var sem_sec: String? = null
 
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
+
+    private val SERVICE_TYPE = "_presence._tcp"
+
+    private lateinit var confirmDialog: AlertDialog
 
     private val permissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -56,20 +69,50 @@ class StdMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initArguments()
+        initialSetup()
         setupViews()
         setupObservers()
     }
 
-    private fun initArguments() {
+    private fun initialSetup() {
         courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
+
+        createConfirmDialog()
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                when(stdViewModel.atdStatus.value) {
+                    is AttendanceStatusStd.DiscoveringTimestamp -> confirmDialog.show()
+                    is AttendanceStatusStd.TimestampDiscovered -> confirmDialog.show()
+                    is AttendanceStatusStd.AttendanceMarked -> {
+                        Toast.makeText(context, "You cannot exit right now. Please Wait a few seconds", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> findNavController().navigateUp()
+                }
+            }
+
+        })
     }
 
     private fun setupViews() {
         binding.fabMarkAtd.setOnClickListener {
             if(Permissions.hasAccessCoarseLocation(activity as Context)
                 && Permissions.hasAccessFineLocation(activity as Context)) {
-                checkGpsAndStartAttendance()
+
+                if(stdViewModel.isDiscovering == false) {
+                    checkGpsAndStartAttendance()
+                } else {
+                    if(manager != null && channel != null) {
+                        stdViewModel.removeServiceRequest(manager!!, channel!!)
+                    }
+                    binding.fabMarkAtd.apply {
+                        extend()
+                        setIconResource(R.drawable.ic_baseline_add_24)
+                        backgroundTintList = ColorStateList.valueOf(Color.parseColor("#03dac5"))
+                    }
+                    stdViewModel.updateIsDiscovering(false)
+                    binding.progressBar.visibility = View.GONE
+                }
+
             } else {
                 permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
             }
@@ -77,21 +120,52 @@ class StdMarkAtdFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        stdViewModel.markAtdStatus.observe(viewLifecycleOwner) {
+        stdViewModel.atdStatus.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
-                is Response.Error -> {
+//                is AttendanceStatusStd.InitiatingDiscovery -> binding.progressBar.visibility = View.VISIBLE
+                is AttendanceStatusStd.DiscoveringTimestamp -> {
+                    stdViewModel.updateIsDiscovering(true)
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.fabMarkAtd.apply {
+                        shrink()
+                        setIconResource(R.drawable.ic_baseline_close_24)
+                        backgroundTintList = ColorStateList.valueOf(Color.parseColor("#f7292b"))
+                    }
+                    /**
+                     * Discovering Timestamp
+                     */
+                    binding.tvStatus.text = "Initial Loading... Please Wait"
+                }
+                is AttendanceStatusStd.TimestampDiscovered -> {
+                    binding.progressBar.visibility = View.GONE
+                    binding.tvTimeStamp.text = it.timestamp
+
+                    binding.fabMarkAtd.visibility = View.GONE
+                    binding.tvStatus.text = "Marking Attendance... Please Wait"
+                    stdViewModel.updateIsDiscovering(false)
+
+                    /**
+                     * Marking Attendance
+                     */
+                    stdViewModel.martAtd(courseCode!!, it.timestamp.toString())
+                }
+                is AttendanceStatusStd.AttendanceMarked -> {
+//                    binding.fabMarkAtd.visibility = View.GONE
+                    binding.tvStatus.text = "Attendance Marked. Broadcasting code... Please Wait"
+
+                    /**
+                     * Broadcasting Timestamp
+                     */
+                    broadcastTimestamp(it.timestamp.toString())
+                }
+                is AttendanceStatusStd.BroadcastComplete -> {
+                    binding.tvStatus.text = "Thank you for waiting, you can exit the screen now."
+
+                }
+                is AttendanceStatusStd.Error -> {
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                     binding.tvStatus.text = it.errorMessage.toString()
-                }
-                is Response.Success -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.fabMarkAtd.apply {
-                        isEnabled = false
-                        isClickable = false
-                    }
-                    // TODO: Broadcast the code for 30 sec
                 }
             }
         }
@@ -105,7 +179,6 @@ class StdMarkAtdFragment : Fragment() {
         if(mGPS) {
             startAttendance()
         } else {
-            // TODO: Display a popup
             Toast.makeText(context, "Please turn on GPS", Toast.LENGTH_SHORT).show()
         }
     }
@@ -118,21 +191,73 @@ class StdMarkAtdFragment : Fragment() {
             Log.i(TAG, "StudentTesting_MarkAtdPage: null bundle arguments")
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
         } else {
-
-            // TODO: Start Discovery
-            checkEditTextAndMarkAtd()
+            lifecycleScope.launch(Dispatchers.IO) {
+                discoverTimestamp()
+            }
 
         }
     }
 
-    private fun checkEditTextAndMarkAtd() {
-        val timeStamp = binding.etTimeStamp.text.toString()
-        if(timeStamp.isBlank()) {
-            Toast.makeText(context, "Please enter timeStamp", Toast.LENGTH_SHORT).show()
-            return
-        } else {
-            stdViewModel.martAtd(courseCode!!, timeStamp)
+    private fun discoverTimestamp() {
+        sem_sec = stdViewModel.currUserStd.value?.data?.sem_sec
+        if(sem_sec == null) {
+            Log.i(TAG, "StudentTesting_MarkAtdPage: sem_sec is null")
+            Toast.makeText(context, "sem_sec is null", Toast.LENGTH_SHORT).show()
         }
+        if(courseCode == null) {
+            Log.i(TAG, "StudentTesting_MarkAtdPage: courseCode is null")
+            Toast.makeText(context, "courseCode is null", Toast.LENGTH_SHORT).show()
+        }
+
+        if(manager == null) {
+            val applicationContext = (activity as Activity).applicationContext
+            manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+        }
+        if(channel == null) {
+            channel = manager?.initialize(context, Looper.getMainLooper(), null)
+        }
+
+        if(sem_sec != null && courseCode != null) {
+            val serviceInstance = "$sem_sec/$courseCode"
+            lifecycleScope.launch {
+
+                stdViewModel.discoverTimestamp(manager!!, channel!!, serviceInstance)
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if(channel != null) {
+            manager?.clearLocalServices(channel, null)
+            stdViewModel.removeServiceRequest(manager!!, channel!!)
+        }
+    }
+
+    private fun broadcastTimestamp(timestamp: String) {
+        val serviceInstance = "$sem_sec/$courseCode"
+        val record = mapOf( FirebasePaths.TIMESTAMP to timestamp )
+        val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
+        if(manager == null) {
+            val applicationContext = (activity as Activity).applicationContext
+            manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+        }
+        if(channel == null) {
+            channel = manager?.initialize(context, Looper.getMainLooper(), null)
+        }
+        stdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
+    }
+
+    private fun createConfirmDialog() {
+        confirmDialog = AlertDialog.Builder(context)
+            .setTitle("Cancel Attendance?")
+            .setMessage("Your attendance hasn't been marked yet")
+            .setPositiveButton("Yes") { _, _ ->
+                stdViewModel.removeServiceRequest(manager!!, channel!!)
+                findNavController().navigateUp()
+            }
+            .setNegativeButton("No", null)
+            .create()
     }
 
 }
