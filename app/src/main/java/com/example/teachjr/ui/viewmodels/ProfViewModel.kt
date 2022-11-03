@@ -36,9 +36,11 @@ class ProfViewModel
     val lecCount: LiveData<Response<Int>>
         get() = _lecCount
 
-//    private val _stdList = MutableLiveData<Response<List<String>>>()
-//    val stdList: LiveData<Response<List<String>>>
-//        get() = _stdList
+
+    private var _isAtdOngoing = false
+    val isAtdOngoing: Boolean
+        get() = _isAtdOngoing
+    fun updateIsAtdOngoing(newState: Boolean) {_isAtdOngoing = newState}
 
     private val _atdStatus = MutableLiveData<AttendanceStatusProf>()
     val atdStatus: LiveData<AttendanceStatusProf>
@@ -50,7 +52,6 @@ class ProfViewModel
 
     private var isServiceBroadcasting = false
 
-    // TODO: Use Flow instead of LiveData
     fun getCourseList() {
         _courseList.postValue(Response.Loading())
         viewModelScope.launch {

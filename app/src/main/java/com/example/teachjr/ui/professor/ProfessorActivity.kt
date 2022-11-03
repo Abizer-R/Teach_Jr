@@ -50,7 +50,12 @@ class ProfessorActivity : AppCompatActivity() {
          */
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.profFragmentContainerView) as NavHostFragment
         val navController = navHostFragment.navController
-        appBarConfiguration = AppBarConfiguration(navController.graph)
+        appBarConfiguration = AppBarConfiguration
+            .Builder(
+                R.id.profHomeFragment,
+                R.id.profMarkAtdFragment
+            )
+            .build()
         // Check if androidx.navigation.ui.NavigationUI.setupActionBarWithNavController is imported
         // By default title in actionbar is used from the fragment label in navigation graph
         // To use the app name, remove label else if you want to add customized label specify it there

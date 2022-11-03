@@ -60,7 +60,6 @@ class StdHomeFragment : Fragment() {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
-                    // TODO: Display the error screen (Future Task)
                     Log.i(TAG, "StudentTesting_HomePage: CurrUser_Error - ${it.errorMessage}")
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -72,12 +71,10 @@ class StdHomeFragment : Fragment() {
             }
         }
 
-        // TODO: Observe courseList
         studentViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
-                    // TODO: Display the error screen (Future Task)
                     Log.i(TAG, "StudentTesting_HomePage: CourseList_Error - ${it.errorMessage}")
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }

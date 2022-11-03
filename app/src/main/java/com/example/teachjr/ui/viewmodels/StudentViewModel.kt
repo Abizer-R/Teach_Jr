@@ -13,11 +13,9 @@ import com.example.teachjr.data.source.repository.StudentRepository
 import com.example.teachjr.utils.*
 import com.example.teachjr.utils.WifiSD.BroadcastService
 import com.example.teachjr.utils.WifiSD.DiscoverService
-import com.google.firebase.auth.ktx.userProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
-import kotlin.coroutines.suspendCoroutine
 
 @HiltViewModel
 class StudentViewModel
@@ -34,13 +32,7 @@ class StudentViewModel
     val isDiscovering: Boolean
         get() = _isDiscovering
     fun updateIsDiscovering(newState: Boolean) {_isDiscovering = newState}
-//    private val _serviceList = mutableMapOf<String, String>()
-//    val serviceList: Map<String, String>
-//        get() = _serviceList
-//
-//    fun addService(key: String, value: String) {
-//        _serviceList[key] = value
-//    }
+
 
     private val _currUserStd = MutableLiveData<Response<StudentUser>>()
     val currUserStd: LiveData<Response<StudentUser>>
@@ -57,15 +49,11 @@ class StudentViewModel
         }
     }
 
-//    private val _enrollCourseStatus = MutableLiveData<Response<Boolean>>()
-//    val enrollCourseStatus: LiveData<Response<Boolean>>
-//        get() = _enrollCourseStatus
-
     private val _courseList = MutableLiveData<Response<List<RvStdCourseListItem>>>()
     val courseList: LiveData<Response<List<RvStdCourseListItem>>>
         get() = _courseList
 
-    // TODO: Make an object StdLecInfo(lecNumber, timestamp, isPresent) and pass it in here
+
     private val _atdDetails = MutableLiveData<Response<StdAttendanceDetails>>()
     val atdDetails: LiveData<Response<StdAttendanceDetails>>
         get() = _atdDetails
@@ -104,18 +92,16 @@ class StudentViewModel
         }
     }
 
-    // TODO: DUDE, JUST APPLY ABSTRACTION and UPDATE STATUS OF _atdStatus ALONG THE WAY
-
-    fun discoverTimestamp(
+    suspend fun discoverTimestamp(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {
 
         Log.i("TAG", "WIFI_SD_Testing-ViewModel: discoverTimestamp() Called")
 //        _atdStatus.postValue(AttendanceStatusStd.InitiatingDiscovery())
         _atdStatus.postValue(AttendanceStatusStd.DiscoveringTimestamp())
-        viewModelScope.launch {
-            setServiceRequest(manager, channel, serviceInstance)
-            discoverTimestampFor1Min(manager, channel, 0)
-        }
+        setServiceRequest(manager, channel, serviceInstance)
+        discoverTimestampFor1Min(manager, channel, 0)
+//        viewModelScope.launch {
+//        }
     }
 
     suspend fun discoverTimestampFor1Min(
@@ -152,6 +138,7 @@ class StudentViewModel
         if(serviceRequest != null) {
             viewModelScope.launch {
                 DiscoverService.removeServiceRequest(serviceRequest!!, manager, channel)
+                _isDiscovering = false
             }
         }
     }
@@ -189,8 +176,6 @@ class StudentViewModel
 
     private suspend fun setServiceRequest(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {
-
-        //TODO: If it doesn't work, try suspend Coroutine and return true then use await or something like that
         Log.i("TAG", "WIFI_SD_Testing-ViewModel: setServiceRequest() called")
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
             Log.i(TAG, "WIFI_SD_Testing: txtRecordListener available -$record")

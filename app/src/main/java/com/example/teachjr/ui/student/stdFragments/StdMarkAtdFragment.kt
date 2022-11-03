@@ -1,13 +1,13 @@
 package com.example.teachjr.ui.student.stdFragments
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.location.LocationManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -16,21 +16,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdMarkAtdBinding
-import com.example.teachjr.ui.professor.profFragments.ProfMarkAtdFragment
 import com.example.teachjr.ui.viewmodels.StudentViewModel
 import com.example.teachjr.utils.AttendanceStatusStd
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
-import com.example.teachjr.utils.Response
-import com.example.teachjr.utils.WifiSD.DiscoverService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.processNextEventInCurrentThread
 
 class StdMarkAtdFragment : Fragment() {
 
@@ -45,7 +43,8 @@ class StdMarkAtdFragment : Fragment() {
     private var channel: WifiP2pManager.Channel? = null
 
     private val SERVICE_TYPE = "_presence._tcp"
-//    private var isDiscovering = false
+
+    private lateinit var confirmDialog: AlertDialog
 
     private val permissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -70,13 +69,28 @@ class StdMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initArguments()
+        initialSetup()
         setupViews()
         setupObservers()
     }
 
-    private fun initArguments() {
+    private fun initialSetup() {
         courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
+
+        createConfirmDialog()
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                when(stdViewModel.atdStatus.value) {
+                    is AttendanceStatusStd.DiscoveringTimestamp -> confirmDialog.show()
+                    is AttendanceStatusStd.TimestampDiscovered -> confirmDialog.show()
+                    is AttendanceStatusStd.AttendanceMarked -> {
+                        Toast.makeText(context, "You cannot exit right now. Please Wait a few seconds", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> findNavController().navigateUp()
+                }
+            }
+
+        })
     }
 
     private fun setupViews() {
@@ -87,7 +101,9 @@ class StdMarkAtdFragment : Fragment() {
                 if(stdViewModel.isDiscovering == false) {
                     checkGpsAndStartAttendance()
                 } else {
-                    stdViewModel.removeServiceRequest(manager!!, channel!!)
+                    if(manager != null && channel != null) {
+                        stdViewModel.removeServiceRequest(manager!!, channel!!)
+                    }
                     binding.fabMarkAtd.apply {
                         extend()
                         setIconResource(R.drawable.ic_baseline_add_24)
@@ -119,7 +135,6 @@ class StdMarkAtdFragment : Fragment() {
                      * Discovering Timestamp
                      */
                     binding.tvStatus.text = "Initial Loading... Please Wait"
-                    // TODO: Implement an "You haven't marked your attendance yet, do you still want to exit?" pop up
                 }
                 is AttendanceStatusStd.TimestampDiscovered -> {
                     binding.progressBar.visibility = View.GONE
@@ -133,7 +148,6 @@ class StdMarkAtdFragment : Fragment() {
                      * Marking Attendance
                      */
                     stdViewModel.martAtd(courseCode!!, it.timestamp.toString())
-                    // TODO: Implement an "You haven't marked your attendance yet, do you still want to exit?" pop up
                 }
                 is AttendanceStatusStd.AttendanceMarked -> {
 //                    binding.fabMarkAtd.visibility = View.GONE
@@ -143,7 +157,6 @@ class StdMarkAtdFragment : Fragment() {
                      * Broadcasting Timestamp
                      */
                     broadcastTimestamp(it.timestamp.toString())
-                    // TODO: Implement an "You need to wait xx sec before exiting" pop up
                 }
                 is AttendanceStatusStd.BroadcastComplete -> {
                     binding.tvStatus.text = "Thank you for waiting, you can exit the screen now."
@@ -166,7 +179,6 @@ class StdMarkAtdFragment : Fragment() {
         if(mGPS) {
             startAttendance()
         } else {
-            // TODO: Display a popup
             Toast.makeText(context, "Please turn on GPS", Toast.LENGTH_SHORT).show()
         }
     }
@@ -179,9 +191,9 @@ class StdMarkAtdFragment : Fragment() {
             Log.i(TAG, "StudentTesting_MarkAtdPage: null bundle arguments")
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
         } else {
-
-            // TODO: Start Discovery
-            discoverTimestamp()
+            lifecycleScope.launch(Dispatchers.IO) {
+                discoverTimestamp()
+            }
 
         }
     }
@@ -234,6 +246,18 @@ class StdMarkAtdFragment : Fragment() {
             channel = manager?.initialize(context, Looper.getMainLooper(), null)
         }
         stdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
+    }
+
+    private fun createConfirmDialog() {
+        confirmDialog = AlertDialog.Builder(context)
+            .setTitle("Cancel Attendance?")
+            .setMessage("Your attendance hasn't been marked yet")
+            .setPositiveButton("Yes") { _, _ ->
+                stdViewModel.removeServiceRequest(manager!!, channel!!)
+                findNavController().navigateUp()
+            }
+            .setNegativeButton("No", null)
+            .create()
     }
 
 }

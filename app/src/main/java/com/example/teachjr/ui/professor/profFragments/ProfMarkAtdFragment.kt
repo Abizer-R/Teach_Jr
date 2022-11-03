@@ -1,6 +1,7 @@
 package com.example.teachjr.ui.professor.profFragments
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -15,9 +16,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
@@ -29,6 +33,7 @@ import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 import com.example.teachjr.utils.Response
 import kotlinx.coroutines.launch
+import kotlin.system.exitProcess
 
 
 class ProfMarkAtdFragment : Fragment() {
@@ -48,8 +53,7 @@ class ProfMarkAtdFragment : Fragment() {
 
     private val SERVICE_TYPE = "_presence._tcp"
 
-    // TODO: Move isAtdOngoing to viewModel
-    private var isAtdOngoing: Boolean = false
+    private lateinit var confirmDialog: AlertDialog
 
 
     private val permissionRequestLauncher =
@@ -58,7 +62,7 @@ class ProfMarkAtdFragment : Fragment() {
                 it.value == true
             }
             if(granted) {
-                if(isAtdOngoing) {
+                if(profViewModel.isAtdOngoing) {
                     endAttendance()
                 } else {
                     checkGpsAndStartAttendance()
@@ -79,15 +83,27 @@ class ProfMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initArguments()
+        initialSetup()
         setupViews()
         setupObservers()
     }
 
-    private fun initArguments() {
+    private fun initialSetup() {
         courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
         semSec = arguments?.getString(FirebasePaths.SEM_SEC)
         lecCount = arguments?.getInt(FirebasePaths.LEC_COUNT)
+
+        createConfirmDialog()
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if(profViewModel.isAtdOngoing) {
+                    confirmDialog.show()
+                } else {
+                    findNavController().navigateUp()
+                }
+            }
+
+        })
     }
 
     private fun setupViews() {
@@ -102,7 +118,7 @@ class ProfMarkAtdFragment : Fragment() {
             if(Permissions.hasAccessCoarseLocation(activity as Context)
                 && Permissions.hasAccessFineLocation(activity as Context)) {
 
-                if(isAtdOngoing) {
+                if(profViewModel.isAtdOngoing) {
                     endAttendance()
                 } else {
                     checkGpsAndStartAttendance()
@@ -129,7 +145,7 @@ class ProfMarkAtdFragment : Fragment() {
         profViewModel.atdStatus.observe(viewLifecycleOwner) {
             when(it) {
                 is AttendanceStatusProf.FetchingTimestamp -> {
-                    isAtdOngoing = true
+                    profViewModel.updateIsAtdOngoing(true)
                     binding.progressBar.visibility = View.VISIBLE
                     updateFAB(isEnabled = false)
                 }
@@ -146,20 +162,6 @@ class ProfMarkAtdFragment : Fragment() {
                      */
 
                     broadcastTimestamp(it.timestamp!!)
-
-                    // TODO: REVIEW THE CODE BELOW
-//                    val serviceInstance = "$semSec/$courseCode"
-//                    val record = mapOf( FirebasePaths.TIMESTAMP to it.timestamp )
-//                    val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
-//                    if(manager == null) {
-//                        val applicationContext = (activity as Activity).applicationContext
-//                        manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
-//                    }
-//                    if(channel == null) {
-//                        channel = manager?.initialize(context, Looper.getMainLooper(), null)
-//                    }
-//
-//                    profViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
                     lifecycleScope.launch {
                         /**
                          * This is a blocking call, therefore it is placed in its different coroutine
@@ -169,12 +171,12 @@ class ProfMarkAtdFragment : Fragment() {
                 }
                 is AttendanceStatusProf.Ended -> {
                     updateFAB(atdEnded = true)
-                    isAtdOngoing = false
+                    profViewModel.updateIsAtdOngoing(false)
                     Toast.makeText(context, "Attendance is over", Toast.LENGTH_SHORT).show()
                 }
                 is AttendanceStatusProf.Error -> {
                     // TODO: Give some functionality to retry
-                    isAtdOngoing = false
+                    profViewModel.updateIsAtdOngoing(false)
                     updateFAB(atdEnded = true)
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
@@ -184,7 +186,7 @@ class ProfMarkAtdFragment : Fragment() {
 
         profViewModel.presentList.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> {} // TODO: Indicate "Marking Attendance"
+                is Response.Loading -> {}
                 is Response.Error -> Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 is Response.Success -> {
                     attendanceAdapter.updateList(it.data!!)
@@ -207,13 +209,6 @@ class ProfMarkAtdFragment : Fragment() {
         profViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
     }
 
-//    suspend fun startBroadcasting(timestamp: String) {
-//        val serviceInstance = "$semSec/$courseCode"
-//        val record = mapOf( FirebasePaths.TIMESTAMP to timestamp )
-//        val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
-//        profViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
-//    }
-
     private fun checkGpsAndStartAttendance(){
         val mLocationManager = (activity as Context).getSystemService(Context.LOCATION_SERVICE) as LocationManager
         // Checking GPS is enabled
@@ -222,7 +217,6 @@ class ProfMarkAtdFragment : Fragment() {
         if(mGPS) {
             startAttendance()
         } else {
-            // TODO: Display a popup
             Toast.makeText(context, "Please turn on GPS", Toast.LENGTH_SHORT).show()
         }
     }
@@ -284,6 +278,18 @@ class ProfMarkAtdFragment : Fragment() {
         if(channel != null) {
             manager?.clearLocalServices(channel, null)
         }
+    }
+
+    private fun createConfirmDialog() {
+        confirmDialog = AlertDialog.Builder(context)
+            .setTitle("End Attendance?")
+            .setMessage("Attendance is still going on.")
+            .setPositiveButton("Yes") { _, _ ->
+                endAttendance()
+                findNavController().navigateUp()
+            }
+            .setNegativeButton("No", null)
+            .create()
     }
 
 }
