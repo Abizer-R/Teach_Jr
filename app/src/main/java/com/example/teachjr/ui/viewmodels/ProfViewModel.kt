@@ -8,11 +8,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.teachjr.data.model.LecturesDocument
 import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.source.repository.ProfRepository
-import com.example.teachjr.utils.AttendanceStatus
-import com.example.teachjr.utils.FirebasePaths
+import com.example.teachjr.utils.AttendanceStatusProf
 import com.example.teachjr.utils.Response
 import com.example.teachjr.utils.WifiSD.BroadcastService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,8 +40,8 @@ class ProfViewModel
 //    val stdList: LiveData<Response<List<String>>>
 //        get() = _stdList
 
-    private val _atdStatus = MutableLiveData<AttendanceStatus>()
-    val atdStatus: LiveData<AttendanceStatus>
+    private val _atdStatus = MutableLiveData<AttendanceStatusProf>()
+    val atdStatus: LiveData<AttendanceStatusProf>
         get() = _atdStatus
 
     private val _presentList = MutableLiveData<Response<List<String>>>()
@@ -79,15 +77,15 @@ class ProfViewModel
 
 
     fun initAtd(sem_sec: String, courseCode: String, lecCount: Int) {
-        _atdStatus.postValue(AttendanceStatus.FetchingTimestamp())
+        _atdStatus.postValue(AttendanceStatusProf.FetchingTimestamp())
         viewModelScope.launch {
             val timestamp = Calendar.getInstance().timeInMillis.toString()
             val newLecDoc = profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount)
             when(newLecDoc) {
                 is Response.Loading -> {}
-                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(newLecDoc.errorMessage.toString()))
+                is Response.Error -> _atdStatus.postValue(AttendanceStatusProf.Error(newLecDoc.errorMessage.toString()))
                 is Response.Success -> {
-                    _atdStatus.postValue(AttendanceStatus.Initiated(timestamp))
+                    _atdStatus.postValue(AttendanceStatusProf.Initiated(timestamp))
                 }
             }
          }
@@ -106,9 +104,11 @@ class ProfViewModel
                 }
                 2 -> { /* Failed to add service */
                     Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to add service")
+                    _atdStatus.postValue(AttendanceStatusProf.Error("Failed to add service"))
                 }
                 3 -> { /* Failed to Clear Service */
                     Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to Clear Service")
+                    _atdStatus.postValue(AttendanceStatusProf.Error("Failed to Clear Service"))
                 }
             }
         }
@@ -156,7 +156,7 @@ class ProfViewModel
                     .collect { flowResult ->
 
                         if(flowResult == "false") {
-                            _atdStatus.postValue(AttendanceStatus.Ended())
+                            _atdStatus.postValue(AttendanceStatusProf.Ended())
                         } else {
                             stdList.add(flowResult)
                             _presentList.postValue(Response.Success(stdList))
@@ -175,9 +175,9 @@ class ProfViewModel
             val endedStatus = profRepository.endAttendance(sem_sec, courseCode, timestamp)
             when(endedStatus) {
                 is Response.Loading -> {}
-                is Response.Error -> _atdStatus.postValue(AttendanceStatus.Error(endedStatus.errorMessage.toString()))
+                is Response.Error -> _atdStatus.postValue(AttendanceStatusProf.Error(endedStatus.errorMessage.toString()))
                 is Response.Success -> {
-                    _atdStatus.postValue(AttendanceStatus.Ended())
+                    _atdStatus.postValue(AttendanceStatusProf.Ended())
                 }
             }
         }

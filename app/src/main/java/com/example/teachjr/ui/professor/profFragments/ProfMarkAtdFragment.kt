@@ -18,20 +18,17 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.switchMap
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
 import com.example.teachjr.ui.adapters.AttendanceAdapter
 import com.example.teachjr.ui.viewmodels.ProfViewModel
-import com.example.teachjr.utils.AttendanceStatus
+import com.example.teachjr.utils.AttendanceStatusProf
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 import com.example.teachjr.utils.Response
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 class ProfMarkAtdFragment : Fragment() {
@@ -130,12 +127,12 @@ class ProfMarkAtdFragment : Fragment() {
 
         profViewModel.atdStatus.observe(viewLifecycleOwner) {
             when(it) {
-                is AttendanceStatus.FetchingTimestamp -> {
+                is AttendanceStatusProf.FetchingTimestamp -> {
                     isAtdOngoing = true
                     binding.progressBar.visibility = View.VISIBLE
                     updateFAB(isEnabled = false)
                 }
-                is AttendanceStatus.Initiated -> {
+                is AttendanceStatusProf.Initiated -> {
                     binding.progressBar.visibility = View.GONE
                     binding.tvTimeStamp.text = it.timestamp
                     updateFAB(atdOngoing = true)
@@ -169,12 +166,12 @@ class ProfMarkAtdFragment : Fragment() {
                         profViewModel.observeAtd(semSec!!, courseCode!!, it.timestamp!!)
                     }
                 }
-                is AttendanceStatus.Ended -> {
+                is AttendanceStatusProf.Ended -> {
                     updateFAB(atdEnded = true)
                     isAtdOngoing = false
                     Toast.makeText(context, "Attendance is over", Toast.LENGTH_SHORT).show()
                 }
-                is AttendanceStatus.Error -> {
+                is AttendanceStatusProf.Error -> {
                     // TODO: Give some functionality to retry
                     isAtdOngoing = false
                     updateFAB(atdEnded = true)
@@ -275,6 +272,13 @@ class ProfMarkAtdFragment : Fragment() {
 
         if(atdEnded) {
             binding.fabAttendance.visibility = View.GONE
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if(channel != null) {
+            manager?.clearLocalServices(channel, null)
         }
     }
 
