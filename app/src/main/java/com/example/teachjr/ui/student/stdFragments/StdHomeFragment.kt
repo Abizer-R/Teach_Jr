@@ -8,12 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdHomeBinding
 import com.example.teachjr.ui.adapters.StdCourseListAdapter
-import com.example.teachjr.ui.viewmodels.studentViewModels.StudentViewModel
+import com.example.teachjr.ui.viewmodels.studentViewModels.StdHomeViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,16 +24,20 @@ class StdHomeFragment : Fragment() {
 
     private val TAG = StdHomeFragment::class.java.simpleName
     private lateinit var binding: FragmentStdHomeBinding
-    private val studentViewModel by activityViewModels<StudentViewModel>()
+    private val stdHomeViewModel by viewModels<StdHomeViewModel>()
+
+    private lateinit var sem_sec: String
+    private lateinit var enrollment: String
 
     private val profCourseListAdapter = StdCourseListAdapter(
         onItemClicked = { rvCourseListItem ->
 
-            // send courseCode, courseName and sem_sec
             val bundle = Bundle()
             bundle.putString(FirebasePaths.COURSE_CODE, rvCourseListItem.courseCode)
             bundle.putString(FirebasePaths.COURSE_NAME, rvCourseListItem.courseName)
             bundle.putString(FirebasePaths.COURSE_PROF_NAME, rvCourseListItem.profName)
+            bundle.putString(FirebasePaths.SEM_SEC, sem_sec)        // FOR UPCOMING FRAGMENTS
+            bundle.putString(FirebasePaths.STUDENT_ENROLLMENT, enrollment)  // FOR UPCOMING FRAGMENTS
             findNavController().navigate(R.id.action_stdHomeFragment_to_stdCourseDetailsFragment, bundle)
         }
     )
@@ -55,7 +60,7 @@ class StdHomeFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
         }
 
-        studentViewModel.currUserStd.observe(viewLifecycleOwner) {
+        stdHomeViewModel.currUserStd.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
@@ -64,13 +69,16 @@ class StdHomeFragment : Fragment() {
                 }
                 is Response.Success -> {
                     Log.i(TAG, "StudentTesting_HomePage: StudentUser = ${it.data}")
+
+                    sem_sec = it.data?.sem_sec!!
+                    enrollment = it.data.enrollment!!
                     // Fetch the courseList only if we have user's details
-                    studentViewModel.getCourseList()
+                    stdHomeViewModel.getCourseList()
                 }
             }
         }
 
-        studentViewModel.courseList.observe(viewLifecycleOwner) {
+        stdHomeViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {

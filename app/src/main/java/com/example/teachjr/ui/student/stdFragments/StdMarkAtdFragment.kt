@@ -18,26 +18,29 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdMarkAtdBinding
-import com.example.teachjr.ui.viewmodels.studentViewModels.StudentViewModel
+import com.example.teachjr.ui.viewmodels.studentViewModels.StdMarkAtdViewModel
 import com.example.teachjr.utils.AttendanceStatusStd
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class StdMarkAtdFragment : Fragment() {
 
     private val TAG = StdMarkAtdFragment::class.java.simpleName
     private lateinit var binding: FragmentStdMarkAtdBinding
-    private val stdViewModel by activityViewModels<StudentViewModel>()
+    private val markAtdViewModel by viewModels<StdMarkAtdViewModel>()
 
     private var courseCode: String? = null
     private var sem_sec: String? = null
+    private var enrollment: String? = null
 
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
@@ -76,11 +79,13 @@ class StdMarkAtdFragment : Fragment() {
 
     private fun initialSetup() {
         courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
+        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
+        enrollment = arguments?.getString(FirebasePaths.STUDENT_ENROLLMENT)
 
         createConfirmDialog()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                when(stdViewModel.atdStatus.value) {
+                when(markAtdViewModel.atdStatus.value) {
                     is AttendanceStatusStd.DiscoveringTimestamp -> confirmDialog.show()
                     is AttendanceStatusStd.TimestampDiscovered -> confirmDialog.show()
                     is AttendanceStatusStd.AttendanceMarked -> {
@@ -98,18 +103,18 @@ class StdMarkAtdFragment : Fragment() {
             if(Permissions.hasAccessCoarseLocation(activity as Context)
                 && Permissions.hasAccessFineLocation(activity as Context)) {
 
-                if(stdViewModel.isDiscovering == false) {
+                if(markAtdViewModel.isDiscovering == false) {
                     checkGpsAndStartAttendance()
                 } else {
                     if(manager != null && channel != null) {
-                        stdViewModel.removeServiceRequest(manager!!, channel!!)
+                        markAtdViewModel.removeServiceRequest(manager!!, channel!!)
                     }
                     binding.fabMarkAtd.apply {
                         extend()
                         setIconResource(R.drawable.ic_baseline_add_24)
                         backgroundTintList = ColorStateList.valueOf(Color.parseColor("#03dac5"))
                     }
-                    stdViewModel.updateIsDiscovering(false)
+                    markAtdViewModel.updateIsDiscovering(false)
                     binding.progressBar.visibility = View.GONE
                 }
 
@@ -120,11 +125,11 @@ class StdMarkAtdFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        stdViewModel.atdStatus.observe(viewLifecycleOwner) {
+        markAtdViewModel.atdStatus.observe(viewLifecycleOwner) {
             when(it) {
 //                is AttendanceStatusStd.InitiatingDiscovery -> binding.progressBar.visibility = View.VISIBLE
                 is AttendanceStatusStd.DiscoveringTimestamp -> {
-                    stdViewModel.updateIsDiscovering(true)
+                    markAtdViewModel.updateIsDiscovering(true)
                     binding.progressBar.visibility = View.VISIBLE
                     binding.fabMarkAtd.apply {
                         shrink()
@@ -142,12 +147,12 @@ class StdMarkAtdFragment : Fragment() {
 
                     binding.fabMarkAtd.visibility = View.GONE
                     binding.tvStatus.text = "Marking Attendance... Please Wait"
-                    stdViewModel.updateIsDiscovering(false)
+                    markAtdViewModel.updateIsDiscovering(false)
 
                     /**
                      * Marking Attendance
                      */
-                    stdViewModel.martAtd(courseCode!!, it.timestamp.toString())
+                    markAtdViewModel.martAtd(courseCode!!, it.timestamp.toString(), sem_sec!!, enrollment!!)
                 }
                 is AttendanceStatusStd.AttendanceMarked -> {
 //                    binding.fabMarkAtd.visibility = View.GONE
@@ -176,6 +181,8 @@ class StdMarkAtdFragment : Fragment() {
         // Checking GPS is enabled
         val mGPS = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
+
+        // TODO: Check if WIFI is on
         if(mGPS) {
             startAttendance()
         } else {
@@ -186,42 +193,22 @@ class StdMarkAtdFragment : Fragment() {
     private fun startAttendance() {
         Log.i(TAG, "StudentTesting_MarkAtdPage: startAttendance() called")
 
-        // TODO: Check if location and wifi is on
-        if(courseCode == null) {
-            Log.i(TAG, "StudentTesting_MarkAtdPage: null bundle arguments")
-            Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
+        if(courseCode == null || sem_sec == null || enrollment == null) {
+            Log.i(TAG, "StudentTesting_MarkAtdPage: null arguments, $courseCode, $sem_sec, $enrollment")
+            Toast.makeText(context, "Couldn't fetch all arguments, Some might be null", Toast.LENGTH_SHORT).show()
         } else {
-            lifecycleScope.launch(Dispatchers.IO) {
-                discoverTimestamp()
+            if(manager == null) {
+                val applicationContext = (activity as Activity).applicationContext
+                manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+            }
+            if(channel == null) {
+                channel = manager?.initialize(context, Looper.getMainLooper(), null)
             }
 
-        }
-    }
-
-    private fun discoverTimestamp() {
-        sem_sec = stdViewModel.currUserStd.value?.data?.sem_sec
-        if(sem_sec == null) {
-            Log.i(TAG, "StudentTesting_MarkAtdPage: sem_sec is null")
-            Toast.makeText(context, "sem_sec is null", Toast.LENGTH_SHORT).show()
-        }
-        if(courseCode == null) {
-            Log.i(TAG, "StudentTesting_MarkAtdPage: courseCode is null")
-            Toast.makeText(context, "courseCode is null", Toast.LENGTH_SHORT).show()
-        }
-
-        if(manager == null) {
-            val applicationContext = (activity as Activity).applicationContext
-            manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
-        }
-        if(channel == null) {
-            channel = manager?.initialize(context, Looper.getMainLooper(), null)
-        }
-
-        if(sem_sec != null && courseCode != null) {
-            val serviceInstance = "$sem_sec/$courseCode"
-            lifecycleScope.launch {
-
-                stdViewModel.discoverTimestamp(manager!!, channel!!, serviceInstance)
+            lifecycleScope.launch(Dispatchers.IO) {
+                val serviceInstance = "$sem_sec/$courseCode"
+                markAtdViewModel.discoverTimestamp(manager!!, channel!!, serviceInstance)
+//                discoverTimestamp()
             }
         }
     }
@@ -230,7 +217,7 @@ class StdMarkAtdFragment : Fragment() {
         super.onStop()
         if(channel != null) {
             manager?.clearLocalServices(channel, null)
-            stdViewModel.removeServiceRequest(manager!!, channel!!)
+            markAtdViewModel.removeServiceRequest(manager!!, channel!!)
         }
     }
 
@@ -245,7 +232,7 @@ class StdMarkAtdFragment : Fragment() {
         if(channel == null) {
             channel = manager?.initialize(context, Looper.getMainLooper(), null)
         }
-        stdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
+        markAtdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
     }
 
     private fun createConfirmDialog() {
@@ -253,7 +240,7 @@ class StdMarkAtdFragment : Fragment() {
             .setTitle("Cancel Attendance?")
             .setMessage("Your attendance hasn't been marked yet")
             .setPositiveButton("Yes") { _, _ ->
-                stdViewModel.removeServiceRequest(manager!!, channel!!)
+                markAtdViewModel.removeServiceRequest(manager!!, channel!!)
                 findNavController().navigateUp()
             }
             .setNegativeButton("No", null)

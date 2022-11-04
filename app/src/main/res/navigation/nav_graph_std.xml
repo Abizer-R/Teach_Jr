@@ -20,9 +20,6 @@
         android:label="fragment_std_course_details"
         tools:layout="@layout/fragment_std_course_details" >
         <action
-            android:id="@+id/action_stdCourseDetailsFragment_to_stdLectureListFragment"
-            app:destination="@id/stdLectureListFragment" />
-        <action
             android:id="@+id/action_stdCourseDetailsFragment_to_stdMarkAtdFragment"
             app:destination="@id/stdMarkAtdFragment" />
     </fragment>
@@ -31,9 +28,4 @@
         android:name="com.example.teachjr.ui.student.stdFragments.StdMarkAtdFragment"
         android:label="fragment_std_mark_atd"
         tools:layout="@layout/fragment_std_mark_atd" />
-    <fragment
-        android:id="@+id/stdLectureListFragment"
-        android:name="com.example.teachjr.ui.student.stdFragments.StdLectureListFragment"
-        android:label="fragment_std_lecture_list"
-        tools:layout="@layout/fragment_std_lecture_list" />
 </navigation>

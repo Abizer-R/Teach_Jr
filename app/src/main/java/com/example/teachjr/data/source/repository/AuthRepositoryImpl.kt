@@ -53,7 +53,7 @@ class AuthRepositoryImpl
         return suspendCoroutine { continuation ->
             dbRef.getReference(FirebasePaths.USER_COLLECTION)
                 .child(currUser!!.uid)
-                .child(FirebasePaths.USER_ENROLLMENT_STUDENT)
+                .child(FirebasePaths.STUDENT_ENROLLMENT)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val userEnrollment = snapshot.value.toString()

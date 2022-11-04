@@ -7,25 +7,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdCourseDetailsBinding
 import com.example.teachjr.ui.adapters.StdLecListAdapter
-import com.example.teachjr.ui.viewmodels.studentViewModels.StudentViewModel
+import com.example.teachjr.ui.viewmodels.studentViewModels.StdCourseViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class StdCourseDetailsFragment : Fragment() {
 
     private val TAG = StdCourseDetailsFragment::class.java.simpleName
     private lateinit var binding: FragmentStdCourseDetailsBinding
-    private val stdViewModel by activityViewModels<StudentViewModel>()
+    private val courseViewModel by viewModels<StdCourseViewModel>()
 
     private var courseCode: String? = null
     private var courseName: String? = null
     private var profName: String? = null
+    private var sem_sec: String? = null
 
     private val stdLecListAdapter = StdLecListAdapter()
 
@@ -48,17 +51,20 @@ class StdCourseDetailsFragment : Fragment() {
         courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
         courseName = arguments?.getString(FirebasePaths.COURSE_NAME)
         profName = arguments?.getString(FirebasePaths.COURSE_PROF_NAME)
+        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
 
-        if(courseCode == null || courseName == null || profName == null) {
+        if(courseCode == null || courseName == null || profName == null || sem_sec == null) {
             Log.i(TAG, "StudentTesting_CoursePage: null bundle arguments")
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
-        }
-        binding.tvCourseCode.text = courseCode
-        binding.tvCourseName.text = courseName
-        binding.tvProfName.text = profName
+        } else {
+            binding.tvCourseCode.text = courseCode
+            binding.tvCourseName.text = courseName
+            binding.tvProfName.text = profName
 
-        stdViewModel.getAttendanceDetails(courseCode)
-        stdViewModel.atdDetails.observe(viewLifecycleOwner) {
+            courseViewModel.getAttendanceDetails(courseCode, sem_sec)
+        }
+
+        courseViewModel.atdDetails.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
@@ -96,8 +102,16 @@ class StdCourseDetailsFragment : Fragment() {
 
         binding.fabMarkAtd.setOnClickListener {
             val bundle = Bundle()
-            bundle.putString(FirebasePaths.COURSE_CODE, courseCode)
-            findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment, bundle)
+            val enrollment = arguments?.getString(FirebasePaths.STUDENT_ENROLLMENT)
+            if(courseCode != null && enrollment != null) {
+                bundle.putString(FirebasePaths.COURSE_CODE, courseCode)
+                bundle.putString(FirebasePaths.SEM_SEC, sem_sec)
+                bundle.putString(FirebasePaths.STUDENT_ENROLLMENT, enrollment)
+                findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment, bundle)
+            } else {
+                Toast.makeText(context, "courseCode/enrollment is null", Toast.LENGTH_SHORT).show()
+                Log.i(TAG, "setupViews: ERROR - courseCode/enrollment is null")
+            }
         }
     }
 }
