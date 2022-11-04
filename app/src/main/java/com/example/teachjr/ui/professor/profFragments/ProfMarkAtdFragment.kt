@@ -18,7 +18,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -27,13 +26,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
 import com.example.teachjr.ui.adapters.AttendanceAdapter
-import com.example.teachjr.ui.viewmodels.ProfViewModel
+import com.example.teachjr.ui.viewmodels.professorViewModels.ProfViewModel
 import com.example.teachjr.utils.AttendanceStatusProf
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 import com.example.teachjr.utils.Response
 import kotlinx.coroutines.launch
-import kotlin.system.exitProcess
 
 
 class ProfMarkAtdFragment : Fragment() {

@@ -11,7 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfCourseDetailsBinding
-import com.example.teachjr.ui.viewmodels.ProfViewModel
+import com.example.teachjr.ui.viewmodels.professorViewModels.ProfViewModel
 import com.example.teachjr.utils.AdapterUtils
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response

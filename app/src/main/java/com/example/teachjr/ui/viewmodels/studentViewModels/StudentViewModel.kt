@@ -1,4 +1,4 @@
-package com.example.teachjr.ui.viewmodels
+package com.example.teachjr.ui.viewmodels.studentViewModels
 
 import android.annotation.SuppressLint
 import android.net.wifi.p2p.WifiP2pManager

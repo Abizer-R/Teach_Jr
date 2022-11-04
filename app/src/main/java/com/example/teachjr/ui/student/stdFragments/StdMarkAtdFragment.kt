@@ -23,7 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdMarkAtdBinding
-import com.example.teachjr.ui.viewmodels.StudentViewModel
+import com.example.teachjr.ui.viewmodels.studentViewModels.StudentViewModel
 import com.example.teachjr.utils.AttendanceStatusStd
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions

@@ -12,9 +12,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdHomeBinding
-import com.example.teachjr.ui.adapters.ProfCourseListAdapter
 import com.example.teachjr.ui.adapters.StdCourseListAdapter
-import com.example.teachjr.ui.viewmodels.StudentViewModel
+import com.example.teachjr.ui.viewmodels.studentViewModels.StudentViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint

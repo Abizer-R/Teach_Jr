@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfHomeBinding
 import com.example.teachjr.ui.adapters.ProfCourseListAdapter
-import com.example.teachjr.ui.viewmodels.ProfViewModel
+import com.example.teachjr.ui.viewmodels.professorViewModels.ProfViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint

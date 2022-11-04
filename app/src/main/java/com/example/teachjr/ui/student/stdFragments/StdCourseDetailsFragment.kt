@@ -7,14 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdCourseDetailsBinding
 import com.example.teachjr.ui.adapters.StdLecListAdapter
-import com.example.teachjr.ui.viewmodels.StudentViewModel
+import com.example.teachjr.ui.viewmodels.studentViewModels.StudentViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 
