@@ -1,29 +1,32 @@
-package com.example.teachjr.ui.viewmodels
+package com.example.teachjr.ui.viewmodels.studentViewModels
 
 import android.annotation.SuppressLint
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest
 import android.util.Log
-import androidx.lifecycle.*
-import com.example.teachjr.data.model.RvStdCourseListItem
-import com.example.teachjr.data.model.StdAttendanceDetails
-import com.example.teachjr.data.model.StudentUser
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.source.repository.StudentRepository
-import com.example.teachjr.utils.*
+import com.example.teachjr.utils.AttendanceStatusStd
+import com.example.teachjr.utils.FirebaseConstants
+import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.WifiSD.BroadcastService
 import com.example.teachjr.utils.WifiSD.DiscoverService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class StudentViewModel
+class StdMarkAtdViewModel
     @Inject constructor(
         private val studentRepository: StudentRepository
-): ViewModel() {
+    ): ViewModel() {
 
-    private val TAG = StudentViewModel::class.java.simpleName
+    private val TAG = StdMarkAtdViewModel::class.java.simpleName
 
     private val serviceList = mutableMapOf<String, String>()
     private var serviceRequest: WifiP2pDnsSdServiceRequest? = null
@@ -33,75 +36,17 @@ class StudentViewModel
         get() = _isDiscovering
     fun updateIsDiscovering(newState: Boolean) {_isDiscovering = newState}
 
-
-    private val _currUserStd = MutableLiveData<Response<StudentUser>>()
-    val currUserStd: LiveData<Response<StudentUser>>
-        get() = _currUserStd
-
-    init {
-        getUser()
-    }
-
-    private fun getUser() {
-        _currUserStd.postValue(Response.Loading())
-        viewModelScope.launch {
-            _currUserStd.postValue(studentRepository.getUserDetails())
-        }
-    }
-
-    private val _courseList = MutableLiveData<Response<List<RvStdCourseListItem>>>()
-    val courseList: LiveData<Response<List<RvStdCourseListItem>>>
-        get() = _courseList
-
-
-    private val _atdDetails = MutableLiveData<Response<StdAttendanceDetails>>()
-    val atdDetails: LiveData<Response<StdAttendanceDetails>>
-        get() = _atdDetails
-
     private val _atdStatus = MutableLiveData<AttendanceStatusStd>()
     val atdStatus: LiveData<AttendanceStatusStd>
         get() = _atdStatus
 
-    fun getCourseList() {
-        _courseList.postValue(Response.Loading())
-        Log.i("TAG", "StdTesting-ViewModel: Calling getCourselist")
-        viewModelScope.launch {
-            val institute = currUserStd.value?.data?.institute
-            val branch = currUserStd.value?.data?.branch
-            val semSec = currUserStd.value?.data?.sem_sec
-            if(institute == null || branch == null || semSec == null) {
-                _courseList.postValue(Response.Error("UserDetails are null, try again", null))
-            } else {
-                val courseListDeferred = async { studentRepository.getCourseList(institute, branch, semSec) }
-                _courseList.postValue(courseListDeferred.await())
-            }
-        }
-    }
-
-    fun getAttendanceDetails(courseCode: String?) {
-        _atdDetails.postValue(Response.Loading())
-        Log.i("TAG", "StdTesting-ViewModel: Calling getAttendanceDetails")
-        viewModelScope.launch {
-            val semSec = currUserStd.value?.data?.sem_sec
-            if(courseCode == null || semSec == null) {
-                Log.i("TAG", "StdTesting-ViewModel: Error - null values")
-                _atdDetails.postValue(Response.Error("Error - null values", null))
-            } else {
-                _atdDetails.postValue(studentRepository.getAttendanceDetails(semSec, courseCode))
-            }
-        }
-    }
-
     suspend fun discoverTimestamp(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {
 
-        Log.i("TAG", "WIFI_SD_Testing-ViewModel: discoverTimestamp() Called")
-//        _atdStatus.postValue(AttendanceStatusStd.InitiatingDiscovery())
+        Log.i(TAG, "WIFI_SD_Testing-ViewModel: discoverTimestamp() Called")
         _atdStatus.postValue(AttendanceStatusStd.DiscoveringTimestamp())
         setServiceRequest(manager, channel, serviceInstance)
         discoverTimestampFor1Min(manager, channel, 0)
-//        viewModelScope.launch {
-//        }
     }
 
     suspend fun discoverTimestampFor1Min(
@@ -109,7 +54,6 @@ class StudentViewModel
         val discoveryResult = DiscoverService.startServiceDiscovery(serviceRequest!!, manager, channel)
         when(discoveryResult) {
             1 -> { /* Discovery Initiated Successfully */
-//                isDiscovering = true
                 Log.i(TAG, "WIFI_SD_Testing-ViewModel: Discovery Initiated Successfully")
                 /**
                  * resetting the whole discovery after delay
@@ -120,15 +64,15 @@ class StudentViewModel
                 }
             }
             2 -> { /* Failed to initiate discovery */
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: Failed to initiate discovery")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: Failed to initiate discovery")
                 _atdStatus.postValue(AttendanceStatusStd.Error("Failed to initiate discovery"))
             }
             3 -> { /* Failed to add Service Request */
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: Failed to add Service Request")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: Failed to add Service Request")
                 _atdStatus.postValue(AttendanceStatusStd.Error("Failed to add Service Request"))
             }
             4 -> { /* Failed to clear Service Requests */
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: Failed to clear Service Requests")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: Failed to clear Service Requests")
                 _atdStatus.postValue(AttendanceStatusStd.Error("Failed to clear Service Requests"))
             }
         }
@@ -143,32 +87,26 @@ class StudentViewModel
         }
     }
 
-    fun martAtd(courseCode: String, timestamp: String) {
-        Log.i("TAG", "StdTesting-ViewModel: Calling markAtd")
+    fun martAtd(courseCode: String, timestamp: String, sem_sem: String, enrollment: String) {
+        Log.i(TAG, "StdTesting-ViewModel: Calling markAtd")
         viewModelScope.launch {
-            val semSec = currUserStd.value?.data?.sem_sec
-            val enrollment = currUserStd.value?.data?.enrollment
-            if(semSec == null || enrollment == null) {
-                Log.i("TAG", "StdTesting-ViewModel: marAtd() Error - null values")
-            } else {
-                val isContinuingResponse = studentRepository.checkAtdStatus(semSec, courseCode, timestamp)
-                when(isContinuingResponse) {
-                    "true" -> {
-                        // Attendance is still going on
-                        val markAtdResult = studentRepository.markAtd(semSec, courseCode, timestamp, enrollment)
-                        if(markAtdResult == FirebaseConstants.STATUS_SUCCESSFUL) {
-                            _atdStatus.postValue(AttendanceStatusStd.AttendanceMarked())
-                        } else {
-                            _atdStatus.postValue(AttendanceStatusStd.Error(markAtdResult))
-                        }
+            val isContinuingResponse = studentRepository.checkAtdStatus(sem_sem, courseCode, timestamp)
+            when(isContinuingResponse) {
+                "true" -> {
+                    // Attendance is still going on
+                    val markAtdResult = studentRepository.markAtd(sem_sem, courseCode, timestamp, enrollment)
+                    if(markAtdResult == FirebaseConstants.STATUS_SUCCESSFUL) {
+                        _atdStatus.postValue(AttendanceStatusStd.AttendanceMarked())
+                    } else {
+                        _atdStatus.postValue(AttendanceStatusStd.Error(markAtdResult))
                     }
-                    "false" -> {
-                        // Attendance is over
-                        _atdStatus.postValue(AttendanceStatusStd.Error("Attendance is Over"))
-                    }
-                    else -> {
-                        _atdStatus.postValue(AttendanceStatusStd.Error(isContinuingResponse))
-                    }
+                }
+                "false" -> {
+                    // Attendance is over
+                    _atdStatus.postValue(AttendanceStatusStd.Error("Attendance is Over"))
+                }
+                else -> {
+                    _atdStatus.postValue(AttendanceStatusStd.Error(isContinuingResponse))
                 }
             }
         }
@@ -176,7 +114,7 @@ class StudentViewModel
 
     private suspend fun setServiceRequest(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {
-        Log.i("TAG", "WIFI_SD_Testing-ViewModel: setServiceRequest() called")
+        Log.i(TAG, "WIFI_SD_Testing-ViewModel: setServiceRequest() called")
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
             Log.i(TAG, "WIFI_SD_Testing: txtRecordListener available -$record")
             record[FirebasePaths.TIMESTAMP]?.also {
@@ -214,19 +152,19 @@ class StudentViewModel
     fun broadcastTimestamp(manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInfo: WifiP2pDnsSdServiceInfo) {
 
         viewModelScope.launch {
-            Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Calling broadcastTimestamp()")
+            Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Calling broadcastTimestamp()")
             val broadcastResult = BroadcastService.startServiceBroadcast(serviceInfo, manager, channel)
             when(broadcastResult) {
                 1 -> { /* Service Added Successfully */
-                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Service Added Successfully")
+                    Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Service Added Successfully")
                     broadcastServiceFor20Sec(manager, channel)
                 }
                 2 -> { /* Failed to add service */
-                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to add service")
+                    Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to add service")
                     _atdStatus.postValue(AttendanceStatusStd.Error("Failed to add service"))
                 }
                 3 -> { /* Failed to Clear Service */
-                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to Clear Service")
+                    Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to Clear Service")
                     _atdStatus.postValue(AttendanceStatusStd.Error("Failed to Clear Service"))
                 }
             }
@@ -239,11 +177,11 @@ class StudentViewModel
         delay(10000)
         manager.discoverPeers(channel, object: WifiP2pManager.ActionListener {
             override fun onSuccess() {
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Services Reset Successfully")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: DiscoverPeers - Services Reset Successfully")
             }
 
             override fun onFailure(reason: Int) {
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Failed to reset services: Reason-$reason")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: DiscoverPeers - Failed to reset services: Reason-$reason")
             }
         })
         delay(10000)
@@ -251,5 +189,4 @@ class StudentViewModel
 //        }
         _atdStatus.postValue(AttendanceStatusStd.BroadcastComplete())
     }
-
 }

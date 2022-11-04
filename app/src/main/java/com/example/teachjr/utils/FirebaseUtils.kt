@@ -38,7 +38,7 @@ object FirebasePaths {
     const val USER_EMAIL = "email"
     const val USER_ID = "id"
     const val USER_NAME = "name"
-    const val USER_ENROLLMENT_STUDENT = "enrollment"
+    const val STUDENT_ENROLLMENT = "enrollment"
     const val COURSE_LIST = "courseList"
 
     const val COURSE_ID = "courseId"

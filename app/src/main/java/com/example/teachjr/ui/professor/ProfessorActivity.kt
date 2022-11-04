@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -32,6 +33,7 @@ class ProfessorActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProfessorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         Log.i(TAG, "ProfessorTesting: Professor Activity Created")
 
         binding.btnLogout.setOnClickListener {

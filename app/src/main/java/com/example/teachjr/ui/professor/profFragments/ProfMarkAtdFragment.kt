@@ -18,8 +18,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -27,20 +26,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
 import com.example.teachjr.ui.adapters.AttendanceAdapter
-import com.example.teachjr.ui.viewmodels.ProfViewModel
+import com.example.teachjr.ui.viewmodels.professorViewModels.ProfMarkAtdViewModel
 import com.example.teachjr.utils.AttendanceStatusProf
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 import com.example.teachjr.utils.Response
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import kotlin.system.exitProcess
 
-
+@AndroidEntryPoint
 class ProfMarkAtdFragment : Fragment() {
 
     private val TAG = ProfMarkAtdFragment::class.java.simpleName
     private lateinit var binding: FragmentProfMarkAtdBinding
-    private val profViewModel by activityViewModels<ProfViewModel>()
+    private val markAtdViewModel by viewModels<ProfMarkAtdViewModel>()
 
     private val attendanceAdapter = AttendanceAdapter()
 
@@ -62,7 +61,7 @@ class ProfMarkAtdFragment : Fragment() {
                 it.value == true
             }
             if(granted) {
-                if(profViewModel.isAtdOngoing) {
+                if(markAtdViewModel.isAtdOngoing) {
                     endAttendance()
                 } else {
                     checkGpsAndStartAttendance()
@@ -96,7 +95,7 @@ class ProfMarkAtdFragment : Fragment() {
         createConfirmDialog()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if(profViewModel.isAtdOngoing) {
+                if(markAtdViewModel.isAtdOngoing) {
                     confirmDialog.show()
                 } else {
                     findNavController().navigateUp()
@@ -118,7 +117,7 @@ class ProfMarkAtdFragment : Fragment() {
             if(Permissions.hasAccessCoarseLocation(activity as Context)
                 && Permissions.hasAccessFineLocation(activity as Context)) {
 
-                if(profViewModel.isAtdOngoing) {
+                if(markAtdViewModel.isAtdOngoing) {
                     endAttendance()
                 } else {
                     checkGpsAndStartAttendance()
@@ -142,10 +141,10 @@ class ProfMarkAtdFragment : Fragment() {
 
     private fun setupObservers() {
 
-        profViewModel.atdStatus.observe(viewLifecycleOwner) {
+        markAtdViewModel.atdStatus.observe(viewLifecycleOwner) {
             when(it) {
                 is AttendanceStatusProf.FetchingTimestamp -> {
-                    profViewModel.updateIsAtdOngoing(true)
+                    markAtdViewModel.updateIsAtdOngoing(true)
                     binding.progressBar.visibility = View.VISIBLE
                     updateFAB(isEnabled = false)
                 }
@@ -166,17 +165,17 @@ class ProfMarkAtdFragment : Fragment() {
                         /**
                          * This is a blocking call, therefore it is placed in its different coroutine
                          */
-                        profViewModel.observeAtd(semSec!!, courseCode!!, it.timestamp!!)
+                        markAtdViewModel.observeAtd(semSec!!, courseCode!!, it.timestamp!!)
                     }
                 }
                 is AttendanceStatusProf.Ended -> {
                     updateFAB(atdEnded = true)
-                    profViewModel.updateIsAtdOngoing(false)
+                    markAtdViewModel.updateIsAtdOngoing(false)
                     Toast.makeText(context, "Attendance is over", Toast.LENGTH_SHORT).show()
                 }
                 is AttendanceStatusProf.Error -> {
                     // TODO: Give some functionality to retry
-                    profViewModel.updateIsAtdOngoing(false)
+                    markAtdViewModel.updateIsAtdOngoing(false)
                     updateFAB(atdEnded = true)
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
@@ -184,7 +183,7 @@ class ProfMarkAtdFragment : Fragment() {
             }
         }
 
-        profViewModel.presentList.observe(viewLifecycleOwner) {
+        markAtdViewModel.presentList.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> {}
                 is Response.Error -> Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
@@ -206,7 +205,7 @@ class ProfMarkAtdFragment : Fragment() {
         if(channel == null) {
             channel = manager?.initialize(context, Looper.getMainLooper(), null)
         }
-        profViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
+        markAtdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
     }
 
     private fun checkGpsAndStartAttendance(){
@@ -233,16 +232,16 @@ class ProfMarkAtdFragment : Fragment() {
             // TODO: Give an option to choose for manually closing atd or closing in 2 min
 
             // Makes a new Lec doc and fetches list of enrolled students
-            profViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
+            markAtdViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
         }
     }
 
     private fun endAttendance() {
-        val timestamp = profViewModel.atdStatus.value?.timestamp
+        val timestamp = markAtdViewModel.atdStatus.value?.timestamp
         if(timestamp != null) {
-            profViewModel.endAttendance(semSec!!, courseCode!!, timestamp)
+            markAtdViewModel.endAttendance(semSec!!, courseCode!!, timestamp)
             lifecycleScope.launch {
-                profViewModel.stopBroadcasting(manager!!, channel!!)
+                markAtdViewModel.stopBroadcasting(manager!!, channel!!)
             }
         } else {
             Log.i(TAG, "ProfessorTesting_MarkAtdPage: null timestamp")

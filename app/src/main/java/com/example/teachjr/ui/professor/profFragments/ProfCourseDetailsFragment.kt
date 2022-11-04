@@ -7,11 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfCourseDetailsBinding
-import com.example.teachjr.ui.viewmodels.ProfViewModel
+import com.example.teachjr.ui.viewmodels.professorViewModels.ProfCourseViewModel
 import com.example.teachjr.utils.AdapterUtils
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
@@ -23,7 +23,7 @@ class ProfCourseDetailsFragment : Fragment() {
 
     private val TAG = ProfCourseDetailsFragment::class.java.simpleName
     private lateinit var binding: FragmentProfCourseDetailsBinding
-    private val profViewModel by activityViewModels<ProfViewModel>()
+    private val courseViewModel by viewModels<ProfCourseViewModel>()
 
     private var courseCode: String? = null
     private var courseName: String? = null
@@ -61,8 +61,8 @@ class ProfCourseDetailsFragment : Fragment() {
         binding.tvSection.text = AdapterUtils.getSection(semSec.toString())
 
         Log.i(TAG, "ProfessorTesting_CoursePage: bundle - courseCode=$courseCode, courseName-$courseName, sem_sec-$semSec")
-        profViewModel.getLectureCount(semSec!!, courseCode!!)
-        profViewModel.lecCount.observe(viewLifecycleOwner) {
+        courseViewModel.getLectureCount(semSec!!, courseCode!!)
+        courseViewModel.lecCount.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
