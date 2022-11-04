@@ -43,7 +43,7 @@ class StdMarkAtdViewModel
     suspend fun discoverTimestamp(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {
 
-        Log.i("TAG", "WIFI_SD_Testing-ViewModel: discoverTimestamp() Called")
+        Log.i(TAG, "WIFI_SD_Testing-ViewModel: discoverTimestamp() Called")
         _atdStatus.postValue(AttendanceStatusStd.DiscoveringTimestamp())
         setServiceRequest(manager, channel, serviceInstance)
         discoverTimestampFor1Min(manager, channel, 0)
@@ -64,15 +64,15 @@ class StdMarkAtdViewModel
                 }
             }
             2 -> { /* Failed to initiate discovery */
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: Failed to initiate discovery")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: Failed to initiate discovery")
                 _atdStatus.postValue(AttendanceStatusStd.Error("Failed to initiate discovery"))
             }
             3 -> { /* Failed to add Service Request */
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: Failed to add Service Request")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: Failed to add Service Request")
                 _atdStatus.postValue(AttendanceStatusStd.Error("Failed to add Service Request"))
             }
             4 -> { /* Failed to clear Service Requests */
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: Failed to clear Service Requests")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: Failed to clear Service Requests")
                 _atdStatus.postValue(AttendanceStatusStd.Error("Failed to clear Service Requests"))
             }
         }
@@ -88,7 +88,7 @@ class StdMarkAtdViewModel
     }
 
     fun martAtd(courseCode: String, timestamp: String, sem_sem: String, enrollment: String) {
-        Log.i("TAG", "StdTesting-ViewModel: Calling markAtd")
+        Log.i(TAG, "StdTesting-ViewModel: Calling markAtd")
         viewModelScope.launch {
             val isContinuingResponse = studentRepository.checkAtdStatus(sem_sem, courseCode, timestamp)
             when(isContinuingResponse) {
@@ -114,7 +114,7 @@ class StdMarkAtdViewModel
 
     private suspend fun setServiceRequest(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {
-        Log.i("TAG", "WIFI_SD_Testing-ViewModel: setServiceRequest() called")
+        Log.i(TAG, "WIFI_SD_Testing-ViewModel: setServiceRequest() called")
         val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
             Log.i(TAG, "WIFI_SD_Testing: txtRecordListener available -$record")
             record[FirebasePaths.TIMESTAMP]?.also {
@@ -152,19 +152,19 @@ class StdMarkAtdViewModel
     fun broadcastTimestamp(manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInfo: WifiP2pDnsSdServiceInfo) {
 
         viewModelScope.launch {
-            Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Calling broadcastTimestamp()")
+            Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Calling broadcastTimestamp()")
             val broadcastResult = BroadcastService.startServiceBroadcast(serviceInfo, manager, channel)
             when(broadcastResult) {
                 1 -> { /* Service Added Successfully */
-                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Service Added Successfully")
+                    Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Service Added Successfully")
                     broadcastServiceFor20Sec(manager, channel)
                 }
                 2 -> { /* Failed to add service */
-                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to add service")
+                    Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to add service")
                     _atdStatus.postValue(AttendanceStatusStd.Error("Failed to add service"))
                 }
                 3 -> { /* Failed to Clear Service */
-                    Log.i("TAG", "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to Clear Service")
+                    Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Failed to Clear Service")
                     _atdStatus.postValue(AttendanceStatusStd.Error("Failed to Clear Service"))
                 }
             }
@@ -177,11 +177,11 @@ class StdMarkAtdViewModel
         delay(10000)
         manager.discoverPeers(channel, object: WifiP2pManager.ActionListener {
             override fun onSuccess() {
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Services Reset Successfully")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: DiscoverPeers - Services Reset Successfully")
             }
 
             override fun onFailure(reason: Int) {
-                Log.i("TAG", "WIFI_SD_Testing-ViewModel: DiscoverPeers - Failed to reset services: Reason-$reason")
+                Log.i(TAG, "WIFI_SD_Testing-ViewModel: DiscoverPeers - Failed to reset services: Reason-$reason")
             }
         })
         delay(10000)

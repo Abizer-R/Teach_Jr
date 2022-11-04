@@ -39,7 +39,7 @@ class StdHomeViewModel
 
     fun getCourseList() {
         _courseList.postValue(Response.Loading())
-        Log.i("TAG", "StdTesting-ViewModel: Calling getCourselist")
+        Log.i(TAG, "StdTesting-ViewModel: Calling getCourselist")
         viewModelScope.launch {
             val institute = currUserStd.value?.data?.institute
             val branch = currUserStd.value?.data?.branch

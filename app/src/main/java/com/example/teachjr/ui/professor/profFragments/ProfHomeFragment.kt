@@ -8,12 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfHomeBinding
 import com.example.teachjr.ui.adapters.ProfCourseListAdapter
-import com.example.teachjr.ui.viewmodels.professorViewModels.ProfViewModel
+import com.example.teachjr.ui.viewmodels.professorViewModels.ProfHomeViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,7 +24,7 @@ class ProfHomeFragment : Fragment() {
 
     private val TAG = ProfHomeFragment::class.java.simpleName
     private lateinit var binding: FragmentProfHomeBinding
-    private val profViewModel by activityViewModels<ProfViewModel>()
+    private val profHomeViewModel by viewModels<ProfHomeViewModel>()
 
     private val profCourseListAdapter = ProfCourseListAdapter(
         onItemClicked = { rvCourseItem ->
@@ -55,8 +56,8 @@ class ProfHomeFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
         }
 
-        profViewModel.getCourseList()
-        profViewModel.courseList.observe(viewLifecycleOwner) {
+        profHomeViewModel.getCourseList()
+        profHomeViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
