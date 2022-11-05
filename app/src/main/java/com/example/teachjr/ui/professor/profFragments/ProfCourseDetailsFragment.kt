@@ -53,15 +53,16 @@ class ProfCourseDetailsFragment : Fragment() {
         semSec = arguments?.getString(FirebasePaths.SEM_SEC)
 
         if(courseCode == null || courseName == null || semSec == null) {
-            Log.i(TAG, "ProfessorTesting_CoursePage: null bundle arguments")
+            Log.i(TAG, "ProfessorTesting_CoursePage: null bundle arguments. courseCode=$courseCode, courseName-$courseName, sem_sec-$semSec")
             Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
-        }
-        binding.tvCourseCode.text = courseCode
-        binding.tvCourseName.text = courseName
-        binding.tvSection.text = AdapterUtils.getSection(semSec.toString())
+        } else {
+            binding.tvCourseCode.text = courseCode
+            binding.tvCourseName.text = courseName
+            binding.tvSection.text = AdapterUtils.getSection(semSec.toString())
 
-        Log.i(TAG, "ProfessorTesting_CoursePage: bundle - courseCode=$courseCode, courseName-$courseName, sem_sec-$semSec")
-        courseViewModel.getLectureCount(semSec!!, courseCode!!)
+            courseViewModel.getLectureCount(semSec!!, courseCode!!)
+        }
+
         courseViewModel.lecCount.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
@@ -79,7 +80,10 @@ class ProfCourseDetailsFragment : Fragment() {
         }
 
         binding.btnAtdReport.setOnClickListener {
-            findNavController().navigate(R.id.action_profCourseDetailsFragment_to_profAtdReportFragment)
+            val bundle = Bundle()
+            bundle.putString(FirebasePaths.SEM_SEC, semSec)
+            bundle.putString(FirebasePaths.COURSE_CODE, courseCode)
+            findNavController().navigate(R.id.action_profCourseDetailsFragment_to_profAtdReportFragment,bundle)
         }
 
         binding.fabMarkAtd.setOnClickListener {

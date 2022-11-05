@@ -1,9 +1,6 @@
 package com.example.teachjr.data.model
 
-import java.util.*
-import kotlin.collections.ArrayList
-
-data class Lecture constructor(
-    val date: Date? = Date(),
-    val stdAttended: List<String>? = ArrayList()
+data class Lecture(
+    val timestamp: String = "",
+    val presentList: List<String> = ArrayList()
 )

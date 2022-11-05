@@ -78,23 +78,53 @@ class ProfRepository
         }
     }
 
-//    suspend fun getStdList(sem_sec: String): Response<List<String>> {
-//        return suspendCoroutine { continuation ->
-//            dbRef.getReference(FirebasePaths.ENROLLMENT_COLLECTION)
-//                .child(sem_sec)
-//                .child(FirebasePaths.ENRL_STUDENT_LIST)
-//                .get()
-//                .addOnSuccessListener {
-//                    val stdList: MutableList<String> = ArrayList()
-//                    for(students in it.children) {
-//                        stdList.add(students.key.toString())
-//                    }
-//                }
-//                .addOnFailureListener {
-//                    continuation.resume(Response.Error(it.message.toString(), null))
-//                }
-//        }
-//    }
+    suspend fun getStdList(sem_sec: String): Response<List<String>> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ENROLLMENT_COLLECTION)
+                .child(sem_sec)
+                .child(FirebasePaths.ENRL_STUDENT_LIST)
+                .get()
+                .addOnSuccessListener {
+                    val stdList: MutableList<String> = ArrayList()
+                    for(students in it.children) {
+                        stdList.add(students.key.toString())
+                    }
+                    continuation.resume(Response.Success(stdList))
+                }
+                .addOnFailureListener {
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
+        }
+    }
+
+    suspend fun getLectureList(sem_sec: String, courseCode: String): Response<List<Lecture>> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ATTENDANCE_COLLECTION)
+                .child(sem_sec)
+                .child(courseCode)
+                .child(FirebasePaths.LEC_LIST)
+                .get()
+                .addOnSuccessListener {
+
+                    val lectureList: MutableList<Lecture> = ArrayList()
+
+                    for(lecture in it.children) {
+                        val timestamp = lecture.key.toString()
+                        val presentList: MutableList<String> = ArrayList()
+                        for(student in lecture.children) {
+                            if(student.key != FirebasePaths.ATD_IS_CONTINUING) {
+                                presentList.add(student.value.toString())
+                            }
+                        }
+                        lectureList.add(Lecture(timestamp, presentList))
+                    }
+                    continuation.resume(Response.Success(lectureList))
+                }
+                .addOnFailureListener {
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
+        }
+    }
 
     /**
      * It doesn't matter what we return here, all we need is confirmation

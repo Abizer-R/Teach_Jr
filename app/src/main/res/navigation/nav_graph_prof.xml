@@ -34,6 +34,6 @@
     <fragment
         android:id="@+id/profAtdReportFragment"
         android:name="com.example.teachjr.ui.professor.profFragments.ProfAtdReportFragment"
-        android:label="fragment_prof_atd_report"
+        android:label="Attendance Report"
         tools:layout="@layout/fragment_prof_atd_report" />
 </navigation>

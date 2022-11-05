@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +23,7 @@ class ProfHomeFragment : Fragment() {
 
     private val TAG = ProfHomeFragment::class.java.simpleName
     private lateinit var binding: FragmentProfHomeBinding
-    private val profHomeViewModel by viewModels<ProfHomeViewModel>()
+    private val homeViewModel by viewModels<ProfHomeViewModel>()
 
     private val profCourseListAdapter = ProfCourseListAdapter(
         onItemClicked = { rvCourseItem ->
@@ -56,8 +55,8 @@ class ProfHomeFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
         }
 
-        profHomeViewModel.getCourseList()
-        profHomeViewModel.courseList.observe(viewLifecycleOwner) {
+        homeViewModel.getCourseList()
+        homeViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
                 is Response.Error -> {
