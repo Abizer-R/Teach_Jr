@@ -34,14 +34,4 @@ class ProfHomeViewModel
         }
     }
 
-
-
-//    fun getStdList(sem_sec: String) {
-//        _stdList.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val stdListResponse = profRepository.getStdList(sem_sec)
-//            _stdList.postValue(stdListResponse)
-//        }
-//    }
-
 }
