@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -35,12 +36,16 @@ class SplashActivity : AppCompatActivity() {
 
         splashViewModel.userType.observe(this) {
             when(it) {
-                is Response.Loading -> {}
+                is Response.Loading -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                }
                 is Response.Error -> {
                     Log.i(TAG, "SplashTesting: Error - ${it.errorMessage}")
+                    binding.progressBar.visibility = View.INVISIBLE
                     Toast.makeText(this, it.errorMessage, Toast.LENGTH_LONG).show()
                 }
                 is Response.Success -> {
+                    binding.progressBar.visibility = View.INVISIBLE
                     when(it.data) {
                         is UserType.Student -> {
                             val intent = Intent(this, StudentActivity::class.java)
