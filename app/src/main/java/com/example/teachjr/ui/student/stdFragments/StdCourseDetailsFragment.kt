@@ -7,12 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdCourseDetailsBinding
 import com.example.teachjr.ui.adapters.StdLecListAdapter
+import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdCourseViewModel
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Response
@@ -23,12 +26,9 @@ class StdCourseDetailsFragment : Fragment() {
 
     private val TAG = StdCourseDetailsFragment::class.java.simpleName
     private lateinit var binding: FragmentStdCourseDetailsBinding
-    private val courseViewModel by viewModels<StdCourseViewModel>()
 
-    private var courseCode: String? = null
-    private var courseName: String? = null
-    private var profName: String? = null
-    private var sem_sec: String? = null
+    private val courseViewModel by viewModels<StdCourseViewModel>()
+    private val sharedStdViewModel by activityViewModels<SharedStdViewModel>()
 
     private val stdLecListAdapter = StdLecListAdapter()
 
@@ -50,29 +50,25 @@ class StdCourseDetailsFragment : Fragment() {
             // Adding up navigation
             setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
             setNavigationOnClickListener {
+                findNavController().navigateUp()
             }
         }
-
 
         initialSetup()
         setupViews()
     }
 
     private fun initialSetup() {
-        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
-        courseName = arguments?.getString(FirebasePaths.COURSE_NAME)
-        profName = arguments?.getString(FirebasePaths.COURSE_PROF_NAME)
-        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
 
-        if(courseCode == null || courseName == null || profName == null || sem_sec == null) {
-            Log.i(TAG, "StudentTesting_CoursePage: null bundle arguments")
-            Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
+        if(sharedStdViewModel.courseValuesNotNull()) {
+            binding.tvCourseCode.text = sharedStdViewModel.courseCode
+            binding.tvCourseName.text = sharedStdViewModel.courseName
+            binding.tvProfName.text = sharedStdViewModel.profName
+
+            courseViewModel.getAttendanceDetails(sharedStdViewModel.courseCode!!, sharedStdViewModel.userDetails!!.sem_sec!!)
+
         } else {
-            binding.tvCourseCode.text = courseCode
-            binding.tvCourseName.text = courseName
-            binding.tvProfName.text = profName
-
-            courseViewModel.getAttendanceDetails(courseCode, sem_sec)
+            Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
         }
 
         courseViewModel.atdDetails.observe(viewLifecycleOwner) {
@@ -112,17 +108,7 @@ class StdCourseDetailsFragment : Fragment() {
         }
 
         binding.fabMarkAtd.setOnClickListener {
-            val bundle = Bundle()
-            val enrollment = arguments?.getString(FirebasePaths.STUDENT_ENROLLMENT)
-            if(courseCode != null && enrollment != null) {
-                bundle.putString(FirebasePaths.COURSE_CODE, courseCode)
-                bundle.putString(FirebasePaths.SEM_SEC, sem_sec)
-                bundle.putString(FirebasePaths.STUDENT_ENROLLMENT, enrollment)
-                findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment, bundle)
-            } else {
-                Toast.makeText(context, "courseCode/enrollment is null", Toast.LENGTH_SHORT).show()
-                Log.i(TAG, "setupViews: ERROR - courseCode/enrollment is null")
-            }
+            findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment)
         }
     }
 }

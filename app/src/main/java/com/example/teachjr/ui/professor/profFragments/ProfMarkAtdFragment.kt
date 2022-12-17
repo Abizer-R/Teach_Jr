@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -27,6 +28,7 @@ import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
 import com.example.teachjr.ui.adapters.AttendanceAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfMarkAtdViewModel
+import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
 import com.example.teachjr.utils.AttendanceStatusProf
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
@@ -39,13 +41,15 @@ class ProfMarkAtdFragment : Fragment() {
 
     private val TAG = ProfMarkAtdFragment::class.java.simpleName
     private lateinit var binding: FragmentProfMarkAtdBinding
+
     private val markAtdViewModel by viewModels<ProfMarkAtdViewModel>()
+    private val sharedProfViewModel by activityViewModels<SharedProfViewModel>()
 
     private val attendanceAdapter = AttendanceAdapter()
 
-    private var courseCode: String? = null
-    private var semSec: String? = null
-    private var lecCount: Int? = null
+//    private var courseCode: String? = null
+//    private var semSec: String? = null
+//    private var lecCount: Int? = null
 
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
@@ -88,9 +92,9 @@ class ProfMarkAtdFragment : Fragment() {
     }
 
     private fun initialSetup() {
-        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
-        semSec = arguments?.getString(FirebasePaths.SEM_SEC)
-        lecCount = arguments?.getInt(FirebasePaths.LEC_COUNT)
+//        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
+//        semSec = arguments?.getString(FirebasePaths.SEM_SEC)
+//        lecCount = arguments?.getInt(FirebasePaths.LEC_COUNT)
 
         createConfirmDialog()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
@@ -165,7 +169,7 @@ class ProfMarkAtdFragment : Fragment() {
                         /**
                          * This is a blocking call, therefore it is placed in its different coroutine
                          */
-                        markAtdViewModel.observeAtd(semSec!!, courseCode!!, it.timestamp!!)
+                        markAtdViewModel.observeAtd(sharedProfViewModel.sem_sec!!, sharedProfViewModel.courseCode!!, it.timestamp)
                     }
                 }
                 is AttendanceStatusProf.Ended -> {
@@ -195,7 +199,7 @@ class ProfMarkAtdFragment : Fragment() {
     }
 
     private fun broadcastTimestamp(timestamp: String) {
-        val serviceInstance = "$semSec/$courseCode"
+        val serviceInstance = "${sharedProfViewModel.sem_sec}/${sharedProfViewModel.courseCode}"
         val record = mapOf( FirebasePaths.TIMESTAMP to timestamp )
         val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
         if(manager == null) {
@@ -224,25 +228,25 @@ class ProfMarkAtdFragment : Fragment() {
         Log.i(TAG, "ProfessorTesting_MarkAtdPage: startAttendance() called")
 
         // TODO: Check if location and wifi is on
-        if(courseCode == null || semSec == null || lecCount == null) {
-            Log.i(TAG, "ProfessorTesting_MarkAtdPage: null bundle arguments")
-            Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
-        } else {
-
+        if(sharedProfViewModel.courseValuesNotNull() && sharedProfViewModel.lecCountNotNull()) {
             // TODO: Give an option to choose for manually closing atd or closing in 2 min
 
             // Makes a new Lec doc and fetches list of enrolled students
-            markAtdViewModel.initAtd(semSec!!, courseCode!!, lecCount!!)
+            markAtdViewModel.initAtd(sharedProfViewModel.sem_sec!!, sharedProfViewModel.courseCode!!, sharedProfViewModel.lecCount!!)
+        } else {
+            Toast.makeText(context, "Couldn't fetch all details, Some might be null", Toast.LENGTH_SHORT).show()
+
         }
     }
 
     private fun endAttendance() {
         val timestamp = markAtdViewModel.atdStatus.value?.timestamp
         if(timestamp != null) {
-            markAtdViewModel.endAttendance(semSec!!, courseCode!!, timestamp)
+            markAtdViewModel.endAttendance(sharedProfViewModel.sem_sec!!, sharedProfViewModel.courseCode!!, timestamp)
             lifecycleScope.launch {
                 markAtdViewModel.stopBroadcasting(manager!!, channel!!)
             }
+            sharedProfViewModel.updateLecCount(sharedProfViewModel.lecCount!! + 1)
         } else {
             Log.i(TAG, "ProfessorTesting_MarkAtdPage: null timestamp")
             Toast.makeText(context, "null timestamp", Toast.LENGTH_SHORT).show()

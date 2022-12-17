@@ -22,11 +22,7 @@ class StdHomeViewModel
     val currUserStd: LiveData<Response<StudentUser>>
         get() = _currUserStd
 
-    init {
-        getUser()
-    }
-
-    private fun getUser() {
+    fun getUser() {
         _currUserStd.postValue(Response.Loading())
         viewModelScope.launch {
             _currUserStd.postValue(studentRepository.getUserDetails())
@@ -37,19 +33,12 @@ class StdHomeViewModel
     val courseList: LiveData<Response<List<RvStdCourseListItem>>>
         get() = _courseList
 
-    fun getCourseList() {
+    fun getCourseList(institute: String, branch: String, sem_sec: String) {
         _courseList.postValue(Response.Loading())
         Log.i(TAG, "StdTesting-ViewModel: Calling getCourselist")
         viewModelScope.launch {
-            val institute = currUserStd.value?.data?.institute
-            val branch = currUserStd.value?.data?.branch
-            val semSec = currUserStd.value?.data?.sem_sec
-            if(institute == null || branch == null || semSec == null) {
-                _courseList.postValue(Response.Error("UserDetails are null, try again", null))
-            } else {
-                val courseListDeferred = async { studentRepository.getCourseList(institute, branch, semSec) }
-                _courseList.postValue(courseListDeferred.await())
-            }
+            val courseListDeferred = async { studentRepository.getCourseList(institute, branch, sem_sec) }
+            _courseList.postValue(courseListDeferred.await())
         }
     }
 
