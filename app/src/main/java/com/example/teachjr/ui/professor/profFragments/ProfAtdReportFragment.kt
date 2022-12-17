@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfAtdReportBinding
 import com.example.teachjr.ui.adapters.AtdReportViewPagerAdapter
@@ -42,6 +43,17 @@ class ProfAtdReportFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.toolbar.apply {
+            title = "Attendance Report"
+
+            //Adding up navigation
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+            setNavigationOnClickListener {
+                findNavController().navigateUp()
+            }
+        }
+
 
         viewPagerAdapter = AtdReportViewPagerAdapter(this)
 //        binding.viewPager.offscreenPageLimit = 2 // This ensures that both are fragments stay alive all the time

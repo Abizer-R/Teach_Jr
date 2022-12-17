@@ -44,6 +44,16 @@ class ProfCourseDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.toolbar.apply {
+            title = "Course Detail"
+
+            //Adding up navigation
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+            setNavigationOnClickListener {
+                findNavController().navigateUp()
+            }
+        }
+
         initialSetup()
     }
 
