@@ -25,7 +25,7 @@ class StdCourseListAdapter(
         holder.apply {
             tvCourseCode.text = courses[position].courseCode
             tvCourseName.text = courses[position].courseName
-            tvProfName.text = courses[position].profName
+//            tvProfName.text = courses[position].profName
             holder.itemView.setOnClickListener {
                 onItemClicked.invoke(courses[position])
             }
@@ -44,6 +44,6 @@ class StdCourseListAdapter(
     class CourseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var tvCourseCode = itemView.findViewById<TextView>(R.id.tvCourseCode)
         var tvCourseName = itemView.findViewById<TextView>(R.id.tvCourseName)
-        var tvProfName = itemView.findViewById<TextView>(R.id.tvProfName)
+//        var tvProfName = itemView.findViewById<TextView>(R.id.tvProfName)
     }
 }

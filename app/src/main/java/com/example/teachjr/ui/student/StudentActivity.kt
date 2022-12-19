@@ -42,16 +42,16 @@ class StudentActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         Log.i(TAG, "StudentTesting: Student Activity Created")
 
-        binding.btnLogout.setOnClickListener {
-            val firebaseAuth = FirebaseAuth.getInstance()
-            firebaseAuth.signOut()
-            Toast.makeText(this, "Signed Out", Toast.LENGTH_SHORT).show()
-
-            val intent = Intent(this, AuthActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
-            finish()
-        }
+//        binding.btnLogout.setOnClickListener {
+//            val firebaseAuth = FirebaseAuth.getInstance()
+//            firebaseAuth.signOut()
+//            Toast.makeText(this, "Signed Out", Toast.LENGTH_SHORT).show()
+//
+//            val intent = Intent(this, AuthActivity::class.java)
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//            startActivity(intent)
+//            finish()
+//        }
 
         /**
          * We cant use Network callback and connectivity manager until onCreate is called

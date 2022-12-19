@@ -33,9 +33,6 @@ class StdHomeFragment : Fragment() {
     private val profCourseListAdapter = StdCourseListAdapter(
         onItemClicked = { rvCourseListItem ->
 
-            if(sharedStdViewModel.userDetails != null) {
-
-            }
             sharedStdViewModel.updateCourseDetails(
                 rvCourseListItem.courseCode,
                 rvCourseListItem.courseName,
@@ -51,11 +48,14 @@ class StdHomeFragment : Fragment() {
     ): View {
         binding = FragmentStdHomeBinding.inflate(layoutInflater)
         Log.i(TAG, "StudentTesting_HomePage: Student HomePage Created")
+        setHasOptionsMenu(true)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupOptionsMenu()
 
         binding.rvCourseList.apply {
             hasFixedSize()
@@ -79,6 +79,25 @@ class StdHomeFragment : Fragment() {
             setObservers()
         }
 
+    }
+
+    private fun setupOptionsMenu() {
+        binding.toolbar.inflateMenu(R.menu.homepage_menu)
+        binding.toolbar.setOnMenuItemClickListener {
+            when(it.itemId) {
+                R.id.action_view_profile -> {
+                    // TODO: Implement view profile (DETAILS + LOGOUT)
+                    Toast.makeText(context, "View Profile clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.action_settings -> {
+                    // TODO: Implement settings (HELP + ABOUT)
+                    Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun setObservers() {

@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="4dp"
     android:layout_marginTop="8dp"
     android:layout_marginBottom="16dp"
     android:layout_marginStart="8dp"
@@ -21,9 +21,10 @@
             android:id="@+id/tvCourseCode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/rv_section_shape"
+            android:background="@drawable/bg_rv_section"
             android:text="CS-501"
             android:textStyle="bold"
+            android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -32,41 +33,27 @@
             android:layout_marginBottom="8dp"
             android:padding="8dp"/>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvCourseName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toStartOf="@+id/guideline7"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Theory Of Computation"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:alpha="0.7"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/tvCourseCode"
-            app:layout_constraintTop_toTopOf="@+id/tvCourseCode"
-            android:layout_marginStart="8dp" >
-
-            <TextView
-                android:id="@+id/tvCourseName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Theory Of Computation"
-                android:textStyle="bold"
-                android:ellipsize="end"
-                android:maxLines="1" />
-
-            <TextView
-                android:id="@+id/tvProfName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rakesh Jain"
-                android:maxLines="1" />
-
-        </LinearLayout>
+            app:layout_constraintTop_toTopOf="parent" />
 
 
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.80" />
+
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
