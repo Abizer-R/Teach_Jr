@@ -82,21 +82,15 @@ class StdMarkAtdFragment : Fragment() {
     }
 
     private fun initialSetup() {
-//        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
-//        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
-//        enrollment = arguments?.getString(FirebasePaths.STUDENT_ENROLLMENT)
+        binding.toolbar.title = "Mark Attendance"
+        binding.icClose.setOnClickListener {
+            checkExitConditions()
+        }
 
         createConfirmDialog()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                when(markAtdViewModel.atdStatus.value) {
-                    is AttendanceStatusStd.DiscoveringTimestamp -> confirmDialog.show()
-                    is AttendanceStatusStd.TimestampDiscovered -> confirmDialog.show()
-                    is AttendanceStatusStd.AttendanceMarked -> {
-                        Toast.makeText(context, "You cannot exit right now. Please Wait a few seconds", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> findNavController().navigateUp()
-                }
+                checkExitConditions()
             }
 
         })
@@ -238,6 +232,17 @@ class StdMarkAtdFragment : Fragment() {
             channel = manager?.initialize(context, Looper.getMainLooper(), null)
         }
         markAtdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
+    }
+
+    private fun checkExitConditions() {
+        when(markAtdViewModel.atdStatus.value) {
+            is AttendanceStatusStd.DiscoveringTimestamp -> confirmDialog.show()
+            is AttendanceStatusStd.TimestampDiscovered -> confirmDialog.show()
+            is AttendanceStatusStd.AttendanceMarked -> {
+                Toast.makeText(context, "You cannot exit right now. Please Wait a few seconds", Toast.LENGTH_SHORT).show()
+            }
+            else -> findNavController().navigateUp()
+        }
     }
 
     private fun createConfirmDialog() {

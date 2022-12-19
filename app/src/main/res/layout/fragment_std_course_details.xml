@@ -306,12 +306,23 @@
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.cardview.widget.CardView>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvLecList"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/rvCardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:itemCount="6"
-                tools:listitem="@layout/item_lec_rv_student"/>
+                app:cardCornerRadius="10dp"
+                android:elevation="4dp"
+                android:layout_margin="16dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvLecList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:itemCount="6"
+                    android:padding="32dp"
+                    tools:listitem="@layout/item_lec_rv_student"/>
+
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
