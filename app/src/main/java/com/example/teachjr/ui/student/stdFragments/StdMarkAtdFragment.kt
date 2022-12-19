@@ -18,11 +18,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdMarkAtdBinding
+import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdMarkAtdViewModel
 import com.example.teachjr.utils.AttendanceStatusStd
 import com.example.teachjr.utils.FirebasePaths
@@ -36,11 +38,13 @@ class StdMarkAtdFragment : Fragment() {
 
     private val TAG = StdMarkAtdFragment::class.java.simpleName
     private lateinit var binding: FragmentStdMarkAtdBinding
-    private val markAtdViewModel by viewModels<StdMarkAtdViewModel>()
 
-    private var courseCode: String? = null
-    private var sem_sec: String? = null
-    private var enrollment: String? = null
+    private val markAtdViewModel by viewModels<StdMarkAtdViewModel>()
+    private val sharedStdViewModel by activityViewModels<SharedStdViewModel>()
+
+//    private var courseCode: String? = null
+//    private var sem_sec: String? = null
+//    private var enrollment: String? = null
 
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
@@ -78,9 +82,9 @@ class StdMarkAtdFragment : Fragment() {
     }
 
     private fun initialSetup() {
-        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
-        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
-        enrollment = arguments?.getString(FirebasePaths.STUDENT_ENROLLMENT)
+//        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
+//        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
+//        enrollment = arguments?.getString(FirebasePaths.STUDENT_ENROLLMENT)
 
         createConfirmDialog()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
@@ -152,7 +156,8 @@ class StdMarkAtdFragment : Fragment() {
                     /**
                      * Marking Attendance
                      */
-                    markAtdViewModel.martAtd(courseCode!!, it.timestamp.toString(), sem_sec!!, enrollment!!)
+                    markAtdViewModel.martAtd(sharedStdViewModel.courseCode!!, it.timestamp.toString(),
+                        sharedStdViewModel.userDetails!!.sem_sec!!, sharedStdViewModel.userDetails!!.enrollment!!)
                 }
                 is AttendanceStatusStd.AttendanceMarked -> {
 //                    binding.fabMarkAtd.visibility = View.GONE
@@ -193,10 +198,8 @@ class StdMarkAtdFragment : Fragment() {
     private fun startAttendance() {
         Log.i(TAG, "StudentTesting_MarkAtdPage: startAttendance() called")
 
-        if(courseCode == null || sem_sec == null || enrollment == null) {
-            Log.i(TAG, "StudentTesting_MarkAtdPage: null arguments, $courseCode, $sem_sec, $enrollment")
-            Toast.makeText(context, "Couldn't fetch all arguments, Some might be null", Toast.LENGTH_SHORT).show()
-        } else {
+        if(sharedStdViewModel.courseValuesNotNull() && sharedStdViewModel.userDetails != null) {
+
             if(manager == null) {
                 val applicationContext = (activity as Activity).applicationContext
                 manager = applicationContext.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
@@ -206,10 +209,12 @@ class StdMarkAtdFragment : Fragment() {
             }
 
             lifecycleScope.launch(Dispatchers.IO) {
-                val serviceInstance = "$sem_sec/$courseCode"
+                val serviceInstance = "${sharedStdViewModel.userDetails!!.sem_sec}/${sharedStdViewModel.courseCode}"
                 markAtdViewModel.discoverTimestamp(manager!!, channel!!, serviceInstance)
-//                discoverTimestamp()
             }
+
+        } else {
+            Toast.makeText(context, "Couldn't fetch all arguments, Some might be null", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -222,7 +227,7 @@ class StdMarkAtdFragment : Fragment() {
     }
 
     private fun broadcastTimestamp(timestamp: String) {
-        val serviceInstance = "$sem_sec/$courseCode"
+        val serviceInstance = "${sharedStdViewModel.userDetails!!.sem_sec}/${sharedStdViewModel.courseCode}"
         val record = mapOf( FirebasePaths.TIMESTAMP to timestamp )
         val serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(serviceInstance, SERVICE_TYPE, record)
         if(manager == null) {

@@ -24,16 +24,11 @@ class StdCourseViewModel
     val atdDetails: LiveData<Response<StdAttendanceDetails>>
         get() = _atdDetails
 
-    fun getAttendanceDetails(courseCode: String?, sem_sem: String?) {
+    fun getAttendanceDetails(courseCode: String, sem_sem: String) {
         _atdDetails.postValue(Response.Loading())
         Log.i(TAG, "StdTesting: Calling getAttendanceDetails")
         viewModelScope.launch {
-            if(courseCode == null || sem_sem == null) {
-                Log.i(TAG, "StdTesting: Error - null arguments")
-                _atdDetails.postValue(Response.Error("Error - null arguments", null))
-            } else {
-                _atdDetails.postValue(studentRepository.getAttendanceDetails(sem_sem, courseCode))
-            }
+            _atdDetails.postValue(studentRepository.getAttendanceDetails(sem_sem, courseCode))
         }
     }
 }

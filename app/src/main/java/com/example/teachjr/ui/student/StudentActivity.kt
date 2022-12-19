@@ -33,7 +33,7 @@ class StudentActivity : AppCompatActivity() {
     private lateinit var connectionLiveData: ConnectionLiveData
     private var connectionStatus = true
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
+//    private lateinit var appBarConfiguration: AppBarConfiguration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,16 +42,16 @@ class StudentActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         Log.i(TAG, "StudentTesting: Student Activity Created")
 
-        binding.btnLogout.setOnClickListener {
-            val firebaseAuth = FirebaseAuth.getInstance()
-            firebaseAuth.signOut()
-            Toast.makeText(this, "Signed Out", Toast.LENGTH_SHORT).show()
-
-            val intent = Intent(this, AuthActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            startActivity(intent)
-            finish()
-        }
+//        binding.btnLogout.setOnClickListener {
+//            val firebaseAuth = FirebaseAuth.getInstance()
+//            firebaseAuth.signOut()
+//            Toast.makeText(this, "Signed Out", Toast.LENGTH_SHORT).show()
+//
+//            val intent = Intent(this, AuthActivity::class.java)
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//            startActivity(intent)
+//            finish()
+//        }
 
         /**
          * We cant use Network callback and connectivity manager until onCreate is called
@@ -74,21 +74,21 @@ class StudentActivity : AppCompatActivity() {
             }
         }
 
-        /**
-         * Implementing Up Navigation button
-         */
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.stdFragmentContainerView) as NavHostFragment
-        val navController = navHostFragment.navController
-        val appBarConfiguration = AppBarConfiguration
-            .Builder(
-                R.id.stdHomeFragment,
-                R.id.stdMarkAtdFragment
-            )
-            .build()
-        // Check if androidx.navigation.ui.NavigationUI.setupActionBarWithNavController is imported
-        // By default title in actionbar is used from the fragment label in navigation graph
-        // To use the app name, remove label else if you want to add customized label specify it there
-        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
+//        /**
+//         * Implementing Up Navigation button
+//         */
+//        val navHostFragment = supportFragmentManager.findFragmentById(R.id.stdFragmentContainerView) as NavHostFragment
+//        val navController = navHostFragment.navController
+//        val appBarConfiguration = AppBarConfiguration
+//            .Builder(
+//                R.id.stdHomeFragment,
+//                R.id.stdMarkAtdFragment
+//            )
+//            .build()
+//        // Check if androidx.navigation.ui.NavigationUI.setupActionBarWithNavController is imported
+//        // By default title in actionbar is used from the fragment label in navigation graph
+//        // To use the app name, remove label else if you want to add customized label specify it there
+//        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
     }
 
     private fun updateConnectionTextView(isConnected: Boolean) {

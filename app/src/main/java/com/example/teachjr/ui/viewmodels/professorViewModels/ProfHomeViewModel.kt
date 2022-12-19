@@ -1,5 +1,6 @@
 package com.example.teachjr.ui.viewmodels.professorViewModels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,6 +28,7 @@ class ProfHomeViewModel
         get() = _courseList
 
     fun getCourseList() {
+        Log.i(TAG, "ProfTesting-ViewModel: Calling getCourselist")
         _courseList.postValue(Response.Loading())
         viewModelScope.launch {
             val courseListDeferred = async { profRepository.getCourseList() }
