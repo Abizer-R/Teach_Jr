@@ -73,7 +73,7 @@ class StdHomeFragment : Fragment() {
          * Fetch the user details and courseList only if we have just launched our app
          */
         if(sharedStdViewModel.userDetails != null && sharedStdViewModel.courseList != null) {
-            populateCourseRv()
+            updateViews()
         } else {
             stdHomeViewModel.getUser()
             setObservers()
@@ -105,7 +105,8 @@ class StdHomeFragment : Fragment() {
             when(it) {
                 is Response.Loading -> {
                     // TODO: Hide the progress bar only when the course List is populated.... CHANGE THE CODE
-                    binding.progressBar.visibility = View.VISIBLE
+                    showLoading()
+//                    binding.progressBar.visibility = View.VISIBLE
                 }
                 is Response.Error -> {
                     Log.i(TAG, "StudentTesting_HomePage: CurrUser_Error - ${it.errorMessage}")
@@ -130,17 +131,19 @@ class StdHomeFragment : Fragment() {
 
         stdHomeViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
+                is Response.Loading -> {
+//                    binding.progressBar.visibility = View.VISIBLE
+                }
                 is Response.Error -> {
                     Log.i(TAG, "StudentTesting_HomePage: CourseList_Error - ${it.errorMessage}")
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }
                 is Response.Success -> {
                     Log.i(TAG, "StudentTesting_HomePage: CourseList = ${it.data}")
-                    binding.progressBar.visibility = View.GONE
+//                    binding.progressBar.visibility = View.GONE
                     if(it.data != null) {
                         sharedStdViewModel.setCourseList(it.data)
-                        populateCourseRv()
+                        updateViews()
                     } else {
                         Toast.makeText(context, "Course List is null. Refresh", Toast.LENGTH_SHORT).show()
                     }
@@ -149,7 +152,28 @@ class StdHomeFragment : Fragment() {
         }
     }
 
-    private fun populateCourseRv() {
+    private fun showLoading() {
+        binding.tvWelcome.visibility = View.GONE
+        binding.rvCourseList.visibility = View.GONE
+
+        binding.tvUsername.text = "Loading"
+        binding.tvUserBatch.text = "Please Wait..."
+
+        binding.loadingAnimation.visibility = View.VISIBLE
+        binding.loadingAnimation.playAnimation()
+    }
+
+    private fun updateViews() {
+        binding.tvWelcome.visibility = View.VISIBLE
+        binding.rvCourseList.visibility = View.VISIBLE
+
+        binding.loadingAnimation.visibility = View.GONE
+        binding.loadingAnimation.cancelAnimation()
+
+        binding.tvUsername.text = sharedStdViewModel.userDetails!!.name
+        binding.tvUserBatch.text =
+            sharedStdViewModel.userDetails!!.section + ", Sem-" +
+                    sharedStdViewModel.userDetails!!.semester
         profCourseListAdapter.updateList(sharedStdViewModel.courseList!!)
     }
 

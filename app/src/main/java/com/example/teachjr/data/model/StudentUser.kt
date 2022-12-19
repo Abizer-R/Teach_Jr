@@ -7,6 +7,6 @@ data class StudentUser constructor(
     val userType: String? = "",
     val branch: String? = "",
     val section: String? = "",
-    val semester: String? = "",
+    val semester: Int? = null,
     val sem_sec: String? = "",
 )
