@@ -48,7 +48,7 @@ class StdHomeFragment : Fragment() {
     ): View {
         binding = FragmentStdHomeBinding.inflate(layoutInflater)
         Log.i(TAG, "StudentTesting_HomePage: Student HomePage Created")
-        setHasOptionsMenu(true)
+//        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -86,8 +86,7 @@ class StdHomeFragment : Fragment() {
         binding.toolbar.setOnMenuItemClickListener {
             when(it.itemId) {
                 R.id.action_view_profile -> {
-                    // TODO: Implement view profile (DETAILS + LOGOUT)
-                    Toast.makeText(context, "View Profile clicked", Toast.LENGTH_SHORT).show()
+                    findNavController().navigate(R.id.action_stdHomeFragment_to_stdProfileFragment)
                     true
                 }
                 R.id.action_settings -> {
@@ -104,9 +103,7 @@ class StdHomeFragment : Fragment() {
         stdHomeViewModel.currUserStd.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> {
-                    // TODO: Hide the progress bar only when the course List is populated.... CHANGE THE CODE
                     showLoading()
-//                    binding.progressBar.visibility = View.VISIBLE
                 }
                 is Response.Error -> {
                     Log.i(TAG, "StudentTesting_HomePage: CurrUser_Error - ${it.errorMessage}")
@@ -121,9 +118,7 @@ class StdHomeFragment : Fragment() {
                         // Fetch the courseList only if we have user's details
                         stdHomeViewModel.getCourseList(it.data.institute!!, it.data.branch!!, it.data.sem_sec!!)
                     } else {
-
-                        // TODO: Add a refresh button
-                        Toast.makeText(context, "User Details are null. Refresh", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "User Details are null. Try restarting the app.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

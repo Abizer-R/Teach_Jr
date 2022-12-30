@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.data.model.RvStdLecListItem
-import com.example.teachjr.utils.AdapterUtils
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
 
 class StdLecListAdapter : RecyclerView.Adapter<StdLecListAdapter.CourseViewHolder>() {
 
@@ -24,7 +24,7 @@ class StdLecListAdapter : RecyclerView.Adapter<StdLecListAdapter.CourseViewHolde
         holder.apply {
             val lecNum = lectures.size - position
             tvLecNum.text = "Lec-${lecNum}: "
-            tvLecDate.text = AdapterUtils.getFormattedDate(lectures[position].timestamp)
+            tvLecDate.text = Adapter_ViewModel_Utils.getFormattedDate(lectures[position].timestamp)
             if(lectures[position].isPresent) {
                 tvLecNum.setTextColor(Color.parseColor("#01dd01"))
                 tvLecDate.setTextColor(Color.parseColor("#01dd01"))

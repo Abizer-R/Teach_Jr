@@ -1,7 +1,13 @@
 package com.example.teachjr.ui.student.stdFragments
 
 import android.animation.ObjectAnimator
+import android.app.AlertDialog
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.location.LocationManager
 import android.os.Bundle
+import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -21,7 +27,7 @@ import com.example.teachjr.databinding.FragmentStdCourseDetailsBinding
 import com.example.teachjr.ui.adapters.StdLecListAdapter
 import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdCourseViewModel
-import com.example.teachjr.utils.AdapterUtils
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
 import com.example.teachjr.utils.AnimationExtUtil.startAnimation
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,7 +60,7 @@ class StdCourseDetailsFragment : Fragment() {
             title = "Course Detail"
 
             // Adding up navigation
-            setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_32)
             setNavigationOnClickListener {
                 findNavController().navigateUp()
             }
@@ -62,6 +68,12 @@ class StdCourseDetailsFragment : Fragment() {
 
         initialSetup()
         setupViews()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Making sure FAB is not there when we return after Successfully marking attendance
+        binding.fabMarkAtd.visibility = View.GONE
     }
 
     private fun initialSetup() {
@@ -85,9 +97,6 @@ class StdCourseDetailsFragment : Fragment() {
                 }
                 is Response.Error -> {
                     stopLoading()
-                    // TODO: Convert Loading layout into an ErrorLayout ("Uh-Oh, an error occurred")
-                    //  and show the error textview in white area
-//                    binding.progressBar.visibility = View.GONE
                     Log.i(TAG, "StudentTesting_CoursePage: lecDetails_Error - ${it.errorMessage}")
                     Toast.makeText(context, "Error: ${it.errorMessage}", Toast.LENGTH_SHORT).show()
                 }
@@ -119,7 +128,7 @@ class StdCourseDetailsFragment : Fragment() {
         stopLoading()
 
         binding.tvUserName.text = sharedStdViewModel.userDetails!!.name
-        binding.tvCurrDate.text = AdapterUtils.getFormattedDate2(Calendar.getInstance().timeInMillis.toString())
+        binding.tvCurrDate.text = Adapter_ViewModel_Utils.getFormattedDate2(Calendar.getInstance().timeInMillis.toString())
         binding.tvPresentCount.text = atdDetails.presentLecCount.toString()
         binding.tvAbsentCount.text = atdDetails.absentLecCount.toString()
 
@@ -134,38 +143,71 @@ class StdCourseDetailsFragment : Fragment() {
             .setDuration(2000)
             .start()
 
-        val revLecList = atdDetails.lecList.reversed()
+        val rvLecList = atdDetails.lecList.reversed()
 
         // Show mark Attendance if attendance is onGoing
-        if(revLecList[0].isContinuing) {
+        if(rvLecList[0].isContinuing && !rvLecList[0].isPresent) {
             setupFAB()
         }
-        stdLecListAdapter.updateList(revLecList)
+        stdLecListAdapter.updateList(rvLecList)
     }
 
     private fun setupFAB() {
         binding.fabMarkAtd.visibility = View.VISIBLE
 
+        binding.fabMarkAtd.setOnClickListener {
+
+            val mLocationManager = (activity as Context).getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            // Checking GPS is enabled
+            val mGPS = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            if(mGPS) {
+                explodeFAB()
+            } else {
+                showGPSAlert()
+            }
+        }
+    }
+
+    private fun explodeFAB() {
         // Setting up the FAB explosion
         val animation = AnimationUtils.loadAnimation(context, R.anim.fab_explosion_anim)
         animation.apply {
             duration = 500
             interpolator = AccelerateDecelerateInterpolator()
         }
-        binding.fabMarkAtd.setOnClickListener {
-            binding.fabMarkAtd.visibility = View.INVISIBLE
-            binding.fabShape.visibility = View.VISIBLE
-            // We will use our own extension func that we made (ViewExt.kt) and not the default one
-            binding.fabShape.startAnimation(animation) {
-                // This callback will be called when the animation ends
-                findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment)
-            }
+
+        binding.fabMarkAtd.visibility = View.INVISIBLE
+        binding.fabShape.visibility = View.VISIBLE
+        // We will use our own extension func that we made (ViewExt.kt) and not the default one
+        binding.fabShape.startAnimation(animation) {
+            // This callback will be called when the animation ends
+            findNavController().navigate(R.id.action_stdCourseDetailsFragment_to_stdMarkAtdFragment)
         }
+    }
+
+    private fun showGPSAlert() {
+        val gpsAlertBuilder = AlertDialog.Builder(context)
+        gpsAlertBuilder.setMessage("GPS is required to mark the attendance. Please enable it and try again.")
+            .setCancelable(true)
+            .setPositiveButton("Okay", object : DialogInterface.OnClickListener {
+                override fun onClick(p0: DialogInterface?, p1: Int) {
+                    startActivity(Intent(ACTION_LOCATION_SOURCE_SETTINGS))
+                }
+            })
+            .setNegativeButton("Cancel", object : DialogInterface.OnClickListener {
+                override fun onClick(p0: DialogInterface?, p1: Int) {
+                    p0?.cancel()
+                }
+            })
+
+        val gpsAlert = gpsAlertBuilder.create()
+        gpsAlert.show()
     }
 
     private fun showLoading() {
         binding.layoutLoaded.visibility = View.GONE
         binding.atdDetailLayout.visibility = View.GONE
+        binding.rvCardView.visibility = View.GONE
 
         binding.layoutLoading.visibility = View.VISIBLE
         binding.loadingAnimation.visibility = View.VISIBLE
@@ -174,6 +216,7 @@ class StdCourseDetailsFragment : Fragment() {
 
     private fun stopLoading() {
         binding.layoutLoaded.visibility = View.VISIBLE
+        binding.rvCardView.visibility = View.VISIBLE
         binding.atdDetailLayout.visibility = View.VISIBLE
 
         binding.layoutLoading.visibility = View.GONE

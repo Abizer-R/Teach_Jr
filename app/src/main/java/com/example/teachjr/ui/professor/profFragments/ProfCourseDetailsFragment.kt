@@ -14,7 +14,7 @@ import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentProfCourseDetailsBinding
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfCourseViewModel
 import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
-import com.example.teachjr.utils.AdapterUtils
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -44,7 +44,7 @@ class ProfCourseDetailsFragment : Fragment() {
             title = "Course Detail"
 
             //Adding up navigation
-            setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_32)
             setNavigationOnClickListener {
                 findNavController().navigateUp()
             }
@@ -58,7 +58,7 @@ class ProfCourseDetailsFragment : Fragment() {
         if(sharedProfViewModel.courseValuesNotNull()) {
             binding.tvCourseCode.text = sharedProfViewModel.courseCode
             binding.tvCourseName.text = sharedProfViewModel.courseName
-            binding.tvSection.text = AdapterUtils.getSection(sharedProfViewModel.sem_sec.toString())
+            binding.tvSection.text = Adapter_ViewModel_Utils.getSection(sharedProfViewModel.sem_sec.toString())
 
             courseViewModel.getLectureCount(sharedProfViewModel.sem_sec!!, sharedProfViewModel.courseCode!!)
 

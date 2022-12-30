@@ -50,7 +50,7 @@ class ProfAtdReportFragment : Fragment() {
             title = "Attendance Report"
 
             //Adding up navigation
-            setNavigationIcon(R.drawable.ic_baseline_arrow_back_24)
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_32)
             setNavigationOnClickListener {
                 findNavController().navigateUp()
             }

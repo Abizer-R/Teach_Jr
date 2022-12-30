@@ -5,13 +5,13 @@
     <item
         android:id="@+id/action_view_profile"
         android:title="View Profile"
-        android:icon="@drawable/ic_baseline_person_24"
+        android:icon="@drawable/ic_baseline_person_32"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_settings"
         android:title="Settings"
-        android:icon="@drawable/ic_baseline_settings_24"
+        android:icon="@drawable/ic_baseline_settings_32"
         app:showAsAction="ifRoom"/>
 
 </menu>

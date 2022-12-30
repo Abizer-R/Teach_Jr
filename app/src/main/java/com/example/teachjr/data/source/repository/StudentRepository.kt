@@ -173,6 +173,8 @@ class StudentRepository
 //        addListenerForSingleValueEvent(valueEventListener)
 //    }
 
-
+    fun logout() {
+        firebaseAuth.signOut()
+    }
 
 }

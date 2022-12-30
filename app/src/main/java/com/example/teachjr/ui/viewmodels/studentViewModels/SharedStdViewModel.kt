@@ -16,8 +16,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SharedStdViewModel
-    @Inject constructor(
-): ViewModel(){
+@Inject constructor(
+    private val studentRepository: StudentRepository
+): ViewModel() {
 
     private val TAG = SharedStdViewModel::class.java.simpleName
 
@@ -70,5 +71,9 @@ class SharedStdViewModel
         _courseCode = null
         _courseName = null
         _profName = null
+    }
+
+    fun logout() {
+        studentRepository.logout()
     }
 }

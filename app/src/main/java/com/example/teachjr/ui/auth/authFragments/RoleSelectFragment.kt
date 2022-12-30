@@ -45,17 +45,14 @@ class RoleSelectFragment : Fragment() {
     }
 
     private fun setupOnclickListeners() {
-        // TODO: IMPLEMENT TWO WAY BINDING
         binding.layoutStd.setOnClickListener {
             authViewModel.setUserType(FirebaseConstants.TYPE_STUDENT)
         }
 
-        // TODO: IMPLEMENT TWO WAY BINDING
         binding.layoutProf.setOnClickListener {
             authViewModel.setUserType(FirebaseConstants.TYPE_PROFESSOR)
         }
 
-        // TODO: Bind this in XML itself
         binding.btnLogin.setOnClickListener {
             gotoLoginScreen()
         }

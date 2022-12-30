@@ -17,6 +17,8 @@ import com.example.teachjr.utils.WifiSD.BroadcastService
 import com.example.teachjr.utils.WifiSD.DiscoverService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.invoke
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,13 +42,55 @@ class StdMarkAtdViewModel
     val atdStatus: LiveData<AttendanceStatusStd>
         get() = _atdStatus
 
+    private val _timerStatus = MutableLiveData<Int?>()
+    val timerStatus: LiveData<Int?>
+        get() = _timerStatus
+
+    /**
+     * This variable is important because each time showTimer() is called it
+     * starts off a new coroutine thread and we cannot cancel the previous one in our case.
+     * So, @currRemainingSeconds acts as a global timer value.
+     * positive value = remaining time for discovery and marking attendance
+     * negative value = remaining time for broadcast
+     */
+    private var currRemainingSeconds = 0
+
+    suspend fun showTimerDiscovering() {
+        viewModelScope.launch {
+            while(currRemainingSeconds > 0) {
+                delay(1000)
+                currRemainingSeconds--
+                _timerStatus.postValue(currRemainingSeconds)
+            }
+        }
+    }
+
+    suspend fun showTimerBroadcasting() {
+        viewModelScope.launch {
+            while(currRemainingSeconds < 0) {
+                delay(1000)
+                currRemainingSeconds++
+                _timerStatus.postValue(currRemainingSeconds)
+            }
+        }
+    }
+
     suspend fun discoverTimestamp(
         manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInstance: String) {
 
         Log.i(TAG, "WIFI_SD_Testing-ViewModel: discoverTimestamp() Called")
-        _atdStatus.postValue(AttendanceStatusStd.DiscoveringTimestamp())
-        setServiceRequest(manager, channel, serviceInstance)
-        discoverTimestampFor1Min(manager, channel, 0)
+        _atdStatus.postValue(AttendanceStatusStd.DiscoveringTimestamp("Calculating..."))
+
+        // Setting timer seconds and showing it
+        currRemainingSeconds = 120
+        showTimerDiscovering()
+
+        viewModelScope.launch {
+            delay(10000)
+            _atdStatus.postValue(AttendanceStatusStd.TimestampDiscovered("1667816525745"))
+        }
+//        setServiceRequest(manager, channel, serviceInstance)
+//        discoverTimestampFor1Min(manager, channel, 0)
     }
 
     suspend fun discoverTimestampFor1Min(
@@ -61,6 +105,8 @@ class StdMarkAtdViewModel
                 delay(10000)
                 if(isDiscovering && repeatCount < 6) {
                     discoverTimestampFor1Min(manager, channel, repeatCount+1)
+                } else {
+                    _atdStatus.postValue(AttendanceStatusStd.TimestampNotFound())
                 }
             }
             2 -> { /* Failed to initiate discovery */
@@ -152,6 +198,8 @@ class StdMarkAtdViewModel
     fun broadcastTimestamp(manager: WifiP2pManager, channel: WifiP2pManager.Channel, serviceInfo: WifiP2pDnsSdServiceInfo) {
 
         viewModelScope.launch {
+            currRemainingSeconds = -20
+            showTimerBroadcasting()
             Log.i(TAG, "WIFI_SD_Testing-ViewModel: broadcastTimestamp - Calling broadcastTimestamp()")
             val broadcastResult = BroadcastService.startServiceBroadcast(serviceInfo, manager, channel)
             when(broadcastResult) {

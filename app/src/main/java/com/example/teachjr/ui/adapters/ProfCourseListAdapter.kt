@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.data.model.RvProfCourseListItem
-import com.example.teachjr.utils.AdapterUtils
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
 
 class ProfCourseListAdapter(
     private val onItemClicked: (RvProfCourseListItem) -> Unit
@@ -28,7 +28,7 @@ class ProfCourseListAdapter(
 //            val semSec = courses[position].sem_sec
 //            val secIdx = semSec.indexOf("_", 0)
 //            tvSection.text = semSec.substring(secIdx + 1)
-            tvSection.text = AdapterUtils.getSection(courses[position].sem_sec)
+            tvSection.text = Adapter_ViewModel_Utils.getSection(courses[position].sem_sec)
             holder.itemView.setOnClickListener {
                 onItemClicked.invoke(courses[position])
             }

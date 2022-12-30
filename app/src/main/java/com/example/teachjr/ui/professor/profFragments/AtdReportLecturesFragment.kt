@@ -8,12 +8,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentAtdReportLecturesBinding
-import com.example.teachjr.databinding.FragmentAtdReportStudentsBinding
 import com.example.teachjr.ui.adapters.AtdReportAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfAtdReportViewModel
-import com.example.teachjr.utils.AdapterUtils
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,7 +53,7 @@ class AtdReportLecturesFragment : Fragment() {
 
                     val stdCount = it.data!!.studentList.size
                     val lecList = it.data.lectureList
-                    val lecPercentageList = AdapterUtils.getLecturePercentage(stdCount, lecList)
+                    val lecPercentageList = Adapter_ViewModel_Utils.getLecturePercentage(stdCount, lecList)
 
                     atdReportAdapter.updateList(lecPercentageList)
                 }

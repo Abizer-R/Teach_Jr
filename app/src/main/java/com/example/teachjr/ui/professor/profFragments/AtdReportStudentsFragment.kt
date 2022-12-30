@@ -8,12 +8,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentAtdReportStudentsBinding
-import com.example.teachjr.databinding.FragmentProfAtdReportBinding
 import com.example.teachjr.ui.adapters.AtdReportAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfAtdReportViewModel
-import com.example.teachjr.utils.AdapterUtils
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
 import com.example.teachjr.utils.Response
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -53,7 +51,7 @@ class AtdReportStudentsFragment : Fragment() {
                 is Response.Success -> {
                     binding.progressBar.visibility = View.GONE
 
-                    val stdPercentageList = AdapterUtils.getStdPercentage(it.data!!.studentList, it.data.lectureList)
+                    val stdPercentageList = Adapter_ViewModel_Utils.getStdPercentage(it.data!!.studentList, it.data.lectureList)
                     atdReportAdapter.updateList(stdPercentageList)
                 }
             }

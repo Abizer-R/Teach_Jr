@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_stdHomeFragment_to_stdCourseDetailsFragment"
             app:destination="@id/stdCourseDetailsFragment" />
+        <action
+            android:id="@+id/action_stdHomeFragment_to_stdProfileFragment"
+            app:destination="@id/stdProfileFragment" />
     </fragment>
     <fragment
         android:id="@+id/stdCourseDetailsFragment"
@@ -28,4 +31,9 @@
         android:name="com.example.teachjr.ui.student.stdFragments.StdMarkAtdFragment"
         android:label="fragment_std_mark_atd"
         tools:layout="@layout/fragment_std_mark_atd" />
+    <fragment
+        android:id="@+id/stdProfileFragment"
+        android:name="com.example.teachjr.ui.student.stdFragments.StdProfileFragment"
+        android:label="fragment_std_profile"
+        tools:layout="@layout/fragment_std_profile" />
 </navigation>
