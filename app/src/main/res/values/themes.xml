@@ -10,7 +10,7 @@
         <item name="colorSecondaryVariant">@color/secondaryDark</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorSecondary</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/primaryDark</item>
         <!-- Customize Font for textviews. -->
         <item name="android:textViewStyle">@style/ProximaTextViewStyle</item>
     </style>

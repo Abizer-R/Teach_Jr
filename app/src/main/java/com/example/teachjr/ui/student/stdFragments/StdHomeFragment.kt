@@ -79,16 +79,20 @@ class StdHomeFragment : Fragment() {
             setObservers()
         }
 
+        binding.layoutUserGreeting.setOnClickListener {
+            findNavController().navigate(R.id.action_stdHomeFragment_to_stdProfileFragment)
+        }
+
     }
 
     private fun setupOptionsMenu() {
         binding.toolbar.inflateMenu(R.menu.homepage_menu)
         binding.toolbar.setOnMenuItemClickListener {
             when(it.itemId) {
-                R.id.action_view_profile -> {
-                    findNavController().navigate(R.id.action_stdHomeFragment_to_stdProfileFragment)
-                    true
-                }
+//                R.id.action_view_profile -> {
+//                    findNavController().navigate(R.id.action_stdHomeFragment_to_stdProfileFragment)
+//                    true
+//                }
                 R.id.action_settings -> {
                     // TODO: Implement settings (HELP + ABOUT)
                     Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
@@ -151,8 +155,8 @@ class StdHomeFragment : Fragment() {
         binding.tvWelcome.visibility = View.GONE
         binding.rvCourseList.visibility = View.GONE
 
-        binding.tvUsername.text = "Loading"
-        binding.tvUserBatch.text = "Please Wait..."
+        binding.tvUsername.text = "Loading\nPlease Wait"
+//        binding.tvUserBatch.text = "Please Wait..."
 
         binding.loadingAnimation.visibility = View.VISIBLE
         binding.loadingAnimation.playAnimation()
@@ -166,9 +170,9 @@ class StdHomeFragment : Fragment() {
         binding.loadingAnimation.cancelAnimation()
 
         binding.tvUsername.text = sharedStdViewModel.userDetails!!.name
-        binding.tvUserBatch.text =
-            sharedStdViewModel.userDetails!!.section + ", Sem-" +
-                    sharedStdViewModel.userDetails!!.semester
+//        binding.tvUserBatch.text =
+//            sharedStdViewModel.userDetails!!.section + ", Sem-" +
+//                    sharedStdViewModel.userDetails!!.semester
         profCourseListAdapter.updateList(sharedStdViewModel.courseList!!)
     }
 

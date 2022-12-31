@@ -266,7 +266,7 @@ class ProfMarkAtdFragment : Fragment() {
         if(atdOngoing) {
             binding.fabAttendance.apply {
                 shrink()
-                setIconResource(R.drawable.ic_baseline_close_24)
+                setIconResource(R.drawable.ic_baseline_close_32)
                 backgroundTintList = ColorStateList.valueOf(Color.parseColor("#f7292b"))
             }
         }

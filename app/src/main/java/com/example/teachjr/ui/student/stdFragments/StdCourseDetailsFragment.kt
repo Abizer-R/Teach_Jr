@@ -57,7 +57,6 @@ class StdCourseDetailsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.apply {
-            title = "Course Detail"
 
             // Adding up navigation
             setNavigationIcon(R.drawable.ic_baseline_arrow_back_32)
@@ -222,5 +221,7 @@ class StdCourseDetailsFragment : Fragment() {
         binding.layoutLoading.visibility = View.GONE
         binding.loadingAnimation.visibility = View.GONE
         binding.loadingAnimation.cancelAnimation()
+
+//        binding.scrollView.requestFocus(View.FOCUS_UP)
     }
 }

@@ -78,7 +78,7 @@ class StdMarkAtdFragment : Fragment() {
     }
 
     private fun initialSetup() {
-        binding.toolbar.title = "Mark Attendance"
+//        binding.toolbar.title = "Mark Attendance"
         binding.icClose.setOnClickListener {
             checkExitConditions()
         }

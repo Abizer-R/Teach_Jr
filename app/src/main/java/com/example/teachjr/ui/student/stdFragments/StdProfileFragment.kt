@@ -41,7 +41,6 @@ class StdProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.apply {
-            title = "User Details"
 
             // Adding up navigation
             setNavigationIcon(R.drawable.ic_baseline_arrow_back_32)
