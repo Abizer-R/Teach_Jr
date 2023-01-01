@@ -160,6 +160,7 @@ class StdCourseDetailsFragment : Fragment() {
             // Checking GPS is enabled
             val mGPS = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
             if(mGPS) {
+                binding.toolbar.visibility = View.INVISIBLE
                 explodeFAB()
             } else {
                 showGPSAlert()

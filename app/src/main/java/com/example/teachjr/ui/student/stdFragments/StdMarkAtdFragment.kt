@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -72,9 +73,17 @@ class StdMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        showFadeAnimation()
         initialSetup()
         initiateAtdMarking()
         setupObservers()
+    }
+
+    private fun showFadeAnimation() {
+        val animation = AnimationUtils.loadAnimation(context, R.anim.fade_in)
+        binding.toolbar.startAnimation(animation)
+        binding.atdLecDetails.startAnimation(animation)
     }
 
     private fun initialSetup() {

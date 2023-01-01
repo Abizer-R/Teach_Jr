@@ -24,6 +24,8 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class StdHomeFragment : Fragment() {
 
+    // TODO: ADD ANIMATIONS WHEN YO GO FROM ONE PAGE TO ANOTHER !!!!!!!!!
+
     private val TAG = StdHomeFragment::class.java.simpleName
     private lateinit var binding: FragmentStdHomeBinding
 

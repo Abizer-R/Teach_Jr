@@ -10,8 +10,6 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
         android:background="@color/primary"
         android:elevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
