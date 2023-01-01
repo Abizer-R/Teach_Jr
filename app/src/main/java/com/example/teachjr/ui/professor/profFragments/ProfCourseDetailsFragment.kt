@@ -44,7 +44,7 @@ class ProfCourseDetailsFragment : Fragment() {
             title = "Course Detail"
 
             //Adding up navigation
-            setNavigationIcon(R.drawable.ic_baseline_arrow_back_32)
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_white_32)
             setNavigationOnClickListener {
                 findNavController().navigateUp()
             }

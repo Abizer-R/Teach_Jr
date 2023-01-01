@@ -9,15 +9,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
-import com.example.teachjr.databinding.FragmentStdHomeBinding
 import com.example.teachjr.databinding.FragmentStdProfileBinding
 import com.example.teachjr.ui.auth.AuthActivity
 import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
-import com.example.teachjr.ui.viewmodels.studentViewModels.StdHomeViewModel
 
 class StdProfileFragment : Fragment() {
 
@@ -43,7 +39,7 @@ class StdProfileFragment : Fragment() {
         binding.toolbar.apply {
 
             // Adding up navigation
-            setNavigationIcon(R.drawable.ic_baseline_arrow_back_32)
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_white_32)
             setNavigationOnClickListener {
                 findNavController().navigateUp()
             }

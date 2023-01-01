@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentLoginStdBinding
@@ -31,6 +32,15 @@ class LoginStdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.toolbar.apply {
+
+            // Adding up navigation
+            setNavigationIcon(R.drawable.ic_baseline_arrow_back_black_32)
+            setNavigationOnClickListener {
+                findNavController().navigateUp()
+            }
+        }
 
         binding.btnLogin.setOnClickListener {
             loginStudent()
