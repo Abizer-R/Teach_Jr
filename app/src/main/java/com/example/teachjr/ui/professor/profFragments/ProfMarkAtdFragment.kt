@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -70,10 +71,10 @@ class ProfMarkAtdFragment : Fragment() {
                 } else {
                     checkGpsAndStartAttendance()
                 }
-            } else {
-                // TODO: Display a message that attendance cannot be initiated without permission
-            }
+            } else {}
         }
+
+    // TODO: Directly start attendance...
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,9 +87,18 @@ class ProfMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        showFadeAnimation()
         initialSetup()
         setupViews()
         setupObservers()
+    }
+
+    private fun showFadeAnimation() {
+        val animation = AnimationUtils.loadAnimation(context, R.anim.fade_in)
+        binding.toolbar.startAnimation(animation)
+        // TODO: may or may not add atdLecDetails layout
+//        binding.atdLecDetails.startAnimation(animation)
     }
 
     private fun initialSetup() {

@@ -95,6 +95,7 @@ class StdCourseDetailsFragment : Fragment() {
 //                    binding.progressBar.visibility = View.VISIBLE
                 }
                 is Response.Error -> {
+                    // TODO: Error Layout
                     stopLoading()
                     Log.i(TAG, "StudentTesting_CoursePage: lecDetails_Error - ${it.errorMessage}")
                     Toast.makeText(context, "Error: ${it.errorMessage}", Toast.LENGTH_SHORT).show()
@@ -205,6 +206,7 @@ class StdCourseDetailsFragment : Fragment() {
     }
 
     private fun showLoading() {
+        // TODO: You can hide whole scrollview....
         binding.layoutLoaded.visibility = View.GONE
         binding.atdDetailLayout.visibility = View.GONE
         binding.rvCardView.visibility = View.GONE

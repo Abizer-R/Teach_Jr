@@ -2,17 +2,30 @@ package com.example.teachjr.ui.viewmodels.professorViewModels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.example.teachjr.data.model.ProfessorUser
 import com.example.teachjr.data.model.RvProfCourseListItem
 import com.example.teachjr.data.model.RvStdCourseListItem
+import com.example.teachjr.data.model.StudentUser
+import com.example.teachjr.data.source.repository.ProfRepository
+import com.example.teachjr.data.source.repository.StudentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class SharedProfViewModel
-    @Inject constructor(
-    ): ViewModel() {
+@Inject constructor(
+    private val profRepository: ProfRepository
+): ViewModel() {
 
     private val TAG = SharedProfViewModel::class.java.simpleName
+
+    private var _userDetails: ProfessorUser? = null
+    val userDetails: ProfessorUser?
+        get() = _userDetails
+
+    fun setUserDetails(stdDetails: ProfessorUser) {
+        _userDetails = stdDetails
+    }
 
     private var _courseList: List<RvProfCourseListItem>? = null
     val courseList: List<RvProfCourseListItem>?
@@ -72,5 +85,9 @@ class SharedProfViewModel
         _courseName = null
         _sem_sec = null
         _lecCount = null
+    }
+
+    fun logout() {
+        profRepository.logout()
     }
 }

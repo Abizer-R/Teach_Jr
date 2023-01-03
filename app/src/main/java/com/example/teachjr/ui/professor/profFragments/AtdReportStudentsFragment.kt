@@ -43,19 +43,32 @@ class AtdReportStudentsFragment : Fragment() {
 
         atdReportViewModel.atdDetails.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
+                is Response.Loading -> {
+                    showLoading()
+                }
                 is Response.Error -> {
-                    binding.progressBar.visibility = View.GONE
+                    // TODO: Error Layout
+                    stopLoading()
                     Toast.makeText(context, "${it.errorMessage}", Toast.LENGTH_SHORT).show()
                 }
                 is Response.Success -> {
-                    binding.progressBar.visibility = View.GONE
+                    stopLoading()
 
                     val stdPercentageList = Adapter_ViewModel_Utils.getStdPercentage(it.data!!.studentList, it.data.lectureList)
                     atdReportAdapter.updateList(stdPercentageList)
                 }
             }
         }
+    }
+
+    private fun showLoading() {
+        binding.loadingAnimation.visibility = View.VISIBLE
+        binding.loadingAnimation.playAnimation()
+    }
+
+    private fun stopLoading() {
+        binding.loadingAnimation.visibility = View.GONE
+        binding.loadingAnimation.cancelAnimation()
     }
 
 }

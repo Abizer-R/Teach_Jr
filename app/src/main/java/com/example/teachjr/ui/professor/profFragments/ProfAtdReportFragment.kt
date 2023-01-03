@@ -27,9 +27,6 @@ class ProfAtdReportFragment : Fragment() {
     private val atdReportViewModel by activityViewModels<ProfAtdReportViewModel>()
     private val sharedProfViewModel by activityViewModels<SharedProfViewModel>()
 
-//    private var sem_sec: String? = null
-//    private var courseCode: String? = null
-
     private lateinit var viewPagerAdapter: AtdReportViewPagerAdapter
     private val tabLayoutTitles = arrayListOf("Lectures", "Students")
 
@@ -45,7 +42,6 @@ class ProfAtdReportFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.apply {
-            title = "Attendance Report"
 
             //Adding up navigation
             setNavigationIcon(R.drawable.ic_baseline_arrow_back_white_32)
@@ -61,9 +57,6 @@ class ProfAtdReportFragment : Fragment() {
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = tabLayoutTitles[position]
         }.attach()
-
-//        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
-//        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
 
         if(sharedProfViewModel.courseValuesNotNull()) {
             lifecycleScope.launch {

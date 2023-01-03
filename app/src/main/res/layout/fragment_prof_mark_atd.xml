@@ -4,7 +4,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.professor.profFragments.ProfMarkAtdFragment">
+    tools:context=".ui.professor.profFragments.ProfMarkAtdFragment"
+    android:background="@color/secondary">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="@color/primary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mark Attendance"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <ImageView
+            android:id="@+id/icClose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_close_32"
+            android:layout_gravity="end"
+            android:padding="8dp"/>
+
+    </androidx.appcompat.widget.Toolbar>
 
     <TextView
         android:id="@+id/tvTimeStamp"
@@ -13,13 +43,13 @@
         android:text="TIMESTAMP"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvAttendance"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        tools:itemCount="30"
+        tools:itemCount="20"
         tools:listitem="@layout/item_attendance_rv"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="4"

@@ -25,6 +25,24 @@ class ProfRepository
     private val currentUser: FirebaseUser
         get() = firebaseAuth.currentUser!!
 
+    suspend fun getUserDetails(): Response<ProfessorUser> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                .child(currentUser.uid)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        continuation.resume(Response.Success(snapshot.getValue(ProfessorUser::class.java)))
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "ProfessorTesting_Repo: getUserDetails = ${error.message}")
+                        continuation.resume(Response.Error(error.message, null))
+                    }
+
+                })
+        }
+    }
+
 
     suspend fun getCourseList(): Response<List<RvProfCourseListItem>> {
         return suspendCoroutine { continuation ->
@@ -213,6 +231,10 @@ class ProfRepository
                     continuation.resume(Response.Error(it.message.toString(), null))
                 }
         }
+    }
+
+    fun logout() {
+        firebaseAuth.signOut()
     }
 
 }
