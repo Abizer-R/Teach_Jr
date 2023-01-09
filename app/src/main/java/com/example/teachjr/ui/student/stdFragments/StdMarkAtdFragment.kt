@@ -25,7 +25,7 @@ import com.example.teachjr.databinding.FragmentStdMarkAtdBinding
 import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdMarkAtdViewModel
 import com.example.teachjr.utils.Adapter_ViewModel_Utils
-import com.example.teachjr.utils.AttendanceStatusStd
+import com.example.teachjr.utils.sealedClasses.AttendanceStatusStd
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 import dagger.hilt.android.AndroidEntryPoint

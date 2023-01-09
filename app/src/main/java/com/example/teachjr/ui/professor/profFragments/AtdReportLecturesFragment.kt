@@ -12,7 +12,7 @@ import com.example.teachjr.databinding.FragmentAtdReportLecturesBinding
 import com.example.teachjr.ui.adapters.AtdReportAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfAtdReportViewModel
 import com.example.teachjr.utils.Adapter_ViewModel_Utils
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

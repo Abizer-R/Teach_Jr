@@ -16,8 +16,7 @@ import com.example.teachjr.databinding.FragmentProfHomeBinding
 import com.example.teachjr.ui.adapters.ProfCourseListAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfHomeViewModel
 import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
-import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

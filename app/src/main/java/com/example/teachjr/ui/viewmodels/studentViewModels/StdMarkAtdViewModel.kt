@@ -10,15 +10,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.source.repository.StudentRepository
-import com.example.teachjr.utils.AttendanceStatusStd
+import com.example.teachjr.utils.sealedClasses.AttendanceStatusStd
 import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.WifiSD.BroadcastService
 import com.example.teachjr.utils.WifiSD.DiscoverService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.invoke
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -85,12 +83,13 @@ class StdMarkAtdViewModel
         currRemainingSeconds = 120
         showTimerDiscovering()
 
-        viewModelScope.launch {
-            delay(10000)
-            _atdStatus.postValue(AttendanceStatusStd.TimestampDiscovered("1667816525745"))
-        }
-//        setServiceRequest(manager, channel, serviceInstance)
-//        discoverTimestampFor1Min(manager, channel, 0)
+        // TODO: Added below code for testing purposes. [You can remove it now]
+//        viewModelScope.launch {
+//            delay(10000)
+//            _atdStatus.postValue(AttendanceStatusStd.TimestampDiscovered("1667816525745"))
+//        }
+        setServiceRequest(manager, channel, serviceInstance)
+        discoverTimestampFor1Min(manager, channel, 0)
     }
 
     suspend fun discoverTimestampFor1Min(

@@ -9,8 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.source.repository.ProfRepository
-import com.example.teachjr.utils.AttendanceStatusProf
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.AttendanceStatusProf
+import com.example.teachjr.utils.sealedClasses.Response
 import com.example.teachjr.utils.WifiSD.BroadcastService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

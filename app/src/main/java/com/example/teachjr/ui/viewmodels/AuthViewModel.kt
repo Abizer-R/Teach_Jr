@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.source.repository.AuthRepositoryImpl
-import com.example.teachjr.utils.UserType
+import com.example.teachjr.utils.sealedClasses.UserType
 import com.example.teachjr.utils.FirebaseConstants
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

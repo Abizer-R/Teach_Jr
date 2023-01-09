@@ -1,6 +1,5 @@
 package com.example.teachjr.ui.auth.authFragments
 
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -13,14 +12,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentRoleSelectBinding
-import com.example.teachjr.ui.student.StudentActivity
 import com.example.teachjr.ui.viewmodels.AuthViewModel
-import com.example.teachjr.utils.UserType
+import com.example.teachjr.utils.sealedClasses.UserType
 import com.example.teachjr.utils.FirebaseConstants
-import com.example.teachjr.utils.Response
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

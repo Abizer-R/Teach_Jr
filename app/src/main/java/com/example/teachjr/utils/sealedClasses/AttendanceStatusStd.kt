@@ -1,4 +1,4 @@
-package com.example.teachjr.utils
+package com.example.teachjr.utils.sealedClasses
 
 sealed class AttendanceStatusStd(val timestamp: String? = null, val remainingTime: String? = null, val errorMessage: String? = null)
 {

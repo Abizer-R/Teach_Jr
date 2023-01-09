@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.data.source.repository.StudentRepository
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,6 +23,14 @@ class StdCourseViewModel
     private val _atdDetails = MutableLiveData<Response<StdAttendanceDetails>>()
     val atdDetails: LiveData<Response<StdAttendanceDetails>>
         get() = _atdDetails
+
+    private var _toBeShownFAB = false
+    val toBeShownFAB: Boolean
+        get() = _toBeShownFAB
+
+    fun setFABVisibility(isVisibile: Boolean) {
+        _toBeShownFAB = true
+    }
 
     fun getAttendanceDetails(courseCode: String, sem_sem: String) {
         _atdDetails.postValue(Response.Loading())

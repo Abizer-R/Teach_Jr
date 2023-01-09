@@ -29,7 +29,7 @@ import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdCourseViewModel
 import com.example.teachjr.utils.Adapter_ViewModel_Utils
 import com.example.teachjr.utils.AnimationExtUtil.startAnimation
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
@@ -72,7 +72,11 @@ class StdCourseDetailsFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         // Making sure FAB is not there when we return after Successfully marking attendance
-        binding.fabMarkAtd.visibility = View.GONE
+        if(courseViewModel.toBeShownFAB) {
+            binding.fabMarkAtd.visibility = View.VISIBLE
+        } else {
+            binding.fabMarkAtd.visibility = View.GONE
+        }
     }
 
     private fun initialSetup() {
@@ -147,6 +151,7 @@ class StdCourseDetailsFragment : Fragment() {
 
         // Show mark Attendance if attendance is onGoing
         if(rvLecList[0].isContinuing && !rvLecList[0].isPresent) {
+            courseViewModel.setFABVisibility(true)
             setupFAB()
         }
         stdLecListAdapter.updateList(rvLecList)

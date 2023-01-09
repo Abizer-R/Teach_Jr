@@ -1,6 +1,5 @@
 package com.example.teachjr.ui.professor.profFragments
 
-import android.animation.ObjectAnimator
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -20,13 +19,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
-import com.example.teachjr.data.model.StdAttendanceDetails
 import com.example.teachjr.databinding.FragmentProfCourseDetailsBinding
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfCourseViewModel
 import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
 import com.example.teachjr.utils.Adapter_ViewModel_Utils
 import com.example.teachjr.utils.AnimationExtUtil.startAnimation
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 

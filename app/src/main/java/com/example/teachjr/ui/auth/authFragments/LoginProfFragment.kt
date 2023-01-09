@@ -13,7 +13,7 @@ import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentLoginProfBinding
 import com.example.teachjr.ui.professor.ProfessorActivity
 import com.example.teachjr.ui.viewmodels.AuthViewModel
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

@@ -3,9 +3,6 @@ package com.example.teachjr.ui.professor.profFragments
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.Color
-import android.location.LocationManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.os.Bundle
@@ -30,10 +27,9 @@ import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
 import com.example.teachjr.ui.adapters.AttendanceAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfMarkAtdViewModel
 import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
-import com.example.teachjr.utils.AttendanceStatusProf
-import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Permissions
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.*
+import com.example.teachjr.utils.sealedClasses.AttendanceStatusProf
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -48,16 +44,14 @@ class ProfMarkAtdFragment : Fragment() {
 
     private val attendanceAdapter = AttendanceAdapter()
 
-//    private var courseCode: String? = null
-//    private var semSec: String? = null
-//    private var lecCount: Int? = null
-
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
 
     private val SERVICE_TYPE = "_presence._tcp"
 
     private lateinit var confirmDialog: AlertDialog
+
+    // TODO: Write the flow on paper first, then apply changes
 
 
     private val permissionRequestLauncher =
@@ -66,15 +60,16 @@ class ProfMarkAtdFragment : Fragment() {
                 it.value == true
             }
             if(granted) {
-                if(markAtdViewModel.isAtdOngoing) {
-                    endAttendance()
-                } else {
-                    checkGpsAndStartAttendance()
-                }
-            } else {}
+                startAttendance()
+//                if(markAtdViewModel.isAtdOngoing) {
+//                    endAttendance()
+//                } else {
+//                    startAttendance()
+//                }
+            } else {
+                // TODO: Display a message that attendance cannot be initiated without permission
+            }
         }
-
-    // TODO: Directly start attendance...
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -91,32 +86,50 @@ class ProfMarkAtdFragment : Fragment() {
         showFadeAnimation()
         initialSetup()
         setupViews()
+//        initiateAtdMarking() // REMOVED FOR TESTING PURPOSES
         setupObservers()
+
+        /**
+         * For testing purposes
+         */
+        showAtdStatus(Constants.MARKING_ATTENDANCE)
+        val list = arrayListOf<String>("0818CS201001", "0818CS201002", "0818CS201003", "0818CS201004", "0818CS201005")
+        attendanceAdapter.updateList(list)
+        binding.rvAttendance.visibility = View.VISIBLE
     }
 
     private fun showFadeAnimation() {
         val animation = AnimationUtils.loadAnimation(context, R.anim.fade_in)
         binding.toolbar.startAnimation(animation)
-        // TODO: may or may not add atdLecDetails layout
-//        binding.atdLecDetails.startAnimation(animation)
     }
 
     private fun initialSetup() {
-//        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
-//        semSec = arguments?.getString(FirebasePaths.SEM_SEC)
-//        lecCount = arguments?.getInt(FirebasePaths.LEC_COUNT)
+
+        binding.icClose.setOnClickListener {
+            checkExitConditions()
+        }
 
         createConfirmDialog()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if(markAtdViewModel.isAtdOngoing) {
-                    confirmDialog.show()
-                } else {
-                    findNavController().navigateUp()
-                }
+                // TODO: Copy the checkExitConditions() and modify if necessary
+                checkExitConditions()
+//                if(markAtdViewModel.isAtdOngoing) {
+//                    confirmDialog.show()
+//                } else {
+//                    findNavController().navigateUp()
+//                }
             }
 
         })
+
+        binding.fabTryAgain.setOnClickListener {
+            initiateAtdMarking()
+        }
+
+        binding.fabEndAtd.setOnClickListener {
+            endAttendance()
+        }
     }
 
     private fun setupViews() {
@@ -127,27 +140,16 @@ class ProfMarkAtdFragment : Fragment() {
             layoutManager = GridLayoutManager(context, 4)
         }
 
-        binding.fabAttendance.setOnClickListener {
-            if(Permissions.hasAccessCoarseLocation(activity as Context)
-                && Permissions.hasAccessFineLocation(activity as Context)) {
 
-                if(markAtdViewModel.isAtdOngoing) {
-                    endAttendance()
-                } else {
-                    checkGpsAndStartAttendance()
-                }
-            } else {
-                permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
-            }
-        }
+
 
         binding.rvAttendance.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 if(dy > 0) {
-                    binding.fabAttendance.hide()
+                    binding.fabEndAtd.hide()
                 } else {
-                    binding.fabAttendance.show()
+                    binding.fabEndAtd.show()
                 }
             }
         })
@@ -159,13 +161,18 @@ class ProfMarkAtdFragment : Fragment() {
             when(it) {
                 is AttendanceStatusProf.FetchingTimestamp -> {
                     markAtdViewModel.updateIsAtdOngoing(true)
-                    binding.progressBar.visibility = View.VISIBLE
-                    updateFAB(isEnabled = false)
+
+                    // TODO: Make some string Constants and pass them below
+                    showAtdStatus(Constants.INITIATING_ATTENDANCE)
+//                    showTimerLayout(it.remainingTime!!)
+                    Log.i(TAG, "WIFI_SD_Observer_Status: Fetching Timestamp")
+
                 }
                 is AttendanceStatusProf.Initiated -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.tvTimeStamp.text = it.timestamp
-                    updateFAB(atdOngoing = true)
+//                    binding.tvTimeStamp.text = it.timestamp
+                    // TODO: Make some string Constants and pass them below
+                    // TODO: Show (present / total) students as well... somewhere....
+                    showAtdStatus(Constants.MARKING_ATTENDANCE)
 
                     /**
                      * Applying LifeCycleScope so that when we exit the fragment,
@@ -183,16 +190,16 @@ class ProfMarkAtdFragment : Fragment() {
                     }
                 }
                 is AttendanceStatusProf.Ended -> {
-                    updateFAB(atdEnded = true)
+                    // TODO: Text = "Attendance ended"
+                    // TODO: Make a layout which shows the attendance percentage too
+                    showSuccessful()
                     markAtdViewModel.updateIsAtdOngoing(false)
                     Toast.makeText(context, "Attendance is over", Toast.LENGTH_SHORT).show()
                 }
                 is AttendanceStatusProf.Error -> {
-                    // TODO: Give some functionality to retry
                     markAtdViewModel.updateIsAtdOngoing(false)
-                    updateFAB(atdEnded = true)
-                    binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
+                    showError()
                 }
             }
         }
@@ -202,6 +209,11 @@ class ProfMarkAtdFragment : Fragment() {
                 is Response.Loading -> {}
                 is Response.Error -> Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 is Response.Success -> {
+                    if(binding.tvNoAtd.visibility == View.VISIBLE) {
+                        binding.tvNoAtd.visibility = View.GONE
+                        binding.rvAttendance.visibility = View.VISIBLE
+                    }
+
                     attendanceAdapter.updateList(it.data!!)
                 }
             }
@@ -222,22 +234,22 @@ class ProfMarkAtdFragment : Fragment() {
         markAtdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
     }
 
-    private fun checkGpsAndStartAttendance(){
-        val mLocationManager = (activity as Context).getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        // Checking GPS is enabled
-        val mGPS = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    private fun initiateAtdMarking() {
+        if(Permissions.hasAccessCoarseLocation(activity as Context)
+            && Permissions.hasAccessFineLocation(activity as Context)) {
 
-        if(mGPS) {
-            startAttendance()
+            if(markAtdViewModel.isAtdOngoing == false) {
+                startAttendance()
+            }
+
         } else {
-            Toast.makeText(context, "Please turn on GPS", Toast.LENGTH_SHORT).show()
+            permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
         }
     }
 
     private fun startAttendance() {
         Log.i(TAG, "ProfessorTesting_MarkAtdPage: startAttendance() called")
 
-        // TODO: Check if location and wifi is on
         if(sharedProfViewModel.courseValuesNotNull() && sharedProfViewModel.lecCountNotNull()) {
             // TODO: Give an option to choose for manually closing atd or closing in 2 min
 
@@ -263,29 +275,6 @@ class ProfMarkAtdFragment : Fragment() {
         }
     }
 
-    private fun updateFAB(isEnabled: Boolean = true, atdOngoing: Boolean = false, atdEnded: Boolean = false) {
-
-        if(isEnabled) {
-            binding.fabAttendance.isEnabled = true
-            binding.fabAttendance.isClickable = true
-        } else {
-            binding.fabAttendance.isEnabled = false
-            binding.fabAttendance.isClickable = false
-        }
-
-        if(atdOngoing) {
-            binding.fabAttendance.apply {
-                shrink()
-                setIconResource(R.drawable.ic_baseline_close_32)
-                backgroundTintList = ColorStateList.valueOf(Color.parseColor("#f7292b"))
-            }
-        }
-
-        if(atdEnded) {
-            binding.fabAttendance.visibility = View.GONE
-        }
-    }
-
     override fun onStop() {
         super.onStop()
         if(channel != null) {
@@ -293,16 +282,71 @@ class ProfMarkAtdFragment : Fragment() {
         }
     }
 
+    private fun checkExitConditions() {
+        if(markAtdViewModel.isAtdOngoing) {
+            confirmDialog.show()
+        } else {
+            findNavController().navigateUp()
+        }
+    }
+
     private fun createConfirmDialog() {
         confirmDialog = AlertDialog.Builder(context)
-            .setTitle("End Attendance?")
-            .setMessage("Attendance is still going on.")
-            .setPositiveButton("Yes") { _, _ ->
+            .setTitle(Constants.ALERT_DIALOG_END_ATTENDANCE_PRIMARY)
+            .setMessage(Constants.ALERT_DIALOG_END_ATTENDANCE_SECONDARY)
+            .setPositiveButton(Constants.YES) { _, _ ->
                 endAttendance()
                 findNavController().navigateUp()
             }
-            .setNegativeButton("No", null)
+            .setNegativeButton(Constants.NO, null)
             .create()
+    }
+
+    private fun showAtdStatus(atdString: String) {
+        binding.cvErrorLayout.visibility = View.GONE
+
+        binding.cvAtdStatusLayout.visibility = View.VISIBLE
+        binding.cvRVLayout.visibility = View.VISIBLE
+        binding.fabEndAtd.visibility = View.VISIBLE
+        if(atdString.equals(Constants.MARKING_ATTENDANCE)) {
+            binding.loadingAnimation.visibility = View.VISIBLE
+            binding.loadingAnimation.playAnimation()
+        } else {
+            binding.loadingAnimation.visibility = View.GONE
+        }
+
+        binding.tvAtdStatus.text = atdString
+
+        binding.tvNoAtd.visibility = View.VISIBLE
+        binding.rvAttendance.visibility = View.GONE
+
+    }
+
+    private fun showError() {
+        binding.cvAtdStatusLayout.visibility = View.GONE
+        binding.cvRVLayout.visibility = View.GONE
+        binding.fabEndAtd.visibility = View.GONE
+
+        binding.cvErrorLayout.visibility = View.VISIBLE
+        binding.loadingAnimation.cancelAnimation()
+    }
+
+
+    private fun showSuccessful() {
+        binding.cvAtdStatusLayout.visibility = View.GONE
+        binding.fabEndAtd.visibility = View.GONE
+        binding.loadingAnimation.cancelAnimation()
+
+
+        binding.cvErrorLayout.visibility = View.VISIBLE
+        binding.icError.setImageResource(R.drawable.ic_baseline_verified_64)
+        binding.tvErrorMessage.text = Constants.ATTENDANCE_MARKED_SUCCESSFULLY
+        binding.tvSolutionMsg.text = Constants.EXIT_SCREEN_ALLOWED_PROMPT
+        binding.fabTryAgain.visibility = View.GONE
+
+        // Setting these invisible because I need a margin below the "exit now" TextView
+        binding.tvSolution1.visibility = View.INVISIBLE
+        binding.tvSolution2.visibility = View.INVISIBLE
     }
 
 }

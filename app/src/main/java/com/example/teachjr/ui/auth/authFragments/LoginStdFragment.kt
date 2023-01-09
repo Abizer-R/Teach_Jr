@@ -9,13 +9,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentLoginStdBinding
-import com.example.teachjr.ui.professor.ProfessorActivity
 import com.example.teachjr.ui.viewmodels.AuthViewModel
 import com.example.teachjr.ui.student.StudentActivity
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 
 class LoginStdFragment : Fragment() {
 

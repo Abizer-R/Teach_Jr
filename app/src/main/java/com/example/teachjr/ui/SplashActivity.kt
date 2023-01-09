@@ -14,8 +14,8 @@ import com.example.teachjr.ui.professor.ProfessorActivity
 import com.example.teachjr.ui.student.StudentActivity
 import com.example.teachjr.ui.viewmodels.SplashViewModel
 import com.example.teachjr.utils.Permissions
-import com.example.teachjr.utils.Response
-import com.example.teachjr.utils.UserType
+import com.example.teachjr.utils.sealedClasses.Response
+import com.example.teachjr.utils.sealedClasses.UserType
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

@@ -7,9 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.ProfessorUser
 import com.example.teachjr.data.model.RvProfCourseListItem
-import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.ProfRepository
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject

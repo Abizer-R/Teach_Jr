@@ -14,11 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdHomeBinding
 import com.example.teachjr.ui.adapters.StdCourseListAdapter
-import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdHomeViewModel
-import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
