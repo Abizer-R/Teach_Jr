@@ -13,4 +13,11 @@ object Constants {
 
     const val YES = "Yes"
     const val NO = "No"
+
+    const val ATD_STATUS_ABSENT = "ABSENT"
+    const val ATD_STATUS_PRESENT_WIFI_SD = "WIFI_SD"
+    const val ATD_STATUS_PRESENT_MANUAL = "MANUAL"
+
+    const val HEX_CODE_RED = "#E11717"
+    const val HEX_CODE_GREEN = "#0EC921"
 }

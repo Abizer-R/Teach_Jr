@@ -8,7 +8,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.teachjr.data.model.ProfAttendanceDetails
+import com.example.teachjr.data.model.RvProfMarkAtdListItem
 import com.example.teachjr.data.source.repository.ProfRepository
+import com.example.teachjr.utils.Constants
 import com.example.teachjr.utils.sealedClasses.AttendanceStatusProf
 import com.example.teachjr.utils.sealedClasses.Response
 import com.example.teachjr.utils.WifiSD.BroadcastService
@@ -20,6 +23,7 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
+import kotlin.math.log
 
 @HiltViewModel
 class ProfMarkAtdViewModel
@@ -40,21 +44,44 @@ class ProfMarkAtdViewModel
     val atdStatus: LiveData<AttendanceStatusProf>
         get() = _atdStatus
 
-    private val _presentList = MutableLiveData<Response<List<String>>>()
-    val presentList: LiveData<Response<List<String>>>
+    private val _presentList = MutableLiveData<Response<MutableMap<String, String>>>()
+    val presentList: LiveData<Response<MutableMap<String, String>>>
         get() = _presentList
 
 
     fun initAtd(sem_sec: String, courseCode: String, lecCount: Int) {
         _atdStatus.postValue(AttendanceStatusProf.FetchingTimestamp())
         viewModelScope.launch {
-            val timestamp = Calendar.getInstance().timeInMillis.toString()
-            val newLecDoc = profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount)
-            when(newLecDoc) {
+            /**
+             * Getting list of all students (Initially all will be absent)
+             */
+            val stdListResponse = profRepository.getStdList(sem_sec)
+            when(stdListResponse) {
                 is Response.Loading -> {}
-                is Response.Error -> _atdStatus.postValue(AttendanceStatusProf.Error(newLecDoc.errorMessage.toString()))
+                is Response.Error -> {
+                    _presentList.postValue(Response.Error(stdListResponse.errorMessage.toString(), null))
+                    Log.i(TAG, "Prof_testing: stdList error - ${stdListResponse.errorMessage}")
+                }
                 is Response.Success -> {
-                    _atdStatus.postValue(AttendanceStatusProf.Initiated(timestamp))
+
+                    val stdList: MutableMap<String, String> = mutableMapOf()
+                    stdListResponse.data!!.forEach {
+                        stdList[it] = Constants.ATD_STATUS_ABSENT
+                    }
+                    _presentList.postValue(Response.Success(stdList))
+
+                    /**
+                     * Getting timestamp and initiating attendance
+                     */
+                    val timestamp = Calendar.getInstance().timeInMillis.toString()
+                    val newLecDoc = profRepository.createNewAtdRef(sem_sec, courseCode, timestamp, lecCount)
+                    when(newLecDoc) {
+                        is Response.Loading -> {}
+                        is Response.Error -> _atdStatus.postValue(AttendanceStatusProf.Error(newLecDoc.errorMessage.toString()))
+                        is Response.Success -> {
+                            _atdStatus.postValue(AttendanceStatusProf.Initiated(timestamp))
+                        }
+                    }
                 }
             }
         }
@@ -117,17 +144,24 @@ class ProfMarkAtdViewModel
      * read the note in ProfMarkAtdFrag (in setupObserver())
      */
     suspend fun observeAtd(sem_sec: String, courseCode: String, timestamp: String) {
-        _presentList.postValue(Response.Loading())
+//        _presentList.postValue(Response.Loading())
         try {
             withContext(Dispatchers.IO) {
-                val stdList: MutableList<String> = ArrayList()
+                Log.i(TAG, "observeAtdTesting: STEP 1 = ObserveAtd Called")
+//                val stdList = _presentList.value!!.data!!.toMutableMap()
+                val stdList = _presentList.value!!.data!!
+
+                Log.i(TAG, "observeAtdTesting: STEP 2 done = $stdList")
+
                 profRepository.observeAttendance(sem_sec, courseCode, timestamp)
                     .collect { flowResult ->
+                        Log.i(TAG, "observeAtdTesting: flowResult = $flowResult")
 
                         if(flowResult == "false") {
                             _atdStatus.postValue(AttendanceStatusProf.Ended())
                         } else {
-                            stdList.add(flowResult)
+//                            stdList.add(flowResult)
+                            stdList[flowResult] = Constants.ATD_STATUS_PRESENT_WIFI_SD
                             _presentList.postValue(Response.Success(stdList))
                         }
                     }

@@ -37,6 +37,8 @@ import kotlin.math.abs
 @AndroidEntryPoint
 class StdMarkAtdFragment : Fragment() {
 
+    // TODO: Create a child observer on 'isAtdOngoing' and create a layout for "Unfortunately, Attendance is over", if atd is not marked yet
+
     private val TAG = StdMarkAtdFragment::class.java.simpleName
     private lateinit var binding: FragmentStdMarkAtdBinding
 

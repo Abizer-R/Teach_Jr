@@ -23,6 +23,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
+import com.example.teachjr.data.model.RvProfMarkAtdListItem
 import com.example.teachjr.databinding.FragmentProfMarkAtdBinding
 import com.example.teachjr.ui.adapters.AttendanceAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfMarkAtdViewModel
@@ -86,16 +87,8 @@ class ProfMarkAtdFragment : Fragment() {
         showFadeAnimation()
         initialSetup()
         setupViews()
-//        initiateAtdMarking() // REMOVED FOR TESTING PURPOSES
+        initiateAtdMarking()
         setupObservers()
-
-        /**
-         * For testing purposes
-         */
-        showAtdStatus(Constants.MARKING_ATTENDANCE)
-        val list = arrayListOf<String>("0818CS201001", "0818CS201002", "0818CS201003", "0818CS201004", "0818CS201005")
-        attendanceAdapter.updateList(list)
-        binding.rvAttendance.visibility = View.VISIBLE
     }
 
     private fun showFadeAnimation() {
@@ -162,15 +155,12 @@ class ProfMarkAtdFragment : Fragment() {
                 is AttendanceStatusProf.FetchingTimestamp -> {
                     markAtdViewModel.updateIsAtdOngoing(true)
 
-                    // TODO: Make some string Constants and pass them below
                     showAtdStatus(Constants.INITIATING_ATTENDANCE)
 //                    showTimerLayout(it.remainingTime!!)
                     Log.i(TAG, "WIFI_SD_Observer_Status: Fetching Timestamp")
 
                 }
                 is AttendanceStatusProf.Initiated -> {
-//                    binding.tvTimeStamp.text = it.timestamp
-                    // TODO: Make some string Constants and pass them below
                     // TODO: Show (present / total) students as well... somewhere....
                     showAtdStatus(Constants.MARKING_ATTENDANCE)
 
@@ -214,7 +204,8 @@ class ProfMarkAtdFragment : Fragment() {
                         binding.rvAttendance.visibility = View.VISIBLE
                     }
 
-                    attendanceAdapter.updateList(it.data!!)
+                    val stdList = it.data!!.entries.map { currStd -> RvProfMarkAtdListItem(currStd.key, currStd.value) }
+                    attendanceAdapter.updateList(stdList)
                 }
             }
         }
@@ -317,8 +308,8 @@ class ProfMarkAtdFragment : Fragment() {
 
         binding.tvAtdStatus.text = atdString
 
-        binding.tvNoAtd.visibility = View.VISIBLE
-        binding.rvAttendance.visibility = View.GONE
+//        binding.tvNoAtd.visibility = View.VISIBLE
+//        binding.rvAttendance.visibility = View.GONE
 
     }
 

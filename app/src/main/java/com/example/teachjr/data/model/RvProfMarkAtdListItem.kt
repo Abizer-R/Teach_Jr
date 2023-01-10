@@ -1,8 +1,8 @@
 package com.example.teachjr.data.model
 
-import com.example.teachjr.utils.sealedClasses.AttendanceStatusRvItem
+import com.example.teachjr.utils.Constants
 
 data class RvProfMarkAtdListItem (
     val enrollment: String = "",
-    val atdStatus: AttendanceStatusRvItem = AttendanceStatusRvItem.Absent()
+    var atdStatus: String = Constants.ATD_STATUS_ABSENT
 )
