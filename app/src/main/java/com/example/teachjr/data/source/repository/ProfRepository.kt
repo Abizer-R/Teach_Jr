@@ -3,7 +3,7 @@ package com.example.teachjr.data.source.repository
 import android.util.Log
 import com.example.teachjr.data.model.*
 import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
@@ -24,6 +24,24 @@ class ProfRepository
     private val TAG = ProfRepository::class.java.simpleName
     private val currentUser: FirebaseUser
         get() = firebaseAuth.currentUser!!
+
+    suspend fun getUserDetails(): Response<ProfessorUser> {
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.USER_COLLECTION)
+                .child(currentUser.uid)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        continuation.resume(Response.Success(snapshot.getValue(ProfessorUser::class.java)))
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.i(TAG, "ProfessorTesting_Repo: getUserDetails = ${error.message}")
+                        continuation.resume(Response.Error(error.message, null))
+                    }
+
+                })
+        }
+    }
 
 
     suspend fun getCourseList(): Response<List<RvProfCourseListItem>> {
@@ -213,6 +231,10 @@ class ProfRepository
                     continuation.resume(Response.Error(it.message.toString(), null))
                 }
         }
+    }
+
+    fun logout() {
+        firebaseAuth.signOut()
     }
 
 }

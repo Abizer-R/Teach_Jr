@@ -1,7 +1,6 @@
 package com.example.teachjr.data.source.repository
 
-import com.example.teachjr.utils.Response
-import com.example.teachjr.utils.UserType
+import com.example.teachjr.utils.sealedClasses.Response
 import com.google.firebase.auth.FirebaseUser
 
 interface AuthRepository {

@@ -3,9 +3,6 @@ package com.example.teachjr.ui.student.stdFragments
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.Color
-import android.location.LocationManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
 import android.os.Bundle
@@ -15,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,25 +24,26 @@ import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdMarkAtdBinding
 import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdMarkAtdViewModel
-import com.example.teachjr.utils.AttendanceStatusStd
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
+import com.example.teachjr.utils.sealedClasses.AttendanceStatusStd
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.Permissions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
+import kotlin.math.abs
 
 @AndroidEntryPoint
 class StdMarkAtdFragment : Fragment() {
+
+    // TODO: Create a child observer on 'isAtdOngoing' and create a layout for "Unfortunately, Attendance is over", if atd is not marked yet
 
     private val TAG = StdMarkAtdFragment::class.java.simpleName
     private lateinit var binding: FragmentStdMarkAtdBinding
 
     private val markAtdViewModel by viewModels<StdMarkAtdViewModel>()
     private val sharedStdViewModel by activityViewModels<SharedStdViewModel>()
-
-//    private var courseCode: String? = null
-//    private var sem_sec: String? = null
-//    private var enrollment: String? = null
 
     private var manager: WifiP2pManager? = null
     private var channel: WifiP2pManager.Channel? = null
@@ -59,7 +58,7 @@ class StdMarkAtdFragment : Fragment() {
                 it.value == true
             }
             if(granted) {
-                checkGpsAndStartAttendance()
+                startAttendance()
             } else {
                 // TODO: Display a message that attendance cannot be initiated without permission
             }
@@ -76,81 +75,68 @@ class StdMarkAtdFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        showFadeAnimation()
         initialSetup()
-        setupViews()
+        initiateAtdMarking()
         setupObservers()
     }
 
+    private fun showFadeAnimation() {
+        val animation = AnimationUtils.loadAnimation(context, R.anim.fade_in)
+        binding.toolbar.startAnimation(animation)
+        binding.atdLecDetails.startAnimation(animation)
+    }
+
     private fun initialSetup() {
-//        courseCode = arguments?.getString(FirebasePaths.COURSE_CODE)
-//        sem_sec = arguments?.getString(FirebasePaths.SEM_SEC)
-//        enrollment = arguments?.getString(FirebasePaths.STUDENT_ENROLLMENT)
+//        binding.toolbar.title = "Mark Attendance"
+        binding.icClose.setOnClickListener {
+            checkExitConditions()
+        }
+
+        binding.tvCourseName.text = sharedStdViewModel.courseName!!
+        binding.tvCourseCode.text = sharedStdViewModel.courseCode!!
+        binding.tvLecDate.text = Adapter_ViewModel_Utils.getFormattedDate2(Calendar.getInstance().timeInMillis.toString())
 
         createConfirmDialog()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                when(markAtdViewModel.atdStatus.value) {
-                    is AttendanceStatusStd.DiscoveringTimestamp -> confirmDialog.show()
-                    is AttendanceStatusStd.TimestampDiscovered -> confirmDialog.show()
-                    is AttendanceStatusStd.AttendanceMarked -> {
-                        Toast.makeText(context, "You cannot exit right now. Please Wait a few seconds", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> findNavController().navigateUp()
-                }
+                checkExitConditions()
             }
 
         })
-    }
 
-    private fun setupViews() {
-        binding.fabMarkAtd.setOnClickListener {
-            if(Permissions.hasAccessCoarseLocation(activity as Context)
-                && Permissions.hasAccessFineLocation(activity as Context)) {
-
-                if(markAtdViewModel.isDiscovering == false) {
-                    checkGpsAndStartAttendance()
-                } else {
-                    if(manager != null && channel != null) {
-                        markAtdViewModel.removeServiceRequest(manager!!, channel!!)
-                    }
-                    binding.fabMarkAtd.apply {
-                        extend()
-                        setIconResource(R.drawable.ic_baseline_add_24)
-                        backgroundTintList = ColorStateList.valueOf(Color.parseColor("#03dac5"))
-                    }
-                    markAtdViewModel.updateIsDiscovering(false)
-                    binding.progressBar.visibility = View.GONE
-                }
-
-            } else {
-                permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
-            }
+        binding.fabTryAgain.setOnClickListener {
+            initiateAtdMarking()
         }
     }
 
     private fun setupObservers() {
+        markAtdViewModel.timerStatus.observe(viewLifecycleOwner) {
+            when(it) {
+                null -> { hideTimerLayout() }
+                else -> {
+                    showTimerLayout(Adapter_ViewModel_Utils.getFormattedTime(abs(it)))
+                }
+            }
+        }
+
         markAtdViewModel.atdStatus.observe(viewLifecycleOwner) {
             when(it) {
-//                is AttendanceStatusStd.InitiatingDiscovery -> binding.progressBar.visibility = View.VISIBLE
                 is AttendanceStatusStd.DiscoveringTimestamp -> {
                     markAtdViewModel.updateIsDiscovering(true)
-                    binding.progressBar.visibility = View.VISIBLE
-                    binding.fabMarkAtd.apply {
-                        shrink()
-                        setIconResource(R.drawable.ic_baseline_close_24)
-                        backgroundTintList = ColorStateList.valueOf(Color.parseColor("#f7292b"))
-                    }
-                    /**
-                     * Discovering Timestamp
-                     */
-                    binding.tvStatus.text = "Initial Loading... Please Wait"
-                }
-                is AttendanceStatusStd.TimestampDiscovered -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.tvTimeStamp.text = it.timestamp
 
-                    binding.fabMarkAtd.visibility = View.GONE
-                    binding.tvStatus.text = "Marking Attendance... Please Wait"
+                    showAtdStatus()
+                    showTimerLayout(it.remainingTime!!)
+                    Log.i(TAG, "WIFI_SD_Observer_Status: Discovering Timestamp")
+                }
+
+                is AttendanceStatusStd.TimestampNotFound -> {
+                    // TODO : Show error msg "Uh-Oh, looks like you are not in range" with a try again button
+                }
+
+                is AttendanceStatusStd.TimestampDiscovered -> {
+                    Log.i(TAG, "WIFI_SD_Observer_Status: Timestamp Discovered")
                     markAtdViewModel.updateIsDiscovering(false)
 
                     /**
@@ -160,38 +146,41 @@ class StdMarkAtdFragment : Fragment() {
                         sharedStdViewModel.userDetails!!.sem_sec!!, sharedStdViewModel.userDetails!!.enrollment!!)
                 }
                 is AttendanceStatusStd.AttendanceMarked -> {
-//                    binding.fabMarkAtd.visibility = View.GONE
-                    binding.tvStatus.text = "Attendance Marked. Broadcasting code... Please Wait"
-
+                    Log.i(TAG, "WIFI_SD_Observer_Status: Attendance Marked")
                     /**
                      * Broadcasting Timestamp
                      */
                     broadcastTimestamp(it.timestamp.toString())
+                    binding.tvMarkingAtd.text = "Almost done."
+                    binding.tvPleaseWait.text = "Do not exit the screen."
                 }
-                is AttendanceStatusStd.BroadcastComplete -> {
-                    binding.tvStatus.text = "Thank you for waiting, you can exit the screen now."
 
+                is AttendanceStatusStd.BroadcastComplete -> {
+                    Log.i(TAG, "WIFI_SD_Observer_Status: Broadcast Completed")
+                    hideTimerLayout()
+                    showSuccessful()
                 }
+
                 is AttendanceStatusStd.Error -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
-                    binding.tvStatus.text = it.errorMessage.toString()
+                    markAtdViewModel.updateIsDiscovering(false)
+                    Log.i(TAG, "WIFI_SD_Observer_Status: Error. ErrorMsg - ${it.errorMessage}")
+                    showError()
                 }
             }
         }
     }
 
-    private fun checkGpsAndStartAttendance(){
-        val mLocationManager = (activity as Context).getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        // Checking GPS is enabled
-        val mGPS = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    private fun initiateAtdMarking() {
+        if(Permissions.hasAccessCoarseLocation(activity as Context)
+            && Permissions.hasAccessFineLocation(activity as Context)) {
 
+            if(markAtdViewModel.isDiscovering == false) {
+//                checkGpsAndStartAttendance()
+                startAttendance()
+            }
 
-        // TODO: Check if WIFI is on
-        if(mGPS) {
-            startAttendance()
         } else {
-            Toast.makeText(context, "Please turn on GPS", Toast.LENGTH_SHORT).show()
+            permissionRequestLauncher.launch(Permissions.getPendingPermissions(activity as Activity))
         }
     }
 
@@ -214,7 +203,7 @@ class StdMarkAtdFragment : Fragment() {
             }
 
         } else {
-            Toast.makeText(context, "Couldn't fetch all arguments, Some might be null", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Null error. Something went wrong.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -240,6 +229,17 @@ class StdMarkAtdFragment : Fragment() {
         markAtdViewModel.broadcastTimestamp(manager!!, channel!!, serviceInfo)
     }
 
+    private fun checkExitConditions() {
+        when(markAtdViewModel.atdStatus.value) {
+            is AttendanceStatusStd.DiscoveringTimestamp -> confirmDialog.show()
+            is AttendanceStatusStd.TimestampDiscovered -> confirmDialog.show()
+            is AttendanceStatusStd.AttendanceMarked -> {
+                Toast.makeText(context, "You cannot exit right now. Please Wait a few seconds", Toast.LENGTH_SHORT).show()
+            }
+            else -> findNavController().navigateUp()
+        }
+    }
+
     private fun createConfirmDialog() {
         confirmDialog = AlertDialog.Builder(context)
             .setTitle("Cancel Attendance?")
@@ -250,6 +250,44 @@ class StdMarkAtdFragment : Fragment() {
             }
             .setNegativeButton("No", null)
             .create()
+    }
+
+    private fun showAtdStatus() {
+        binding.errorLayout.visibility = View.INVISIBLE
+
+        binding.atdStatusLayout.visibility = View.VISIBLE
+        binding.loadingAnimation.playAnimation()
+    }
+
+    private fun showTimerLayout(remainingTime: String) {
+        binding.tvEstimatedTime.text = remainingTime
+    }
+
+    private fun hideTimerLayout() {
+        binding.timerLayout.visibility = View.GONE
+    }
+
+    private fun showError() {
+        binding.atdStatusLayout.visibility = View.INVISIBLE
+
+        binding.errorLayout.visibility = View.VISIBLE
+        binding.loadingAnimation.cancelAnimation()
+    }
+
+    private fun showSuccessful() {
+        binding.atdStatusLayout.visibility = View.GONE
+        binding.loadingAnimation.cancelAnimation()
+
+
+        binding.errorLayout.visibility = View.VISIBLE
+        binding.icError.setImageResource(R.drawable.ic_baseline_verified_64)
+        binding.tvErrorMessage.text = "Attendance has been marked successfully."
+        binding.tvSolutionMsg.text = "You can exit the screen now."
+        binding.fabTryAgain.visibility = View.GONE
+
+        // Setting these invisible because I need a margin below the "exit now" TextView
+        binding.tvSolution1.visibility = View.INVISIBLE
+        binding.tvSolution2.visibility = View.INVISIBLE
     }
 
 }

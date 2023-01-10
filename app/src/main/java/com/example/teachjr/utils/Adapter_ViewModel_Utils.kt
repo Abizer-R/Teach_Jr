@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-object AdapterUtils {
+object Adapter_ViewModel_Utils {
 
     fun getSection(sem_sec: String): String {
         val secIdx = sem_sec.indexOf("_", 0)
@@ -87,5 +87,10 @@ object AdapterUtils {
         val df = DecimalFormat("#.##")
         df.roundingMode = RoundingMode.FLOOR
         return df.format(number).toDouble()
+    }
+
+    fun getFormattedTime(seconds: Int) : String {
+        return "${(seconds / 60).toString().padStart(2, '0')} : " +
+                (seconds % 60).toString().padStart(2, '0')
     }
 }

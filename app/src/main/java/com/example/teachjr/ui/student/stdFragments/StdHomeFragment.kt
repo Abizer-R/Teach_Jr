@@ -14,11 +14,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentStdHomeBinding
 import com.example.teachjr.ui.adapters.StdCourseListAdapter
-import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.SharedStdViewModel
 import com.example.teachjr.ui.viewmodels.studentViewModels.StdHomeViewModel
-import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -48,7 +46,7 @@ class StdHomeFragment : Fragment() {
     ): View {
         binding = FragmentStdHomeBinding.inflate(layoutInflater)
         Log.i(TAG, "StudentTesting_HomePage: Student HomePage Created")
-        setHasOptionsMenu(true)
+//        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -79,17 +77,16 @@ class StdHomeFragment : Fragment() {
             setObservers()
         }
 
+        binding.layoutUserGreeting.setOnClickListener {
+            findNavController().navigate(R.id.action_stdHomeFragment_to_stdProfileFragment)
+        }
+
     }
 
     private fun setupOptionsMenu() {
         binding.toolbar.inflateMenu(R.menu.homepage_menu)
         binding.toolbar.setOnMenuItemClickListener {
             when(it.itemId) {
-                R.id.action_view_profile -> {
-                    // TODO: Implement view profile (DETAILS + LOGOUT)
-                    Toast.makeText(context, "View Profile clicked", Toast.LENGTH_SHORT).show()
-                    true
-                }
                 R.id.action_settings -> {
                     // TODO: Implement settings (HELP + ABOUT)
                     Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
@@ -104,11 +101,10 @@ class StdHomeFragment : Fragment() {
         stdHomeViewModel.currUserStd.observe(viewLifecycleOwner) {
             when(it) {
                 is Response.Loading -> {
-                    // TODO: Hide the progress bar only when the course List is populated.... CHANGE THE CODE
                     showLoading()
-//                    binding.progressBar.visibility = View.VISIBLE
                 }
                 is Response.Error -> {
+                    // TODO: Show Error Layout with "try again" button
                     Log.i(TAG, "StudentTesting_HomePage: CurrUser_Error - ${it.errorMessage}")
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -121,9 +117,7 @@ class StdHomeFragment : Fragment() {
                         // Fetch the courseList only if we have user's details
                         stdHomeViewModel.getCourseList(it.data.institute!!, it.data.branch!!, it.data.sem_sec!!)
                     } else {
-
-                        // TODO: Add a refresh button
-                        Toast.makeText(context, "User Details are null. Refresh", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "User Details are null. Try restarting the app.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -135,6 +129,7 @@ class StdHomeFragment : Fragment() {
 //                    binding.progressBar.visibility = View.VISIBLE
                 }
                 is Response.Error -> {
+                    // TODO: Show Error Layout with "try again" button
                     Log.i(TAG, "StudentTesting_HomePage: CourseList_Error - ${it.errorMessage}")
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -156,8 +151,7 @@ class StdHomeFragment : Fragment() {
         binding.tvWelcome.visibility = View.GONE
         binding.rvCourseList.visibility = View.GONE
 
-        binding.tvUsername.text = "Loading"
-        binding.tvUserBatch.text = "Please Wait..."
+        binding.tvUsername.text = "Loading\nPlease Wait"
 
         binding.loadingAnimation.visibility = View.VISIBLE
         binding.loadingAnimation.playAnimation()
@@ -171,9 +165,6 @@ class StdHomeFragment : Fragment() {
         binding.loadingAnimation.cancelAnimation()
 
         binding.tvUsername.text = sharedStdViewModel.userDetails!!.name
-        binding.tvUserBatch.text =
-            sharedStdViewModel.userDetails!!.section + ", Sem-" +
-                    sharedStdViewModel.userDetails!!.semester
         profCourseListAdapter.updateList(sharedStdViewModel.courseList!!)
     }
 

@@ -10,8 +10,13 @@
         <item name="colorSecondaryVariant">@color/secondaryDark</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorSecondary</item>
-        <!-- Customize your theme here. -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/primaryDark</item>
+        <!-- Customize Font for textviews. -->
+        <item name="android:textViewStyle">@style/ProximaTextViewStyle</item>
+    </style>
+
+    <style name="ProximaTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/proxima_nova_regular</item>
     </style>
 
     <style name="roundedImageViewRounded">

@@ -8,13 +8,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.teachjr.R
 import com.example.teachjr.databinding.FragmentAtdReportLecturesBinding
-import com.example.teachjr.databinding.FragmentAtdReportStudentsBinding
 import com.example.teachjr.ui.adapters.AtdReportAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfAtdReportViewModel
-import com.example.teachjr.utils.AdapterUtils
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -45,22 +43,35 @@ class AtdReportLecturesFragment : Fragment() {
 
         atdReportViewModel.atdDetails.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
+                is Response.Loading -> {
+                    showLoading()
+                }
                 is Response.Error -> {
-                    binding.progressBar.visibility = View.GONE
+                    // TODO: Error Layout
+                    stopLoading()
                     Toast.makeText(context, "${it.errorMessage}", Toast.LENGTH_SHORT).show()
                 }
                 is Response.Success -> {
-                    binding.progressBar.visibility = View.GONE
+                    stopLoading()
 
                     val stdCount = it.data!!.studentList.size
                     val lecList = it.data.lectureList
-                    val lecPercentageList = AdapterUtils.getLecturePercentage(stdCount, lecList)
+                    val lecPercentageList = Adapter_ViewModel_Utils.getLecturePercentage(stdCount, lecList)
 
                     atdReportAdapter.updateList(lecPercentageList)
                 }
             }
         }
+    }
+
+    private fun showLoading() {
+        binding.loadingAnimation.visibility = View.VISIBLE
+        binding.loadingAnimation.playAnimation()
+    }
+
+    private fun stopLoading() {
+        binding.loadingAnimation.visibility = View.GONE
+        binding.loadingAnimation.cancelAnimation()
     }
 
 }

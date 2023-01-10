@@ -16,8 +16,7 @@ import com.example.teachjr.databinding.FragmentProfHomeBinding
 import com.example.teachjr.ui.adapters.ProfCourseListAdapter
 import com.example.teachjr.ui.viewmodels.professorViewModels.ProfHomeViewModel
 import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
-import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -54,6 +53,8 @@ class ProfHomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupOptionsMenu()
+
         binding.rvCourseList.apply {
             hasFixedSize()
             adapter = profCourseListAdapter
@@ -67,32 +68,77 @@ class ProfHomeFragment : Fragment() {
         sharedProfViewModel.clearValues()
 
         /**
-         * Fetch the courseList only if we have just launched our app
+         * Fetch the user details and courseList only if we have just launched our app
          */
-        if(sharedProfViewModel.courseList != null) {
-            populateCourseRv()
+        if(sharedProfViewModel.userDetails != null && sharedProfViewModel.courseList != null) {
+            updateViews()
         } else {
-            homeViewModel.getCourseList()
+            homeViewModel.getUser()
             setObservers()
+        }
+
+        binding.layoutUserGreeting.setOnClickListener {
+            findNavController().navigate(R.id.action_profHomeFragment_to_profProfileFragment)
+        }
+    }
+
+    private fun setupOptionsMenu() {
+        binding.toolbar.inflateMenu(R.menu.homepage_menu)
+        binding.toolbar.setOnMenuItemClickListener {
+            when(it.itemId) {
+                R.id.action_settings -> {
+                    // TODO: Implement settings (HELP + ABOUT)
+                    Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
         }
     }
 
     private fun setObservers() {
+        homeViewModel.currUserProf.observe(viewLifecycleOwner) {
+            when(it) {
+                is Response.Loading -> {
+                    showLoading()
+                }
+                is Response.Error -> {
+                    // TODO: Show Error Layout with "try again" button
+                    Log.i(TAG, "StudentTesting_HomePage: CurrUser_Error - ${it.errorMessage}")
+                    Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
+                }
+                is Response.Success -> {
+                    Log.i(TAG, "ProfessorTesting_HomePage: ProfUser = ${it.data}")
+
+                    if(it.data != null) {
+                        sharedProfViewModel.setUserDetails(it.data)
+
+                        /**
+                         * Fetch the courseList only if we have user's details
+                         */
+                        homeViewModel.getCourseList()
+                    } else {
+                        Toast.makeText(context, "User Details are null. Try restarting the app.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
         homeViewModel.courseList.observe(viewLifecycleOwner) {
             when(it) {
-                is Response.Loading -> binding.progressBar.visibility = View.VISIBLE
+                is Response.Loading -> {
+//                    binding.progressBar.visibility = View.VISIBLE
+                }
                 is Response.Error -> {
+                    // TODO: Show Error Layout with "try again" button
                     Log.i(TAG, "ProfessorTesting_HomePage: CourseList_Error - ${it.errorMessage}")
-                    binding.progressBar.visibility = View.GONE
                     Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
                 }
                 is Response.Success -> {
                     Log.i(TAG, "ProfessorTesting_HomePage: CourseList - ${it.data}")
-                    binding.progressBar.visibility = View.GONE
 
                     if(it.data != null) {
                         sharedProfViewModel.setCourseList(it.data)
-                        populateCourseRv()
+                        updateViews()
                     } else {
                         Toast.makeText(context, "Course List is null. Refresh", Toast.LENGTH_SHORT).show()
                     }
@@ -101,7 +147,24 @@ class ProfHomeFragment : Fragment() {
         }
     }
 
-    private fun populateCourseRv() {
+    private fun showLoading() {
+        binding.tvWelcome.visibility = View.GONE
+        binding.rvCourseList.visibility = View.GONE
+
+        binding.tvUsername.text = "Loading\nPlease Wait"
+
+        binding.loadingAnimation.visibility = View.VISIBLE
+        binding.loadingAnimation.playAnimation()
+    }
+
+    private fun updateViews() {
+        binding.tvWelcome.visibility = View.VISIBLE
+        binding.rvCourseList.visibility = View.VISIBLE
+
+        binding.loadingAnimation.visibility = View.GONE
+        binding.loadingAnimation.cancelAnimation()
+
+        binding.tvUsername.text = sharedProfViewModel.userDetails!!.name
         profCourseListAdapter.updateList(sharedProfViewModel.courseList!!)
     }
 }

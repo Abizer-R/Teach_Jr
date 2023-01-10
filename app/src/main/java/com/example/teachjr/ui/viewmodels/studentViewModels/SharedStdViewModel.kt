@@ -1,23 +1,18 @@
 package com.example.teachjr.ui.viewmodels.studentViewModels
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.teachjr.data.model.RvStdCourseListItem
 import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.StudentRepository
-import com.example.teachjr.ui.viewmodels.professorViewModels.SharedProfViewModel
-import com.example.teachjr.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SharedStdViewModel
-    @Inject constructor(
-): ViewModel(){
+@Inject constructor(
+    private val studentRepository: StudentRepository
+): ViewModel() {
 
     private val TAG = SharedStdViewModel::class.java.simpleName
 
@@ -70,5 +65,9 @@ class SharedStdViewModel
         _courseCode = null
         _courseName = null
         _profName = null
+    }
+
+    fun logout() {
+        studentRepository.logout()
     }
 }

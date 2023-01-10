@@ -1,6 +1,5 @@
 package com.example.teachjr.ui.adapters
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,8 +7,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.teachjr.R
 import com.example.teachjr.data.model.RvAtdReportListItem
-import com.example.teachjr.data.model.RvStdLecListItem
-import com.example.teachjr.utils.AdapterUtils
 
 class AtdReportAdapter : RecyclerView.Adapter<AtdReportAdapter.AtdReportViewHolder>() {
 

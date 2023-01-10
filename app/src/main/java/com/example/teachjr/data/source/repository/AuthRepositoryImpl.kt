@@ -2,7 +2,7 @@ package com.example.teachjr.data.source.repository
 
 import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*

@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.teachjr.data.model.ProfAttendanceDetails
 import com.example.teachjr.data.source.repository.ProfRepository
-import com.example.teachjr.utils.Response
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -52,7 +52,8 @@ class ProfAtdReportViewModel
                             Log.i(TAG, "Prof_testing: lecList error - ${lecListResponse.errorMessage}")
                         }
                         is Response.Success -> {
-                            _atdDetails.postValue(Response.Success(ProfAttendanceDetails(
+                            _atdDetails.postValue(
+                                Response.Success(ProfAttendanceDetails(
                                 studentList = stdListResponse.data!!,
                                 lectureList = lecListResponse.data!!
                             )))

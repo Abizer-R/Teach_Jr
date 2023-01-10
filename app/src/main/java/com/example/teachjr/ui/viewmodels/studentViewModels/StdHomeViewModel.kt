@@ -5,7 +5,7 @@ import androidx.lifecycle.*
 import com.example.teachjr.data.model.RvStdCourseListItem
 import com.example.teachjr.data.model.StudentUser
 import com.example.teachjr.data.source.repository.StudentRepository
-import com.example.teachjr.utils.*
+import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject

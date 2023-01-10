@@ -4,13 +4,10 @@ import android.util.Log
 import com.example.teachjr.data.model.*
 import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.FirebasePaths
-import com.example.teachjr.utils.Response
-import com.google.android.gms.tasks.OnSuccessListener
+import com.example.teachjr.utils.sealedClasses.Response
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import kotlinx.coroutines.tasks.await
-import java.sql.Timestamp
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -173,6 +170,8 @@ class StudentRepository
 //        addListenerForSingleValueEvent(valueEventListener)
 //    }
 
-
+    fun logout() {
+        firebaseAuth.signOut()
+    }
 
 }
