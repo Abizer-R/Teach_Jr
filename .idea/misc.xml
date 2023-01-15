@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/bg_atd_lec_details.xml" value="0.2265" />
+        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/bg_btn_edit.xml" value="0.1355" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/bg_header.xml" value="0.2265" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/bg_rv_section.xml" value="0.2265" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/bg_welcom_user.xml" value="0.2265" />
@@ -35,7 +36,7 @@
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_course_create.xml" value="0.246875" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_course_details.xml" value="0.264" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_home.xml" value="0.536" />
-        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_mark_atd.xml" value="0.2609375" />
+        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_mark_atd.xml" value="0.264" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_profile.xml" value="0.21419410004275333" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_std_list.xml" value="0.2609375" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_role_select.xml" value="0.264" />
