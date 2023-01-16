@@ -226,6 +226,7 @@ class ProfMarkAtdFragment : Fragment() {
                     } else {
                         updateRecyclerViewsEDTEnded(it.data!!)
                     }
+                    binding.tvPresentCount.text = "${markAtdViewModel.presentCount} / ${it.data!!.size}"
                 }
             }
         }

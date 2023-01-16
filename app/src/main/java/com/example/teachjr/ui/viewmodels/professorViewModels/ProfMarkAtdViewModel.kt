@@ -50,6 +50,10 @@ class ProfMarkAtdViewModel
     val saveManualStatus: LiveData<Response<Boolean>>
         get() = _saveManualStatus
 
+    private var _presentCount = 0
+    val presentCount: Int
+        get() = _presentCount
+
     private var isServiceBroadcasting = false
 
     private val _atdStatus = MutableLiveData<AttendanceStatusProf>()
@@ -181,6 +185,7 @@ class ProfMarkAtdViewModel
                                 enrollment = flowResult, uid = student!!.uid, atdStatus = Constants.ATD_STATUS_PRESENT_WIFI_SD
                             )
                             _presentList.postValue(Response.Success(stdList))
+                            _presentCount++
                         }
                     }
             }
