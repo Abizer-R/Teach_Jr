@@ -84,17 +84,20 @@ class StdHomeFragment : Fragment() {
     }
 
     private fun setupOptionsMenu() {
-        binding.toolbar.inflateMenu(R.menu.homepage_menu)
-        binding.toolbar.setOnMenuItemClickListener {
-            when(it.itemId) {
-                R.id.action_settings -> {
-                    // TODO: Implement settings (HELP + ABOUT)
-                    Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                else -> false
-            }
-        }
+        /**
+         * Currently I don't have anything to put in settings
+         */
+//        binding.toolbar.inflateMenu(R.menu.homepage_menu)
+//        binding.toolbar.setOnMenuItemClickListener {
+//            when(it.itemId) {
+//                R.id.action_settings -> {
+//                    // TODO: Implement settings (HELP + ABOUT)
+//                    Toast.makeText(context, "Settings clicked", Toast.LENGTH_SHORT).show()
+//                    true
+//                }
+//                else -> false
+//            }
+//        }
     }
 
     private fun setObservers() {
