@@ -2,6 +2,7 @@ package com.example.teachjr.utils
 
 object Constants {
 
+    // TODO: Move these to string file
     const val INITIATING_ATTENDANCE = "Initiating Attendance"
     const val MARKING_ATTENDANCE = "Marking Attendance"
 
@@ -14,6 +15,9 @@ object Constants {
     const val YES = "Yes"
     const val NO = "No"
 
+    /**
+     * These does not have to be moved
+     */
     const val ATD_STATUS_ABSENT = "ABSENT"
     const val ATD_STATUS_PRESENT_WIFI_SD = "WIFI_SD"
     const val ATD_STATUS_PRESENT_MANUAL = "MANUAL"

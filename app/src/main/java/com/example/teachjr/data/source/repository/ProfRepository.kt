@@ -2,6 +2,7 @@ package com.example.teachjr.data.source.repository
 
 import android.util.Log
 import com.example.teachjr.data.model.*
+import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.FirebasePaths
 import com.example.teachjr.utils.sealedClasses.Response
 import com.google.firebase.auth.FirebaseAuth
@@ -106,6 +107,42 @@ class ProfRepository
                     val stdList: MutableList<String> = ArrayList()
                     for(students in it.children) {
                         stdList.add(students.key.toString())
+                    }
+                    continuation.resume(Response.Success(stdList))
+                }
+                .addOnFailureListener {
+                    continuation.resume(Response.Error(it.message.toString(), null))
+                }
+        }
+    }
+
+    suspend fun getStdListWithUid(sem_sec: String): Response<MutableMap<String, String>> {
+//        /**
+//         * Testing purpose
+//         */
+//        return Response.Success(mutableMapOf(
+//            "0818CS201001" to "uid1",
+//            "0818CS201002" to "uid2",
+//            "0818CS201003" to "uid3",
+//            "0818CS201004" to "uid4",
+//            "0818CS201005" to "uid5",
+//            "0818CS201006" to "uid6",
+//            "0818CS201007" to "uid7",
+//            "0818CS201008" to "uid8",
+//            ))
+        return suspendCoroutine { continuation ->
+            dbRef.getReference(FirebasePaths.ENROLLMENT_COLLECTION)
+                .child(sem_sec)
+                .child(FirebasePaths.ENRL_STUDENT_LIST)
+                .get()
+                .addOnSuccessListener {
+                    val stdList: MutableMap<String, String> = mutableMapOf()
+                    for(student in it.children) {
+                        /**
+                         * <String, String> == <Enrollment, Uid>
+                          */
+                        stdList[student.key.toString()] = student.value.toString()
+//                        stdList.add(students.key.toString())
                     }
                     continuation.resume(Response.Success(stdList))
                 }
@@ -229,6 +266,30 @@ class ProfRepository
                 .addOnFailureListener {
                     Log.i(TAG, "ProfessorTesting_Repo: endAttendance = ${it.message}")
                     continuation.resume(Response.Error(it.message.toString(), null))
+                }
+        }
+    }
+
+    suspend fun markAtd(
+        sem_sec: String, courseCode: String, timestamp: String, students: List<RvProfMarkAtdListItem>): String {
+        return suspendCoroutine { continuation ->
+
+            Log.i(TAG, "ProfTesting: markAtd() called")
+
+            val lecPath = "/${FirebasePaths.ATTENDANCE_COLLECTION}/$sem_sec/$courseCode/${FirebasePaths.LEC_LIST}/$timestamp"
+            val updates = mutableMapOf<String, Any>()
+            students.forEach { it ->
+                updates["$lecPath/${it.uid}"] = it.enrollment
+            }
+
+
+            dbRef.reference.updateChildren(updates)
+                .addOnSuccessListener {
+                    continuation.resume(FirebaseConstants.STATUS_SUCCESSFUL)
+                }
+                .addOnFailureListener {
+                    Log.i(TAG, "ProfessorTesting_Repo: createNewAtdRef = ${it.message}")
+                    continuation.resume(it.message.toString())
                 }
         }
     }

@@ -11,10 +11,16 @@ import com.example.teachjr.data.model.RvProfMarkAtdListItem
 import com.example.teachjr.utils.Constants
 import com.google.android.material.card.MaterialCardView
 
-class AttendanceAdapter : RecyclerView.Adapter<AttendanceAdapter.CourseViewHolder>() {
+class AttendanceAdapter(
+    private val onItemClicked: (List<RvProfMarkAtdListItem>, Int) -> Unit
+) : RecyclerView.Adapter<AttendanceAdapter.CourseViewHolder>() {
 
     private var enrollmentList: List<RvProfMarkAtdListItem> = ArrayList()
 //    private var enrollments: List<String> = ArrayList()
+
+    fun getManualAtdList(): List<RvProfMarkAtdListItem> {
+        return enrollmentList.filter { it.atdStatus == Constants.ATD_STATUS_PRESENT_MANUAL }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -31,15 +37,21 @@ class AttendanceAdapter : RecyclerView.Adapter<AttendanceAdapter.CourseViewHolde
             when(enrollmentList[position].atdStatus) {
                 Constants.ATD_STATUS_ABSENT -> {
                     tvEnrollment.setTextColor(Color.parseColor(Constants.HEX_CODE_RED))
+                    cvParent.strokeWidth = 0
                 }
                 Constants.ATD_STATUS_PRESENT_WIFI_SD -> {
                     tvEnrollment.setTextColor(Color.parseColor(Constants.HEX_CODE_GREEN))
+                    cvParent.strokeWidth = 0
                 }
                 Constants.ATD_STATUS_PRESENT_MANUAL -> {
                     tvEnrollment.setTextColor(Color.parseColor(Constants.HEX_CODE_GREEN))
                     cvParent.strokeColor = Color.parseColor(Constants.HEX_CODE_GREEN)
                     cvParent.strokeWidth = 4
                 }
+            }
+
+            holder.itemView.setOnClickListener {
+                onItemClicked(enrollmentList, position)
             }
         }
     }

@@ -12,9 +12,11 @@ import com.example.teachjr.data.model.ProfAttendanceDetails
 import com.example.teachjr.data.model.RvProfMarkAtdListItem
 import com.example.teachjr.data.source.repository.ProfRepository
 import com.example.teachjr.utils.Constants
+import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.sealedClasses.AttendanceStatusProf
 import com.example.teachjr.utils.sealedClasses.Response
 import com.example.teachjr.utils.WifiSD.BroadcastService
+import com.example.teachjr.utils.sealedClasses.AttendanceStatusStd
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -38,14 +40,28 @@ class ProfMarkAtdViewModel
         get() = _isAtdOngoing
     fun updateIsAtdOngoing(newState: Boolean) {_isAtdOngoing = newState}
 
+    private var _isEditing = false
+    val isEditing: Boolean
+        get() = _isEditing
+    fun updateIsEditing(newState: Boolean) {_isEditing = newState}
+
+
+    private var _saveManualStatus = MutableLiveData<Response<Boolean>>()
+    val saveManualStatus: LiveData<Response<Boolean>>
+        get() = _saveManualStatus
+
+    private var _presentCount = 0
+    val presentCount: Int
+        get() = _presentCount
+
     private var isServiceBroadcasting = false
 
     private val _atdStatus = MutableLiveData<AttendanceStatusProf>()
     val atdStatus: LiveData<AttendanceStatusProf>
         get() = _atdStatus
 
-    private val _presentList = MutableLiveData<Response<MutableMap<String, String>>>()
-    val presentList: LiveData<Response<MutableMap<String, String>>>
+    private val _presentList = MutableLiveData<Response<MutableMap<String, RvProfMarkAtdListItem>>>()
+    val presentList: LiveData<Response<MutableMap<String, RvProfMarkAtdListItem>>>
         get() = _presentList
 
 
@@ -55,7 +71,7 @@ class ProfMarkAtdViewModel
             /**
              * Getting list of all students (Initially all will be absent)
              */
-            val stdListResponse = profRepository.getStdList(sem_sec)
+            val stdListResponse = profRepository.getStdListWithUid(sem_sec)
             when(stdListResponse) {
                 is Response.Loading -> {}
                 is Response.Error -> {
@@ -64,9 +80,12 @@ class ProfMarkAtdViewModel
                 }
                 is Response.Success -> {
 
-                    val stdList: MutableMap<String, String> = mutableMapOf()
+                    val stdList: MutableMap<String, RvProfMarkAtdListItem> = mutableMapOf()
                     stdListResponse.data!!.forEach {
-                        stdList[it] = Constants.ATD_STATUS_ABSENT
+                        /**
+                         * <String, String> == <Enrollment, Uid>
+                         */
+                        stdList[it.key] = RvProfMarkAtdListItem(enrollment = it.key, uid = it.value)    // Default: Absent
                     }
                     _presentList.postValue(Response.Success(stdList))
 
@@ -161,14 +180,31 @@ class ProfMarkAtdViewModel
                             _atdStatus.postValue(AttendanceStatusProf.Ended())
                         } else {
 //                            stdList.add(flowResult)
-                            stdList[flowResult] = Constants.ATD_STATUS_PRESENT_WIFI_SD
+                            val student = stdList[flowResult]
+                            stdList[flowResult] = RvProfMarkAtdListItem(
+                                enrollment = flowResult, uid = student!!.uid, atdStatus = Constants.ATD_STATUS_PRESENT_WIFI_SD
+                            )
                             _presentList.postValue(Response.Success(stdList))
+                            _presentCount++
                         }
                     }
             }
         } catch (e: Exception) {
             e.printStackTrace()
             _presentList.postValue(Response.Error(e.message.toString(), null))
+        }
+    }
+
+    fun saveManualAtd(sem_sec: String, courseCode: String, timestamp: String, students: List<RvProfMarkAtdListItem>) {
+        Log.i(TAG, "ProfTesting-ViewModel: Calling saveManualAtd")
+        _saveManualStatus.postValue(Response.Loading())
+        viewModelScope.launch {
+            val markAtdResult = profRepository.markAtd(sem_sec, courseCode, timestamp, students)
+            if(markAtdResult == FirebaseConstants.STATUS_SUCCESSFUL) {
+                _saveManualStatus.postValue(Response.Success(true))
+            } else {
+                _saveManualStatus.postValue(Response.Error(markAtdResult, null))
+            }
         }
     }
 
