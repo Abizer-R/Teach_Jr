@@ -6,10 +6,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.teachjr.data.model.ProfAttendanceDetails
 import com.example.teachjr.data.source.repository.ProfRepository
+import com.example.teachjr.utils.Adapter_ViewModel_Utils
+import com.example.teachjr.utils.FirebaseConstants
+import com.example.teachjr.utils.excelReadWrite.WriteExcel
 import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,13 +24,13 @@ class ProfAtdReportViewModel
 
     private val TAG = ProfAtdReportViewModel::class.java.simpleName
 
-//    private val _studentList = MutableLiveData<Response<List<String>>>()
-//    val studentList: LiveData<Response<List<String>>>
-//        get() = _studentList
-//
-//    private val _lecturesList = MutableLiveData<Response<List<Lecture>>>()
-//    val lecturesList: LiveData<Response<List<Lecture>>>
-//        get() = _lecturesList
+    private var _detailsLoaded = false
+    val detailsLoaded: Boolean
+        get() = _detailsLoaded
+
+    private val _atdReportSaveStatus = MutableLiveData<Response<String>>()
+    val atdReportSaveStatus: LiveData<Response<String>>
+        get() = _atdReportSaveStatus
 
     private val _atdDetails = MutableLiveData<Response<ProfAttendanceDetails>>()
     val atdDetails: LiveData<Response<ProfAttendanceDetails>>
@@ -57,11 +61,31 @@ class ProfAtdReportViewModel
                                 studentList = stdListResponse.data!!,
                                 lectureList = lecListResponse.data!!
                             )))
+                            _detailsLoaded = true
                         }
                     }
                 }
             }
        }
+    }
+
+    suspend fun downloadExcelSheet(downloadFolderPath: String) {
+        _atdReportSaveStatus.postValue(Response.Loading())
+        Log.i(TAG, "Testing_downloadExcelSheet: Downloading started")
+
+        val timestamp = Calendar.getInstance().timeInMillis.toString()
+        val dateString = Adapter_ViewModel_Utils.getFormattedDate3(timestamp)
+        val fileName = "AtdReport_$dateString"
+
+        val response = WriteExcel.createExcelFile(
+            downloadFolderPath, fileName, atdDetails.value!!.data!!)
+
+        if(response.equals(FirebaseConstants.STATUS_SUCCESSFUL)) {
+            _atdReportSaveStatus.postValue(Response.Success(fileName))
+        } else {
+            _atdReportSaveStatus.postValue(Response.Error(response, null))
+        }
+        Log.i(TAG, "Testing_downloadExcelSheet: Downloading Done")
     }
 
 //    fun getStdList(sem_sec: String) {
