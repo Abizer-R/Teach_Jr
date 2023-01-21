@@ -169,7 +169,8 @@ class ProfAtdReportFragment : Fragment() {
     private fun createConfirmDialogOpenUpload() {
         confirmDialogOpenUpload = AlertDialog.Builder(context)
             .setTitle("File Saved")
-            .setMessage("Do you want to open it or upload it to google drive?")
+//            .setMessage("Do you want to open it or upload it to google drive?")
+            .setMessage("Do you want to open it?")
             .setPositiveButton("Open") { _, _ ->
 
                 try {
@@ -204,10 +205,9 @@ class ProfAtdReportFragment : Fragment() {
                 }
 
             }
-            .setNegativeButton("Upload") {_,_ ->
-                // TODO: UPload to google drive
-            }
-            .setNeutralButton("Cancel", null)
+//            .setNegativeButton("Upload") {_,_ -> }
+//            .setNeutralButton("Cancel", null)
+            .setNegativeButton("Cancel", null)
             .create()
     }
 
