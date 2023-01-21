@@ -33,13 +33,22 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/toolbar"/>
 
+    <TextView
+        android:id="@+id/tvNoActivityToHandleIntent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="NOTE: You don't have any app that can open an EXCEL sheet. You can find the attendance report file by following this path:\n"
+        app:layout_constraintTop_toBottomOf="@id/tabLayout"
+        android:layout_marginHorizontal="8dp"/>
+
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabLayout" />
+        app:layout_constraintTop_toBottomOf="@id/tvNoActivityToHandleIntent" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cvSaving"

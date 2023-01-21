@@ -59,6 +59,16 @@
             android:name=".ui.auth.AuthActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        
+        <provider
+            android:authorities="com.example.teachjr.fileProvider"
+            android:name="androidx.core.content.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
 </manifest>

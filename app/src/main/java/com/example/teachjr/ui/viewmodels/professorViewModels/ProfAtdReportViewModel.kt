@@ -28,6 +28,10 @@ class ProfAtdReportViewModel
     val detailsLoaded: Boolean
         get() = _detailsLoaded
 
+    private var _sheetName: String? = null
+    val sheetName: String?
+        get() = _sheetName
+
     private val _atdReportSaveStatus = MutableLiveData<Response<String>>()
     val atdReportSaveStatus: LiveData<Response<String>>
         get() = _atdReportSaveStatus
@@ -82,6 +86,8 @@ class ProfAtdReportViewModel
 
         if(response.equals(FirebaseConstants.STATUS_SUCCESSFUL)) {
             _atdReportSaveStatus.postValue(Response.Success(fileName))
+            _sheetName = "$fileName.xls"
+            Log.i(TAG, "Testing: $sheetName")
         } else {
             _atdReportSaveStatus.postValue(Response.Error(response, null))
         }

@@ -1,21 +1,19 @@
 package com.example.teachjr.ui.professor.profFragments
 
-import android.R.attr.path
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -49,7 +47,8 @@ class ProfAtdReportFragment : Fragment() {
     private lateinit var viewPagerAdapter: AtdReportViewPagerAdapter
     private val tabLayoutTitles = arrayListOf("Lectures", "Students")
 
-    private lateinit var confirmDialog: AlertDialog
+    private lateinit var confirmDialogDownload: AlertDialog
+    private lateinit var confirmDialogOpenUpload: AlertDialog
 
     private val permissionRequestLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -70,6 +69,7 @@ class ProfAtdReportFragment : Fragment() {
         binding = FragmentProfAtdReportBinding.inflate(layoutInflater)
 
         downloadFolderFile = requireContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!
+//        downloadFolderFile = requireContext().filesDir
 
         return binding.root
     }
@@ -87,6 +87,7 @@ class ProfAtdReportFragment : Fragment() {
 
         setupOptionsMenu()
         createConfirmDownloadDialog()
+        createConfirmDialogOpenUpload()
         setupObservers()
 
 
@@ -134,7 +135,7 @@ class ProfAtdReportFragment : Fragment() {
                 }
                 is Response.Success -> {
                     stopSaving()
-                    Toast.makeText(context, "Downloaded at ${it.data}", Toast.LENGTH_SHORT).show()
+                    confirmDialogOpenUpload.show()
                     // TODO: Alert dialog - Upload to google drive | open in folder | cancel
                 }
             }
@@ -145,14 +146,14 @@ class ProfAtdReportFragment : Fragment() {
         if(Permissions.hasReadStoragePermissions(activity as Context)
             && Permissions.hasWriteStoragePermissions(activity as Context)) {
 
-            confirmDialog.show()
+            confirmDialogDownload.show()
         } else {
             permissionRequestLauncher.launch(Permissions.getPendingStoragePermissions(activity as Activity))
         }
     }
 
     private fun createConfirmDownloadDialog() {
-        confirmDialog = AlertDialog.Builder(context)
+        confirmDialogDownload = AlertDialog.Builder(context)
             .setTitle("Convert to excel?")
             .setMessage("Attendance report will be saved as excel sheet")
             .setPositiveButton(Constants.YES) { _, _ ->
@@ -162,6 +163,51 @@ class ProfAtdReportFragment : Fragment() {
                 }
             }
             .setNegativeButton(Constants.NO, null)
+            .create()
+    }
+
+    private fun createConfirmDialogOpenUpload() {
+        confirmDialogOpenUpload = AlertDialog.Builder(context)
+            .setTitle("File Saved")
+            .setMessage("Do you want to open it or upload it to google drive?")
+            .setPositiveButton("Open") { _, _ ->
+
+                try {
+                    if(atdReportViewModel.sheetName != null) {
+                        val filePath = File(downloadFolderFile, "")
+                        val sheet = File(filePath, atdReportViewModel.sheetName!!)
+                        val contentUri = FileProvider.getUriForFile(
+                            requireContext(),
+                            "com.example.teachjr.fileProvider",
+                            sheet
+                        )
+                        Log.i(TAG, "TESTING, URI: ${contentUri.toString()}")
+
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        if(contentUri.toString().contains(".xls") || contentUri.toString().contains(".xlsx")) {
+                            intent.setDataAndType(contentUri, "application/vnd.ms-excel")
+                        }
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+
+//                        val file = File(atdReportViewModel.filePath)
+//                        OpenExcel.openFile(requireContext(), file)
+                    }
+                } catch (e: ActivityNotFoundException) {
+                    binding.tvNoActivityToHandleIntent.text = binding.tvNoActivityToHandleIntent.text.toString() + downloadFolderFile.path.toString()
+                    binding.tvNoActivityToHandleIntent.visibility = View.VISIBLE
+//                    Toast.makeText(context, "You don't have any app that can open an \'Excel file\'", Toast.LENGTH_LONG).show()
+                }
+                catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
+                }
+
+            }
+            .setNegativeButton("Upload") {_,_ ->
+                // TODO: UPload to google drive
+            }
+            .setNeutralButton("Cancel", null)
             .create()
     }
 
