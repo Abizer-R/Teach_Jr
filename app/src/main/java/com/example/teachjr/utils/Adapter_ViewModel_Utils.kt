@@ -40,6 +40,17 @@ object Adapter_ViewModel_Utils {
         }
     }
 
+    fun getFormattedDate3(timestamp: String): String {
+        try {
+//            val sdf = SimpleDateFormat("EEE, MMM dd, yyyy")
+            val sdf = SimpleDateFormat("dd_MM_yy")
+            val netDate = Date(timestamp.toLong())
+            return sdf.format(netDate)
+        } catch (e: Exception) {
+            return e.toString()
+        }
+    }
+
     fun getLecturePercentage(totalStdCount: Int, lecList: List<Lecture>): List<RvAtdReportListItem> {
         val lecPercentageList: MutableList<RvAtdReportListItem> = ArrayList()
 

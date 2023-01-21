@@ -77,6 +77,10 @@ dependencies {
 
     // Lottie Animations
     implementation 'com.airbnb.android:lottie:5.2.0'
+
+    // Apache Poi
+    implementation 'org.apache.poi:poi:3.9'
+    implementation("org.apache.poi:poi-ooxml:3.9")
 }
 
 // Allow references to generated code
