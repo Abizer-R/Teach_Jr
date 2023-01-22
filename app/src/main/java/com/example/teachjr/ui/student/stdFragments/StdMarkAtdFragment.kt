@@ -163,6 +163,7 @@ class StdMarkAtdFragment : Fragment() {
 
                 is AttendanceStatusStd.Error -> {
                     markAtdViewModel.updateIsDiscovering(false)
+                    markAtdViewModel.stopTimer()
                     Log.i(TAG, "WIFI_SD_Observer_Status: Error. ErrorMsg - ${it.errorMessage}")
                     showError()
                 }

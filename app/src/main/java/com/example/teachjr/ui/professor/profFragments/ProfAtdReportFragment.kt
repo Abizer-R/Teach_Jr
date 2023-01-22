@@ -56,7 +56,7 @@ class ProfAtdReportFragment : Fragment() {
                 it.value == true
             }
             if(granted) {
-                Toast.makeText(context, "GRANTED", Toast.LENGTH_SHORT).show()
+                openExcelFile()
             } else {
                 Toast.makeText(context, "not GRANTED", Toast.LENGTH_SHORT).show()
             }
@@ -136,7 +136,8 @@ class ProfAtdReportFragment : Fragment() {
                 is Response.Success -> {
                     stopSaving()
                     confirmDialogOpenUpload.show()
-                    // TODO: Alert dialog - Upload to google drive | open in folder | cancel
+                    binding.layoutFileLocation.visibility = View.VISIBLE
+                    binding.tvFileLocation.text = downloadFolderFile.path.toString()
                 }
             }
         }
@@ -173,37 +174,7 @@ class ProfAtdReportFragment : Fragment() {
             .setMessage("Do you want to open it?")
             .setPositiveButton("Open") { _, _ ->
 
-                try {
-                    if(atdReportViewModel.sheetName != null) {
-                        val filePath = File(downloadFolderFile, "")
-                        val sheet = File(filePath, atdReportViewModel.sheetName!!)
-                        val contentUri = FileProvider.getUriForFile(
-                            requireContext(),
-                            "com.example.teachjr.fileProvider",
-                            sheet
-                        )
-                        Log.i(TAG, "TESTING, URI: ${contentUri.toString()}")
-
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        if(contentUri.toString().contains(".xls") || contentUri.toString().contains(".xlsx")) {
-                            intent.setDataAndType(contentUri, "application/vnd.ms-excel")
-                        }
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        startActivity(intent)
-
-//                        val file = File(atdReportViewModel.filePath)
-//                        OpenExcel.openFile(requireContext(), file)
-                    }
-                } catch (e: ActivityNotFoundException) {
-                    binding.tvNoActivityToHandleIntent.text = binding.tvNoActivityToHandleIntent.text.toString() + downloadFolderFile.path.toString()
-                    binding.tvNoActivityToHandleIntent.visibility = View.VISIBLE
-//                    Toast.makeText(context, "You don't have any app that can open an \'Excel file\'", Toast.LENGTH_LONG).show()
-                }
-                catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
-                }
-
+                openExcelFile()
             }
 //            .setNegativeButton("Upload") {_,_ -> }
 //            .setNeutralButton("Cancel", null)
@@ -219,5 +190,38 @@ class ProfAtdReportFragment : Fragment() {
     private fun stopSaving() {
         binding.viewPager.alpha = 1F
         binding.cvSaving.visibility = View.GONE
+    }
+
+    private fun openExcelFile() {
+        try {
+            if(atdReportViewModel.sheetName != null) {
+                val filePath = File(downloadFolderFile, "")
+                val sheet = File(filePath, atdReportViewModel.sheetName!!)
+                val contentUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.example.teachjr.fileProvider",
+                    sheet
+                )
+                Log.i(TAG, "TESTING, URI: ${contentUri.toString()}")
+
+                val intent = Intent(Intent.ACTION_VIEW)
+                if(contentUri.toString().contains(".xls") || contentUri.toString().contains(".xlsx")) {
+                    intent.setDataAndType(contentUri, "application/vnd.ms-excel")
+                }
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+
+//                        val file = File(atdReportViewModel.filePath)
+//                        OpenExcel.openFile(requireContext(), file)
+            }
+        } catch (e: ActivityNotFoundException) {
+//                    binding.tvNoActivityToHandleIntent.text = binding.tvNoActivityToHandleIntent.text.toString() + downloadFolderFile.path.toString()
+//                    binding.tvNoActivityToHandleIntent.visibility = View.VISIBLE
+            Toast.makeText(context, "You don't have any app that can open an EXCEL file", Toast.LENGTH_LONG).show()
+        }
+        catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
+        }
     }
 }

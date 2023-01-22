@@ -50,13 +50,23 @@ class StdMarkAtdViewModel
      * So, @currRemainingSeconds acts as a global timer value.
      * positive value = remaining time for discovery and marking attendance
      * negative value = remaining time for broadcast
+     *
+     * ----DEBUG----
+     * When user clicks, on "try again", a new coroutine is launched
+     * This variable is affected by all the running coroutines,
+     * Hence, the 'Fast forward timer bug' occurs.
+     * To solve it, I added a logic where: if currRemainingSeconds == Int.MAX_VALUE, break out of while loop (which ultimately completes the coroutine)
      */
     private var currRemainingSeconds = 0
+    fun stopTimer() {
+        currRemainingSeconds = 0
+    }
 
     suspend fun showTimerDiscovering() {
         viewModelScope.launch {
             while(currRemainingSeconds > 0) {
                 delay(1000)
+                Log.i(TAG, "testing_showTimerDiscovering: sec = $currRemainingSeconds")
                 currRemainingSeconds--
                 _timerStatus.postValue(currRemainingSeconds)
             }
