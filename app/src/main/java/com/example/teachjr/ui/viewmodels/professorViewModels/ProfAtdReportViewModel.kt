@@ -1,18 +1,21 @@
 package com.example.teachjr.ui.viewmodels.professorViewModels
 
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.teachjr.data.model.ProfAttendanceDetails
 import com.example.teachjr.data.source.repository.ProfRepository
 import com.example.teachjr.utils.Adapter_ViewModel_Utils
+import com.example.teachjr.utils.Constants
 import com.example.teachjr.utils.FirebaseConstants
 import com.example.teachjr.utils.excelReadWrite.WriteExcel
 import com.example.teachjr.utils.sealedClasses.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 
@@ -27,14 +30,6 @@ class ProfAtdReportViewModel
     private var _detailsLoaded = false
     val detailsLoaded: Boolean
         get() = _detailsLoaded
-
-    private var _sheetName: String? = null
-    val sheetName: String?
-        get() = _sheetName
-
-    private val _atdReportSaveStatus = MutableLiveData<Response<String>>()
-    val atdReportSaveStatus: LiveData<Response<String>>
-        get() = _atdReportSaveStatus
 
     private val _atdDetails = MutableLiveData<Response<ProfAttendanceDetails>>()
     val atdDetails: LiveData<Response<ProfAttendanceDetails>>
@@ -73,45 +68,24 @@ class ProfAtdReportViewModel
        }
     }
 
-    suspend fun downloadExcelSheet(downloadFolderPath: String) {
-        _atdReportSaveStatus.postValue(Response.Loading())
-        Log.i(TAG, "Testing_downloadExcelSheet: Downloading started")
-
-        val timestamp = Calendar.getInstance().timeInMillis.toString()
-        val dateString = Adapter_ViewModel_Utils.getFormattedDate3(timestamp)
-        val fileName = "AtdReport_$dateString"
-
-        val response = WriteExcel.createExcelFile(
-            downloadFolderPath, fileName, atdDetails.value!!.data!!)
-
-        if(response.equals(FirebaseConstants.STATUS_SUCCESSFUL)) {
-            _atdReportSaveStatus.postValue(Response.Success(fileName))
-            _sheetName = "$fileName.xls"
-            Log.i(TAG, "Testing: $sheetName")
-        } else {
-            _atdReportSaveStatus.postValue(Response.Error(response, null))
-        }
-        Log.i(TAG, "Testing_downloadExcelSheet: Downloading Done")
-    }
-
-//    fun getStdList(sem_sec: String) {
-//        _studentList.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val stdListResponse = profRepository.getStdList(sem_sec)
-//            _studentList.postValue(stdListResponse)
-//        }
-//    }
-//
-//    fun getLectureList(sem_sec: String, courseCode: String) {
-//        _lecturesList.postValue(Response.Loading())
-//        viewModelScope.launch {
-//            val lecListResponse = profRepository.getLectureList(sem_sec, courseCode)
-//            _lecturesList.postValue(lecListResponse)
-//        }
-//    }
-
     override fun onCleared() {
         super.onCleared()
         Log.i(TAG, "onCleared: VIEWMODEL CLEARED")
     }
+
+
+    /**
+     * Below stuff is used in ProfExcelSheetFragment
+     */
+
+    private var _fileName = Constants.FILE_NOT_FOUND
+    val fileName: String
+        get() = _fileName
+    fun updateFileName(name: String) { _fileName = name }
+
+//    private val _fileSaveStatus = MutableLiveData<Response<String>>()
+//    val fileSaveStatus: LiveData<Response<String>>
+//        get() = _fileSaveStatus
+
+
 }

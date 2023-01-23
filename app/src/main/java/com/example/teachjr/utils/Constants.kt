@@ -24,4 +24,7 @@ object Constants {
 
     const val HEX_CODE_RED = "#E11717"
     const val HEX_CODE_GREEN = "#0EC921"
+
+    const val FILE_NOT_FOUND = "FILE_NOT_FOUND"
+    const val REPORT_FILE_NAME_PREFIX = "AtdReport"
 }

@@ -43,7 +43,7 @@ object Adapter_ViewModel_Utils {
     fun getFormattedDate3(timestamp: String): String {
         try {
 //            val sdf = SimpleDateFormat("EEE, MMM dd, yyyy")
-            val sdf = SimpleDateFormat("dd_MM_yy")
+            val sdf = SimpleDateFormat("dd_MM_yyyy")
             val netDate = Date(timestamp.toLong())
             return sdf.format(netDate)
         } catch (e: Exception) {
@@ -103,5 +103,11 @@ object Adapter_ViewModel_Utils {
     fun getFormattedTime(seconds: Int) : String {
         return "${(seconds / 60).toString().padStart(2, '0')} : " +
                 (seconds % 60).toString().padStart(2, '0')
+    }
+
+    fun generateFileName(): String {
+        val timestamp = Calendar.getInstance().timeInMillis.toString()
+        val dateString = getFormattedDate3(timestamp)
+        return "${Constants.REPORT_FILE_NAME_PREFIX}_$dateString"
     }
 }

@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.teachjr.data.model.ProfAttendanceDetails
 import com.example.teachjr.utils.Adapter_ViewModel_Utils
 import com.example.teachjr.utils.FirebaseConstants
+import com.example.teachjr.utils.sealedClasses.Response
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFFont
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -17,9 +18,9 @@ object WriteExcel {
 
     private val TAG = WriteExcel::class.java.simpleName
 
-    suspend fun createExcelFile(downloadFolderPath: String, fileName: String, atdDetails: ProfAttendanceDetails) : String {
+    suspend fun getWorkbookWithData(path: String, fileName: String, atdDetails: ProfAttendanceDetails) : Workbook? {
         return suspendCoroutine { continuation ->
-            Log.i(TAG, "TESTING : downloadFolderPath = $downloadFolderPath")
+            Log.i(TAG, "TESTING : downloadFolderPath = $path")
             try {
                 val workbook = XSSFWorkbook()
                 val sheet = workbook.createSheet(fileName)
@@ -27,25 +28,11 @@ object WriteExcel {
                 addEnrollmentColumn(sheet, atdDetails.studentList)  // First Column
                 addRows(sheet, atdDetails)
 
-//                addData(sheet, atdDetails)
-
-
-                val currFile = File(downloadFolderPath, "$fileName.xls")
-                if(!currFile.exists()) {
-                    currFile.createNewFile()
-                }
-
-                val fileOutputStream = FileOutputStream(currFile)
-                workbook.write(fileOutputStream)
-
-                fileOutputStream.flush()
-                fileOutputStream.close()
-
-                continuation.resume(FirebaseConstants.STATUS_SUCCESSFUL)
+                continuation.resume(workbook)
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                continuation.resume(e.message.toString())
+                continuation.resume(null)
             }
         }
     }

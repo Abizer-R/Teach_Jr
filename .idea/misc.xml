@@ -17,8 +17,10 @@
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_arrow_back_black_32.xml" value="0.2265" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_close_24.xml" value="0.266" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_error_64.xml" value="0.1325" />
+        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_insert_drive_file_24.xml" value="0.1" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_panorama_fish_eye_24.xml" value="0.1795" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_person_32.xml" value="0.2265" />
+        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_save_alt_24_white.xml" value="0.1015" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_settings_white_32.xml" value="0.2265" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/ic_baseline_verified_64.xml" value="0.2265" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/drawable/rv_section_shape.xml" value="0.1795" />
@@ -35,6 +37,7 @@
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_atd_report.xml" value="0.2609375" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_course_create.xml" value="0.246875" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_course_details.xml" value="0.264" />
+        <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_excel_sheet.xml" value="0.21419410004275333" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_home.xml" value="0.2" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_mark_atd.xml" value="0.264" />
         <entry key="..\:/Users/abizer's ideapad/AndroidStudioProjects/TeachJr/app/src/main/res/layout/fragment_prof_profile.xml" value="0.21419410004275333" />
