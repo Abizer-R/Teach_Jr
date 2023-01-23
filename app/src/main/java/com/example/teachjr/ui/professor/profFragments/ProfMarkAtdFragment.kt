@@ -3,8 +3,10 @@ package com.example.teachjr.ui.professor.profFragments
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
+import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -17,6 +19,7 @@ import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -78,6 +81,7 @@ class ProfMarkAtdFragment : Fragment() {
 //                }
             } else {
                 // TODO: Display a message that attendance cannot be initiated without permission
+                Toast.makeText(context, "Attendance can't be initiated without permission", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -264,7 +268,9 @@ class ProfMarkAtdFragment : Fragment() {
 
     private fun initiateAtdMarking() {
         if(Permissions.hasAccessCoarseLocation(activity as Context)
-            && Permissions.hasAccessFineLocation(activity as Context)) {
+            && Permissions.hasAccessFineLocation(activity as Context)
+            && (Build.VERSION.SDK_INT >= 33 && Permissions.hasNearbyWifiDevices(activity as Context))) {
+
 
             if(markAtdViewModel.isAtdOngoing == false) {
                 startAttendance()

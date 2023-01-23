@@ -33,6 +33,7 @@ class SplashActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         Permissions.requestPermission(this@SplashActivity)
+        Permissions.requestStoragePermissions(this@SplashActivity)
 
         splashViewModel.userType.observe(this) {
             when(it) {

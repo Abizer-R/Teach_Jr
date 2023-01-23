@@ -52,10 +52,23 @@
         android:id="@+id/profAtdReportFragment"
         android:name="com.example.teachjr.ui.professor.profFragments.ProfAtdReportFragment"
         android:label="Attendance Report"
-        tools:layout="@layout/fragment_prof_atd_report" />
+        tools:layout="@layout/fragment_prof_atd_report" >
+        <action
+            android:id="@+id/action_profAtdReportFragment_to_profExcelSheetFragment"
+            app:destination="@id/profExcelSheetFragment"
+            app:enterAnim="@anim/slide_in_from_right"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_to_left" />
+    </fragment>
     <fragment
         android:id="@+id/profProfileFragment"
         android:name="com.example.teachjr.ui.professor.profFragments.ProfProfileFragment"
         android:label="fragment_prof_profile"
         tools:layout="@layout/fragment_prof_profile" />
+    <fragment
+        android:id="@+id/profExcelSheetFragment"
+        android:name="com.example.teachjr.ui.professor.profFragments.ProfExcelSheetFragment"
+        android:label="fragment_prof_excel_sheet"
+        tools:layout="@layout/fragment_prof_excel_sheet" />
 </navigation>

@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.net.wifi.p2p.WifiP2pManager
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo
+import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -173,7 +174,8 @@ class StdMarkAtdFragment : Fragment() {
 
     private fun initiateAtdMarking() {
         if(Permissions.hasAccessCoarseLocation(activity as Context)
-            && Permissions.hasAccessFineLocation(activity as Context)) {
+            && Permissions.hasAccessFineLocation(activity as Context)
+            && (Build.VERSION.SDK_INT >= 33 && Permissions.hasNearbyWifiDevices(activity as Context))) {
 
             if(markAtdViewModel.isDiscovering == false) {
 //                checkGpsAndStartAttendance()

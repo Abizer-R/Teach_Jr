@@ -4,9 +4,10 @@
 
     <item
         android:id="@+id/action_download_report"
-        android:title="Download Report"
-        android:icon="@drawable/ic_baseline_save_alt_24_white"
-        app:showAsAction="ifRoom"/>
+        android:title="Excel"
+        android:icon="@drawable/ic_baseline_insert_drive_file_24"
+        android:titleCondensed="Excel"
+        app:showAsAction="always|withText"/>
 
 <!--    <item-->
 <!--        android:id="@+id/action_open_download_folder"-->
