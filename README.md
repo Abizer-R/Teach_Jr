@@ -1,4 +1,4 @@
-# Teach_Jr
+# <img src="https://user-images.githubusercontent.com/86946600/223048973-84c608c9-f815-40a0-ab80-2a9d2cf7aa8e.png" align="center" height="150"> Teach Junior
 WIFI-based attendance app
 
 ------------------------------------------
