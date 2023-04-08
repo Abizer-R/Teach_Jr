@@ -280,6 +280,7 @@
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                     <FrameLayout
+                        android:id="@+id/frameLayoutPercentageBar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="16dp">
@@ -304,6 +305,18 @@
                             android:textStyle="bold" />
 
                     </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tvNoLec"
+                        android:visibility="gone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:layout_margin="16dp"
+                        android:text="No lectures held yet."
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.cardview.widget.CardView>

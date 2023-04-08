@@ -136,6 +136,12 @@ class StdCourseDetailsFragment : Fragment() {
         binding.tvPresentCount.text = atdDetails.presentLecCount.toString()
         binding.tvAbsentCount.text = atdDetails.absentLecCount.toString()
 
+        if(atdDetails.totalLecCount == 0) {
+            binding.tvNoLec.visibility = View.VISIBLE
+            binding.frameLayoutPercentageBar.visibility = View.GONE
+            return
+        }
+
         // TODO: Change the bar color acc to percentage
         // Setting up percentage Tv and bar
         val percentage = (atdDetails.presentLecCount * 100) / atdDetails.totalLecCount
